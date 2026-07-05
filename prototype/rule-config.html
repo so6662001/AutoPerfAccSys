@@ -61,6 +61,7 @@
         <button data-tab="int">计息参数</button>
         <button data-tab="formula">公式编辑器</button>
         <button data-tab="change">变更审批 <span class="tag amber" id="crBadge" style="display:none;margin-left:4px">0</span></button>
+        <button data-tab="pilot">灰度看板</button>
         <button data-tab="timeline">版本时间轴</button>
       </div>
     </div>
@@ -330,8 +331,19 @@
         <div class="card"><div class="card-b"><div class="muted small">已退回</div><div class="b700" style="font-size:22px;color:var(--c-red)" id="crRej">0</div></div></div>
       </div>
       <div class="card">
-        <div class="card-h"><h3>规则变更单</h3><span class="sub">发布即生成变更单，三级串签通过后（按生效方式/范围）生效</span></div>
+        <div class="card-h"><h3>规则变更单</h3><div class="flex gap8 center"><span class="sub">发布即生成变更单，三级串签通过后生效</span><button class="btn sm" id="btnAudit">⬇ 合规审计导出</button></div></div>
         <div class="card-b" id="crList"></div>
+      </div>
+    </div>
+
+    <!-- 灰度看板 -->
+    <div data-tabgroup="rule" data-tab="pilot" class="tab-pane">
+      <div class="callout blue" style="margin-bottom:16px"><span>🧪</span><div><b>灰度试点效果对比：</b>对灰度生效的规则，对比"试点部门"与"对照组"的绩效表现，评估政策效果，为是否推广全量提供数据依据。</div></div>
+      <div class="card">
+        <div class="card-h"><h3>试点效果看板</h3>
+          <select class="select" id="pilotSel" style="width:auto;padding:6px 10px"></select>
+        </div>
+        <div class="card-b" id="pilotBoard"></div>
       </div>
     </div>
 
@@ -384,7 +396,7 @@
   $("btnCheck").addEventListener("click", ()=>showToast("语法校验通过 ✓","公式依赖：账期分档表.现货吨位单价","green"));
 
   // ===== 发布 → 规则变更单 → 多级串签审批 → (定时)生效（治理闭环）=====
-  let effVer = 3, seqVer = 3;
+  let effVer = 3, seqVer = 4;
   function weightSum(key){ return cards[key].reduce((s,r)=>s+(parseFloat(r.weight)||0),0); }
   function newChain(){ return [
     { role:"部门主管", name:"陈组长", status:"待处理", time:"" },
@@ -399,6 +411,13 @@
               {role:"分管领导",name:"周总",status:"通过",time:"05-02 16:00"} ],
       details:["销售评分卡权重 40/20/20/20","启用回款账期差异化提成","预收 / 预付账款计息上线"],
       params:{ "销售权重":"40/20/20/20","采购权重":"35/25/25/15","定性折算(A/B/C/D)":"110/100/80/50","销售否决线":"月度保底销量达成<60%","采购否决线":"采购价格竞争力<60%","预收日利率":"5‱","预付日利率":"4‱","采购提成阶梯":"5/8/12%" } },
+    { id:"CR-20260601-04", ver:4, submitter:"李静·绩效专员", time:"2026-06-01 09:30",
+      effMode:"now", effLabel:"立即生效", scopeLabel:"灰度·华东销售部", status:"已生效", cur:3,
+      chain:[ {role:"部门主管",name:"陈组长",status:"通过",time:"06-01 10:10"},
+              {role:"HR负责人",name:"王总监",status:"通过",time:"06-01 11:40"},
+              {role:"分管领导",name:"周总",status:"通过",time:"06-01 15:20"} ],
+      details:["销售评分卡权重调整为 50/20/15/15（加大保底权重）","≤30天账期吨位单价下调至 5 元/吨"],
+      params:{ "销售权重":"50/20/15/15","采购权重":"35/25/25/15","定性折算(A/B/C/D)":"110/100/80/50","销售否决线":"月度保底销量达成<60%","采购否决线":"采购价格竞争力<60%","预收日利率":"5‱","预付日利率":"4‱","采购提成阶梯":"5/8/12%" } },
   ];
   function paramsSnapshot(){
     return {
@@ -412,9 +431,9 @@
       "采购提成阶梯": [$("rc_pur_t1")?$("rc_pur_t1").value:"5",$("rc_pur_t2")?$("rc_pur_t2").value:"8",$("rc_pur_t3")?$("rc_pur_t3").value:"12"].join("/")+"%",
     };
   }
-  function pushNotice(title, body){
+  function pushNotice(title, body, crId){
     try{ const arr=JSON.parse(localStorage.getItem("steel_notices")||"[]");
-      arr.unshift({ title, body, time:new Date().toLocaleString("zh-CN") });
+      arr.unshift({ title, body, crId:crId||"", time:new Date().toLocaleString("zh-CN") });
       localStorage.setItem("steel_notices", JSON.stringify(arr.slice(0,20))); }catch(e){}
   }
   // 生效方式
@@ -483,6 +502,7 @@
     $("crList").querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>addSign(b.dataset.add)));
     $("crList").querySelectorAll("[data-promote]").forEach(b=>b.addEventListener("click",()=>promote(b.dataset.promote)));
     renderTimeline();
+    if(typeof renderPilot==="function") renderPilot();
   }
   function delegate(id){
     const r=changeReqs.find(x=>x.id===id); const c=r.chain[r.cur];
@@ -538,7 +558,7 @@
     if(r.cur < r.chain.length){ renderCR(); showToast("已通过 · 进入下一节点","下一审批人："+r.chain[r.cur].role+" · "+r.chain[r.cur].name,"green"); return; }
     // 全部通过
     if(r.effMode==="now"){ r.status="已生效"; effVer=r.ver; $("nextVer").textContent="v"+(seqVer+1); renderCR();
-      pushNotice("绩效规则 v"+r.ver+" 已生效","生效范围："+r.scopeLabel+"；"+r.details[0]+" 等 "+r.details.length+" 项变更。如有疑问可发起申诉。");
+      pushNotice("绩效规则 v"+r.ver+" 已生效","生效范围："+r.scopeLabel+"；"+r.details[0]+" 等 "+r.details.length+" 项变更。如有疑问可发起申诉。", r.id);
       showToast("串签完成 · 已生效 ✓","规则 v"+r.ver+" 三级审批通过，立即生效，已推送员工端","green"); }
     else { r.status="待生效"; renderCR(); showToast("串签完成 · 待生效","规则 v"+r.ver+" 已通过，"+r.effLabel,"blue"); }
   }
@@ -549,7 +569,7 @@
   function goEffective(id){
     const r=changeReqs.find(x=>x.id===id); r.status="已生效"; effVer=r.ver; $("nextVer").textContent="v"+(seqVer+1);
     renderCR();
-    pushNotice("绩效规则 v"+r.ver+" 已生效","生效范围："+r.scopeLabel+"（"+r.effLabel+"）；"+r.details[0]+" 等 "+r.details.length+" 项变更。");
+    pushNotice("绩效规则 v"+r.ver+" 已生效","生效范围："+r.scopeLabel+"（"+r.effLabel+"）；"+r.details[0]+" 等 "+r.details.length+" 项变更。", r.id);
     showToast("已到期生效 ✓","规则 v"+r.ver+" 于 "+r.effLabel+" 正式生效，已推送员工端","green");
   }
   function promote(id){
@@ -581,9 +601,75 @@
     document.querySelectorAll('[data-tabs="rule"] .tabs button').forEach(b=>{ if(b.dataset.tab==="change") b.click(); });
     showToast("已提交变更审批 ✓","规则 v"+ver+"（"+effSel.label+" · "+scopeSel.label+"）已提交，需 主管→HR→分管领导 三级串签","blue");
   });
+  // ===== 灰度试点效果对比看板 =====
+  // 试点效果 mock 指标（试点部门 vs 对照组），按变更单 id 关联
+  const pilotData = {
+    "CR-20260601-04": {
+      dept:"华东销售部", ctrl:"华北销售部（对照）",
+      metrics:[
+        { k:"人均应发绩效", t:"¥18,900", c:"¥17,400", up:true, note:"+8.6%" },
+        { k:"平均基础绩效系数", t:"0.92", c:"0.86", up:true, note:"+0.06" },
+        { k:"保底销量达成率", t:"112%", c:"104%", up:true, note:"+8pct" },
+        { k:"回款账期(平均)", t:"26 天", c:"33 天", up:true, note:"−7 天(更优)" },
+        { k:"应收逾期率", t:"4.1%", c:"6.8%", up:true, note:"−2.7pct" },
+      ],
+      verdict:"正向", advice:"试点各项指标均优于对照组，账期与逾期显著改善，建议推广至全公司。"
+    }
+  };
+  function renderPilot(){
+    const grays = changeReqs.filter(r=>r.scopeLabel && r.scopeLabel.indexOf("灰度")===0);
+    if(!grays.length){ $("pilotSel").innerHTML=""; $("pilotBoard").innerHTML='<div class="callout amber"><span>ℹ</span><div>当前无灰度试点变更单。可在发布时选择"范围：灰度试点"生成。</div></div>'; return; }
+    $("pilotSel").innerHTML = grays.map(r=>`<option value="${r.id}">${r.id} · ${r.scopeLabel}</option>`).join("");
+    drawPilot($("pilotSel").value || grays[0].id);
+  }
+  function drawPilot(id){
+    const r = changeReqs.find(x=>x.id===id); const d = pilotData[id];
+    if(!d){ $("pilotBoard").innerHTML='<div class="callout amber"><span>ℹ</span><div>该试点暂无效果数据（示例仅 CR-20260601-04 含对比数据）。</div></div>'; return; }
+    const rows = d.metrics.map(m=>{
+      const tv = parseFloat(String(m.t).replace(/[^0-9.]/g,""))||0, cv=parseFloat(String(m.c).replace(/[^0-9.]/g,""))||0;
+      const max=Math.max(tv,cv)||1;
+      return `<tr><td>${m.k}</td>
+        <td style="width:34%"><div class="flex between small"><b style="color:var(--c-primary)">${m.t}</b></div><div class="bar mt8"><span style="width:${Math.round(tv/max*100)}%"></span></div></td>
+        <td style="width:34%"><div class="flex between small"><b class="muted">${m.c}</b></div><div class="bar mt8"><span style="width:${Math.round(cv/max*100)}%;background:var(--c-text-3)"></span></div></td>
+        <td class="right"><span class="tag ${m.up?'green':'red'}">${m.up?'▲':'▼'} ${m.note}</span></td></tr>`;
+    }).join("");
+    $("pilotBoard").innerHTML = `
+      <div class="flex between center wrap gap12" style="margin-bottom:12px">
+        <div><div class="muted small">试点变更单</div><b>${r.id} · v${r.ver}</b></div>
+        <div><div class="muted small">试点 / 对照</div><b>${d.dept} vs ${d.ctrl}</b></div>
+        <div><div class="muted small">试点效果</div><span class="tag ${d.verdict==='正向'?'green':d.verdict==='负向'?'red':'gray'}">${d.verdict}</span></div>
+      </div>
+      <table class="table"><thead><tr><th>指标</th><th>试点部门</th><th>对照组</th><th class="right">对比</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="callout green" style="margin-top:14px"><span>🏁</span><div><b>推广建议：</b>${d.advice}</div>
+        <button class="btn sm accent" style="margin-left:auto" data-promote="${r.id}">🚀 推广至全公司</button></div>`;
+    $("pilotBoard").querySelectorAll("[data-promote]").forEach(b=>b.addEventListener("click",()=>promote(b.dataset.promote)));
+  }
+
+  // 合规审计导出（全量变更 + 审批链留痕）
+  function auditExport(){
+    let md = `# 绩效规则变更 · 合规审计报告\n\n- 导出时间：${new Date().toLocaleString("zh-CN")}\n- 当前全公司生效版本：v${effVer}\n- 变更单总数：${changeReqs.length}\n\n`;
+    changeReqs.slice().sort((a,b)=>a.time<b.time?-1:1).forEach(r=>{
+      md += `## ${r.id} · 规则 v${r.ver}（${r.status}）\n\n`;
+      md += `- 提交人：${r.submitter} · ${r.time}\n- 生效方式：${r.effLabel} · 范围：${r.scopeLabel}\n`;
+      md += `- 变更内容：\n${r.details.map(x=>"    - "+x).join("\n")}\n`;
+      md += `- 审批链（串签留痕）：\n`;
+      r.chain.forEach((s,i)=>{ md += `    ${i+1}. ${s.role} · ${s.name}${s.mode==="或签"?"（或签）":""}${s.delegatedFrom?"（受"+s.delegatedFrom+"委托）":""}${s.added?"（加签）":""} — ${s.status}${s.time?" @"+s.time:""}\n`; });
+      if(r.params){ md += `- 参数快照：\n${Object.entries(r.params).map(([k,v])=>"    - "+k+"："+v).join("\n")}\n`; }
+      md += `\n`;
+    });
+    const blob=new Blob([md],{type:"text/markdown;charset=utf-8"}); const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=`绩效规则合规审计_${new Date().toISOString().slice(0,10)}.md`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    showToast("合规审计已导出 ✓","含全量变更单与三级串签留痕","green");
+  }
+
   renderCR();
+  $("nextVer").textContent = "v"+(seqVer+1);
+  renderPilot();
   if($("tlFilter")) $("tlFilter").addEventListener("change", renderTimeline);
   if($("btnCmp")) $("btnCmp").addEventListener("click", renderDiff);
+  if($("pilotSel")) $("pilotSel").addEventListener("change", ()=>drawPilot($("pilotSel").value));
+  if($("btnAudit")) $("btnAudit").addEventListener("click", auditExport);
 
   // 从绩效单规则版本追溯跳转（?cr=）
   window.addEventListener("DOMContentLoaded", ()=>{

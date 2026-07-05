@@ -82,16 +82,19 @@
   </div>
   <script>
   (function(){
-    const def = [{ title:"绩效规则 v3 已生效", body:"生效范围：全公司；启用回款账期差异化提成、预收/预付计息。如有疑问可发起申诉。", time:"2026-05-02 16:00" }];
+    const def = [{ title:"绩效规则 v3 已生效", body:"生效范围：全公司；启用回款账期差异化提成、预收/预付计息。如有疑问可发起申诉。", time:"2026-05-02 16:00", crId:"CR-20260502-03" }];
     let notices = [];
     try{ notices = JSON.parse(localStorage.getItem("steel_notices")||"[]"); }catch(e){}
     const all = notices.concat(def);
     const box = document.getElementById("notices");
-    box.innerHTML = all.slice(0,5).map(n=>`<div class="m-card" style="border-left:3px solid var(--c-primary)">
-      <div style="font-weight:700;font-size:13px;margin-bottom:4px">🔔 ${n.title}</div>
-      <div style="font-size:12px;color:var(--c-text-2);line-height:1.6">${n.body}</div>
-      <div style="font-size:11px;color:var(--c-text-3);margin-top:6px">${n.time}</div>
-    </div>`).join("");
+    box.innerHTML = all.slice(0,5).map(n=>{
+      const link = n.crId ? `href="rule-config.html?cr=${n.crId}"` : `href="javascript:void(0)"`;
+      return `<a ${link} style="text-decoration:none;color:inherit;display:block"><div class="m-card" style="border-left:3px solid var(--c-primary)">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px">🔔 ${n.title} ${n.crId?'<span style="float:right;color:var(--c-primary);font-size:11px">查看详情 ›</span>':''}</div>
+        <div style="font-size:12px;color:var(--c-text-2);line-height:1.6">${n.body}</div>
+        <div style="font-size:11px;color:var(--c-text-3);margin-top:6px">${n.time}</div>
+      </div></a>`;
+    }).join("");
     const b = document.getElementById("msgBadge");
     if(notices.length){ b.style.display="inline-block"; b.textContent = notices.length + " 条新"; }
   })();
