@@ -52,6 +52,7 @@
         <button data-tab="tier">阶梯提成表</button>
         <button data-tab="int">计息参数</button>
         <button data-tab="formula">公式编辑器</button>
+        <button data-tab="change">变更审批 <span class="tag amber" id="crBadge" style="display:none;margin-left:4px">0</span></button>
       </div>
     </div>
 
@@ -309,6 +310,21 @@
         </div>
       </div>
     </div>
+
+    <!-- 变更审批 -->
+    <div data-tabgroup="rule" data-tab="change" class="tab-pane">
+      <div class="callout blue" style="margin-bottom:16px"><span>🛡</span><div><b>规则治理：</b>「保存并发布」不再即时生效，而是生成<b>规则变更单</b>提交审批。经 HR 负责人复核通过后新版本才正式生效，变更全程留痕、可追溯、可回退。</div></div>
+      <div class="grid" style="grid-template-columns: repeat(4,1fr);margin-bottom:16px">
+        <div class="card"><div class="card-b"><div class="muted small">当前生效版本</div><div class="b700" style="font-size:22px" id="crEffVer">v3</div></div></div>
+        <div class="card"><div class="card-b"><div class="muted small">待审批</div><div class="b700" style="font-size:22px;color:var(--c-amber)" id="crPend">0</div></div></div>
+        <div class="card"><div class="card-b"><div class="muted small">已生效</div><div class="b700" style="font-size:22px;color:var(--c-green)" id="crDone">1</div></div></div>
+        <div class="card"><div class="card-b"><div class="muted small">已退回</div><div class="b700" style="font-size:22px;color:var(--c-red)" id="crRej">0</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>规则变更单</h3><span class="sub">发布即生成变更单，审批通过后生效</span></div>
+        <div class="card-b" id="crList"></div>
+      </div>
+    </div>
   </div>
 </div>
 <script src="assets/app.js"></script>
@@ -331,26 +347,70 @@
   $("btnAddTier").addEventListener("click", ()=>showToast("新增账期档","已添加空白档位，请填写账期区间与单价","blue"));
   $("btnCheck").addEventListener("click", ()=>showToast("语法校验通过 ✓","公式依赖：账期分档表.现货吨位单价","green"));
 
-  // 发布（含权重硬校验拦截）
-  let curVer = 3;
+  // ===== 发布 → 规则变更单 → 审批 → 生效（治理闭环）=====
+  let effVer = 3, seqVer = 3;
   function weightSum(key){ return cards[key].reduce((s,r)=>s+(parseFloat(r.weight)||0),0); }
+  const changeReqs = [
+    { id:"CR-20260502-03", ver:3, submitter:"李静·绩效专员", approver:"王总监·HR负责人", time:"2026-05-02 10:20", status:"已生效",
+      details:["销售评分卡权重 40/20/20/20","启用回款账期差异化提成","预收 / 预付账款计息上线"] },
+  ];
+  function changeSnapshot(){
+    const dirtyN = document.querySelectorAll(".cell-in.dirty").length;
+    return [
+      "销售评分卡权重 "+cards.sales.map(r=>r.weight).join("/")+"（合计 "+weightSum("sales")+"%）",
+      "采购评分卡权重 "+cards.pur.map(r=>r.weight).join("/")+"（合计 "+weightSum("pur")+"%）",
+      "定性折算 A/B/C/D = "+["grade_A","grade_B","grade_C","grade_D"].map(id=>$(id).value).join("/")+"%",
+      "一票否决 · 销售「"+cards.sales[vetoes.sales.dimIdx].dim+"」<"+vetoes.sales.line+"% · 采购「"+cards.pur[vetoes.pur.dimIdx].dim+"」<"+vetoes.pur.line+"%",
+      "本次含 "+dirtyN+" 处参数修改",
+    ];
+  }
+  function renderCR(){
+    const pend=changeReqs.filter(r=>r.status==="待审批").length;
+    const done=changeReqs.filter(r=>r.status==="已生效").length;
+    const rej=changeReqs.filter(r=>r.status==="已退回").length;
+    $("crPend").textContent=pend; $("crDone").textContent=done; $("crRej").textContent=rej;
+    $("crEffVer").textContent="v"+effVer;
+    $("crBadge").style.display = pend?"inline-flex":"none"; $("crBadge").textContent=pend;
+    $("crList").innerHTML = changeReqs.slice().reverse().map(r=>{
+      const st = r.status==="待审批"?'<span class="tag amber">待审批</span>':r.status==="已生效"?'<span class="tag green">已生效</span>':'<span class="tag red">已退回</span>';
+      const ops = r.status==="待审批" ? `<div class="flex gap8" style="margin-top:12px"><button class="btn sm primary" data-appr="${r.id}">✓ 审批通过并生效</button><button class="btn sm" style="border-color:var(--c-red);color:var(--c-red)" data-rej="${r.id}">✕ 退回</button></div>` : "";
+      return `<div class="card" style="box-shadow:none;margin-bottom:12px"><div class="card-b">
+        <div class="flex between center wrap gap8"><div class="b700">${r.id} · 拟发布 v${r.ver} ${st}</div><span class="muted small">提交：${r.submitter} · ${r.time}</span></div>
+        <div class="divider"></div>
+        <ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--c-text-2);line-height:1.9">${r.details.map(d=>`<li>${d}</li>`).join("")}</ul>
+        ${r.approver?`<div class="muted small" style="margin-top:8px">审批：${r.approver}</div>`:""}
+        ${ops}
+      </div></div>`;
+    }).join("");
+    $("crList").querySelectorAll("[data-appr]").forEach(b=>b.addEventListener("click",()=>{
+      const r=changeReqs.find(x=>x.id===b.dataset.appr); r.status="已生效"; r.approver="王总监·HR负责人"; effVer=r.ver;
+      $("nextVer").textContent="v"+(seqVer+1);
+      renderCR(); showToast("变更已生效 ✓","规则 v"+r.ver+" 审批通过，正式生效","green");
+    }));
+    $("crList").querySelectorAll("[data-rej]").forEach(b=>b.addEventListener("click",()=>{
+      const r=changeReqs.find(x=>x.id===b.dataset.rej); r.status="已退回"; r.approver="王总监·HR负责人";
+      renderCR(); showToast("变更已退回","规则变更单 "+r.id+" 被退回，未生效","red");
+    }));
+  }
   $("btnPublish").addEventListener("click", ()=>{
     const bad = [];
     if(weightSum("sales")!==100) bad.push("销售评分卡 "+weightSum("sales")+"%");
     if(weightSum("pur")!==100) bad.push("采购评分卡 "+weightSum("pur")+"%");
     if(bad.length){
       showToast("发布被拦截 ⛔","评分卡权重合计必须 = 100%："+bad.join("、"),"red");
-      // 切到系数档页并提示
-      document.querySelectorAll('[data-tabs="rule"] .tabs button').forEach(b=>{
-        if(b.dataset.tab==="coef") b.click();
-      });
+      document.querySelectorAll('[data-tabs="rule"] .tabs button').forEach(b=>{ if(b.dataset.tab==="coef") b.click(); });
       return;
     }
-    curVer++; $("nextVer").textContent = "v"+(curVer+1);
+    const ver = ++seqVer;
+    const id = "CR-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+String(ver).padStart(2,"0");
+    changeReqs.push({ id, ver, submitter:"李静·绩效专员", time:new Date().toLocaleString("zh-CN"), status:"待审批", details:changeSnapshot() });
     dirty=false; $("dirtyTag").style.display="none";
     document.querySelectorAll(".cell-in.dirty").forEach(i=>i.classList.remove("dirty"));
-    showToast("已发布 v"+curVer+" ✓","校验通过，新版本已生效，历史绩效仍按旧版本复算","green");
+    renderCR();
+    document.querySelectorAll('[data-tabs="rule"] .tabs button').forEach(b=>{ if(b.dataset.tab==="change") b.click(); });
+    showToast("已提交变更审批 ✓","规则 v"+ver+" 变更单已提交，待 HR 负责人复核通过后生效","blue");
   });
+  renderCR();
 
   // ===== 沙盘草稿打通 =====
   function loadDraft(){
@@ -581,7 +641,7 @@
     renderScorecard(); renderComparison();
     markDirty();
     const sum = cards[key].reduce((s,r)=>s+(parseFloat(r.weight)||0),0);
-    if(sum===100) showToast("已采用方案B权重 ✓","已写入"+(key==="sales"?"销售":"采购")+"评分卡，点击右上『保存并发布』即可生效","green");
+    if(sum===100) showToast("已采用方案B权重 ✓","已写入"+(key==="sales"?"销售":"采购")+"评分卡，点击右上『保存并发布』提交变更审批","green");
     else showToast("已采用方案B权重 ⚠","权重合计 "+sum+"%，发布将被拦截，请调整至 100%","amber");
   });
 
