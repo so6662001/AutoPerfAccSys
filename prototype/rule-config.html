@@ -189,6 +189,26 @@
           </table></div>
         </div>
       </div>
+
+      <!-- 系数分布模拟 -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-h">
+          <h3>系数分布模拟 <span class="tag green">实时</span></h3>
+          <span class="sub" id="distSub">按当前评分规则，模拟全员系数分布</span>
+        </div>
+        <div class="card-b">
+          <div class="callout blue" style="margin-bottom:14px"><span>📊</span><div>用<b>当前评分卡权重 + 定性折算 + 一票否决</b>规则，对样本员工整体跑一遍，预览系数分布。调整任一规则可即时观察全员系数如何变化，评估政策松紧。</div></div>
+          <div class="grid" style="grid-template-columns: 1.1fr 1fr;gap:18px">
+            <div>
+              <div class="barchart" id="distChart" style="height:180px"></div>
+              <div class="flex between small muted mt12"><span>样本人数 <b id="distN" style="color:var(--c-text)">—</b></span><span>平均系数 <b id="distAvg" style="color:var(--c-text)">—</b></span><span>否决人数 <b id="distVeto" style="color:var(--c-red)">—</b></span></div>
+            </div>
+            <div style="max-height:240px;overflow-y:auto">
+              <table class="table"><thead><tr><th>员工</th><th class="right">综合达成率</th><th class="right">系数</th></tr></thead><tbody id="distRows"></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 阶梯提成表 -->
@@ -294,13 +314,25 @@
   $("btnAddTier").addEventListener("click", ()=>showToast("新增账期档","已添加空白档位，请填写账期区间与单价","blue"));
   $("btnCheck").addEventListener("click", ()=>showToast("语法校验通过 ✓","公式依赖：账期分档表.现货吨位单价","green"));
 
-  // 发布
+  // 发布（含权重硬校验拦截）
   let curVer = 3;
+  function weightSum(key){ return cards[key].reduce((s,r)=>s+(parseFloat(r.weight)||0),0); }
   $("btnPublish").addEventListener("click", ()=>{
+    const bad = [];
+    if(weightSum("sales")!==100) bad.push("销售评分卡 "+weightSum("sales")+"%");
+    if(weightSum("pur")!==100) bad.push("采购评分卡 "+weightSum("pur")+"%");
+    if(bad.length){
+      showToast("发布被拦截 ⛔","评分卡权重合计必须 = 100%："+bad.join("、"),"red");
+      // 切到系数档页并提示
+      document.querySelectorAll('[data-tabs="rule"] .tabs button').forEach(b=>{
+        if(b.dataset.tab==="coef") b.click();
+      });
+      return;
+    }
     curVer++; $("nextVer").textContent = "v"+(curVer+1);
     dirty=false; $("dirtyTag").style.display="none";
     document.querySelectorAll(".cell-in.dirty").forEach(i=>i.classList.remove("dirty"));
-    showToast("已发布 v"+curVer+" ✓","新版本已生效，历史绩效仍按旧版本复算","green");
+    showToast("已发布 v"+curVer+" ✓","校验通过，新版本已生效，历史绩效仍按旧版本复算","green");
   });
 
   // ===== 沙盘草稿打通 =====
@@ -418,11 +450,82 @@
         renderScorecard();
       });
     });
+    if (typeof renderDistribution === "function") renderDistribution();
   }
-  $("scCard").addEventListener("change", ()=>{ renderVeto(); renderScorecard(); });
-  ["grade_A","grade_B","grade_C","grade_D"].forEach(id=>$(id).addEventListener("input", renderScorecard));
+  // ===== 系数分布模拟（用当前评分规则跑样本员工）=====
+  const cohorts = {
+    // 每人：各量化维度达成率 + 定性等级（顺序对应 cards[key] 维度）
+    sales: [
+      { n:"王海涛", r:[118,100,95], g:"A" }, { n:"孙磊", r:[92,80,88], g:"B" },
+      { n:"刘敏", r:[105,120,100], g:"A" }, { n:"陈磊", r:[110,90,85], g:"B" },
+      { n:"周丽", r:[70,60,75], g:"C" },   { n:"李强", r:[55,40,60], g:"D" },
+      { n:"吴敏", r:[130,110,100], g:"A" }, { n:"郑爽", r:[85,95,90], g:"B" },
+    ],
+    pur: [
+      { n:"张伟", r:[105,100,96], g:"A" }, { n:"赵倩", r:[58,80,70], g:"C" },
+      { n:"周强", r:[95,88,80], g:"C" },   { n:"吴敏", r:[110,100,105], g:"A" },
+      { n:"孙磊", r:[82,70,90], g:"B" },   { n:"钱进", r:[100,95,100], g:"B" },
+    ],
+  };
+  const BANDS = [0, 0.6, 0.8, 1.0, 1.2];
+  const BAND_COLORS = { "0":"var(--c-red)", "0.6":"var(--c-amber)", "0.8":"var(--c-amber)", "1":"var(--c-primary)", "1.2":"var(--c-green)" };
+  function personRate(key, p){
+    const rows = cards[key]; const gm = gradeMap(); let wsum=0, wt=0, qi=0;
+    rows.forEach((row)=>{
+      const w = parseFloat(row.weight)||0; wsum += w;
+      let rate;
+      if(row.type==="qual"){ rate = gm[p.g]||0; }
+      else { rate = p.r[qi] ?? 0; qi++; }
+      wt += rate*w;
+    });
+    return wsum ? wt/wsum : 0;
+  }
+  function personCoef(key, p, rate){
+    const v = vetoes[key];
+    // 判定否决维度达成率
+    let vetoRate = null;
+    if(v.on){
+      const row = cards[key][v.dimIdx];
+      if(row){ let qi=0, idx=-1;
+        cards[key].forEach((r,i)=>{ if(r.type!=="qual"){ if(i===v.dimIdx) idx=qi; qi++; } });
+        vetoRate = row.type==="qual" ? (gradeMap()[p.g]||0) : p.r[idx];
+      }
+    }
+    if(v.on && vetoRate!==null && vetoRate < v.line) return 0;
+    return bandOf(rate).c;
+  }
+  function renderDistribution(){
+    const key = $("scCard").value;
+    const list = cohorts[key];
+    const counts = { "0":0,"0.6":0,"0.8":0,"1":0,"1.2":0 };
+    let sum=0, veto=0;
+    const rowsData = list.map(p=>{
+      const rate = personRate(key, p);
+      const coef = personCoef(key, p, rate);
+      const k = String(coef);
+      if(counts[k]!==undefined) counts[k]++;
+      sum += coef; if(coef===0) veto++;
+      return { n:p.n, rate, coef };
+    });
+    const maxC = Math.max(1, ...Object.values(counts));
+    $("distChart").innerHTML = BANDS.map(b=>{
+      const k=String(b); const c=counts[k]; const h=Math.round(c/maxC*100);
+      return `<div class="col"><div class="bwrap"><div class="b" style="height:${h}%;background:${BAND_COLORS[k]}">${""}</div></div>
+        <div class="cap"><b>${c}</b> 人<br>系数 ${b}</div></div>`;
+    }).join("");
+    $("distN").textContent = list.length;
+    $("distAvg").textContent = (sum/list.length).toFixed(2);
+    $("distVeto").textContent = veto + " 人";
+    $("distRows").innerHTML = rowsData.map(d=>`<tr><td><span class="mini-av">${d.n[0]}</span>${d.n}</td>
+      <td class="right num">${d.rate.toFixed(1)}%</td>
+      <td class="right"><span class="tag ${d.coef===0?'red':d.coef>=1?'green':'amber'}">${d.coef.toFixed(1)}</span></td></tr>`).join("");
+  }
+
+  $("scCard").addEventListener("change", ()=>{ renderVeto(); renderScorecard(); renderDistribution(); });
+  ["grade_A","grade_B","grade_C","grade_D"].forEach(id=>$(id).addEventListener("input", ()=>{ renderScorecard(); renderDistribution(); }));
   renderVeto();
   renderScorecard();
+  renderDistribution();
 })();
 </script>
 </body>
