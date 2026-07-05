@@ -22,7 +22,11 @@
       </div>
       <div class="actions">
         <span class="tag amber" id="dirtyTag" style="display:none">● 有未保存更改</span>
-        <button class="btn">🕘 版本历史</button>
+        <select class="select" id="effMode" style="width:auto;padding:8px 10px">
+          <option value="now">生效：立即</option>
+          <option value="next">生效：下期(2026-07)</option>
+          <option value="custom">生效：指定周期…</option>
+        </select>
         <button class="btn primary" id="btnPublish">💾 保存并发布 <span id="nextVer">v4</span></button>
       </div>
     </div>
@@ -347,13 +351,30 @@
   $("btnAddTier").addEventListener("click", ()=>showToast("新增账期档","已添加空白档位，请填写账期区间与单价","blue"));
   $("btnCheck").addEventListener("click", ()=>showToast("语法校验通过 ✓","公式依赖：账期分档表.现货吨位单价","green"));
 
-  // ===== 发布 → 规则变更单 → 审批 → 生效（治理闭环）=====
+  // ===== 发布 → 规则变更单 → 多级串签审批 → (定时)生效（治理闭环）=====
   let effVer = 3, seqVer = 3;
   function weightSum(key){ return cards[key].reduce((s,r)=>s+(parseFloat(r.weight)||0),0); }
+  function newChain(){ return [
+    { role:"部门主管", name:"陈组长", status:"待处理", time:"" },
+    { role:"HR负责人", name:"王总监", status:"待处理", time:"" },
+    { role:"分管领导", name:"周总", status:"待处理", time:"" },
+  ]; }
   const changeReqs = [
-    { id:"CR-20260502-03", ver:3, submitter:"李静·绩效专员", approver:"王总监·HR负责人", time:"2026-05-02 10:20", status:"已生效",
+    { id:"CR-20260502-03", ver:3, submitter:"李静·绩效专员", time:"2026-05-02 10:20",
+      effMode:"now", effLabel:"立即生效", status:"已生效", cur:3,
+      chain:[ {role:"部门主管",name:"陈组长",status:"通过",time:"05-02 11:00"},
+              {role:"HR负责人",name:"王总监",status:"通过",time:"05-02 14:30"},
+              {role:"分管领导",name:"周总",status:"通过",time:"05-02 16:00"} ],
       details:["销售评分卡权重 40/20/20/20","启用回款账期差异化提成","预收 / 预付账款计息上线"] },
   ];
+  // 生效方式
+  let effSel = { mode:"now", label:"立即生效" };
+  $("effMode").addEventListener("change", ()=>{
+    const v = $("effMode").value;
+    if(v==="now") effSel = { mode:"now", label:"立即生效" };
+    else if(v==="next") effSel = { mode:"sched", label:"2026-07 起生效" };
+    else { const m = prompt("指定生效周期（YYYY-MM）", "2026-08"); if(m){ effSel={ mode:"sched", label:m+" 起生效" }; } else { $("effMode").value="now"; effSel={mode:"now",label:"立即生效"}; } }
+  });
   function changeSnapshot(){
     const dirtyN = document.querySelectorAll(".cell-in.dirty").length;
     return [
@@ -364,33 +385,58 @@
       "本次含 "+dirtyN+" 处参数修改",
     ];
   }
+  function chainHtml(r){
+    return `<div class="steps" style="margin:12px 0;flex-wrap:wrap;gap:6px 0">` + r.chain.map((s,i)=>{
+      const cls = s.status==="通过"?"done":s.status==="退回"?"reject":(i===r.cur&&r.status==="待审批"?"active":"");
+      const icon = s.status==="通过"?"✓":s.status==="退回"?"✕":(i+1);
+      const line = i<r.chain.length-1 ? `<div class="line ${s.status==='通过'?'done':''}"></div>` : "";
+      return `<div class="st ${cls}"><div class="n">${icon}</div><div class="lb">${s.role}·${s.name}${s.time?`<br><span class="muted" style="font-size:10px">${s.time}</span>`:""}</div></div>${line}`;
+    }).join("") + `</div>`;
+  }
   function renderCR(){
-    const pend=changeReqs.filter(r=>r.status==="待审批").length;
+    const pend=changeReqs.filter(r=>r.status==="待审批"||r.status==="待生效").length;
     const done=changeReqs.filter(r=>r.status==="已生效").length;
     const rej=changeReqs.filter(r=>r.status==="已退回").length;
     $("crPend").textContent=pend; $("crDone").textContent=done; $("crRej").textContent=rej;
     $("crEffVer").textContent="v"+effVer;
     $("crBadge").style.display = pend?"inline-flex":"none"; $("crBadge").textContent=pend;
     $("crList").innerHTML = changeReqs.slice().reverse().map(r=>{
-      const st = r.status==="待审批"?'<span class="tag amber">待审批</span>':r.status==="已生效"?'<span class="tag green">已生效</span>':'<span class="tag red">已退回</span>';
-      const ops = r.status==="待审批" ? `<div class="flex gap8" style="margin-top:12px"><button class="btn sm primary" data-appr="${r.id}">✓ 审批通过并生效</button><button class="btn sm" style="border-color:var(--c-red);color:var(--c-red)" data-rej="${r.id}">✕ 退回</button></div>` : "";
-      return `<div class="card" style="box-shadow:none;margin-bottom:12px"><div class="card-b">
-        <div class="flex between center wrap gap8"><div class="b700">${r.id} · 拟发布 v${r.ver} ${st}</div><span class="muted small">提交：${r.submitter} · ${r.time}</span></div>
+      const st = r.status==="待审批"?'<span class="tag amber">审批中</span>':r.status==="待生效"?'<span class="tag blue">待生效</span>':r.status==="已生效"?'<span class="tag green">已生效</span>':'<span class="tag red">已退回</span>';
+      let ops = "";
+      if(r.status==="待审批"){ const c=r.chain[r.cur];
+        ops = `<div class="flex between center wrap gap8" style="margin-top:12px"><span class="small muted">当前待审：<b style="color:var(--c-text)">${c.role} · ${c.name}</b></span>
+          <div class="flex gap8"><button class="btn sm primary" data-appr="${r.id}">✓ 通过（${c.role}）</button><button class="btn sm" style="border-color:var(--c-red);color:var(--c-red)" data-rej="${r.id}">✕ 退回</button></div></div>`;
+      } else if(r.status==="待生效"){
+        ops = `<div class="flex between center wrap gap8" style="margin-top:12px"><span class="small muted">已审批通过，${r.effLabel}</span><button class="btn sm" data-eff="${r.id}">▶ 模拟到期生效</button></div>`;
+      }
+      return `<div class="card" id="crcard-${r.id}" style="box-shadow:none;margin-bottom:12px"><div class="card-b">
+        <div class="flex between center wrap gap8"><div class="b700">${r.id} · 拟发布 v${r.ver} ${st}</div><span class="muted small">提交：${r.submitter} · ${r.time} · <span class="tag gray">${r.effLabel}</span></span></div>
+        ${chainHtml(r)}
         <div class="divider"></div>
         <ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--c-text-2);line-height:1.9">${r.details.map(d=>`<li>${d}</li>`).join("")}</ul>
-        ${r.approver?`<div class="muted small" style="margin-top:8px">审批：${r.approver}</div>`:""}
         ${ops}
       </div></div>`;
     }).join("");
-    $("crList").querySelectorAll("[data-appr]").forEach(b=>b.addEventListener("click",()=>{
-      const r=changeReqs.find(x=>x.id===b.dataset.appr); r.status="已生效"; r.approver="王总监·HR负责人"; effVer=r.ver;
-      $("nextVer").textContent="v"+(seqVer+1);
-      renderCR(); showToast("变更已生效 ✓","规则 v"+r.ver+" 审批通过，正式生效","green");
-    }));
-    $("crList").querySelectorAll("[data-rej]").forEach(b=>b.addEventListener("click",()=>{
-      const r=changeReqs.find(x=>x.id===b.dataset.rej); r.status="已退回"; r.approver="王总监·HR负责人";
-      renderCR(); showToast("变更已退回","规则变更单 "+r.id+" 被退回，未生效","red");
-    }));
+    $("crList").querySelectorAll("[data-appr]").forEach(b=>b.addEventListener("click",()=>approve(b.dataset.appr)));
+    $("crList").querySelectorAll("[data-rej]").forEach(b=>b.addEventListener("click",()=>reject(b.dataset.rej)));
+    $("crList").querySelectorAll("[data-eff]").forEach(b=>b.addEventListener("click",()=>goEffective(b.dataset.eff)));
+  }
+  function nowT(){ return new Date().toLocaleString("zh-CN",{month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}); }
+  function approve(id){
+    const r=changeReqs.find(x=>x.id===id); const step=r.chain[r.cur];
+    step.status="通过"; step.time=nowT(); r.cur++;
+    if(r.cur < r.chain.length){ renderCR(); showToast("已通过 · 进入下一节点","下一审批人："+r.chain[r.cur].role+" · "+r.chain[r.cur].name,"green"); return; }
+    // 全部通过
+    if(r.effMode==="now"){ r.status="已生效"; effVer=r.ver; $("nextVer").textContent="v"+(seqVer+1); renderCR(); showToast("串签完成 · 已生效 ✓","规则 v"+r.ver+" 三级审批通过，立即生效","green"); }
+    else { r.status="待生效"; renderCR(); showToast("串签完成 · 待生效","规则 v"+r.ver+" 已通过，"+r.effLabel,"blue"); }
+  }
+  function reject(id){
+    const r=changeReqs.find(x=>x.id===id); r.chain[r.cur].status="退回"; r.chain[r.cur].time=nowT(); r.status="已退回";
+    renderCR(); showToast("变更已退回","由 "+r.chain[r.cur].role+" 退回，未生效","red");
+  }
+  function goEffective(id){
+    const r=changeReqs.find(x=>x.id===id); r.status="已生效"; effVer=r.ver; $("nextVer").textContent="v"+(seqVer+1);
+    renderCR(); showToast("已到期生效 ✓","规则 v"+r.ver+" 于 "+r.effLabel+" 正式生效","green");
   }
   $("btnPublish").addEventListener("click", ()=>{
     const bad = [];
@@ -403,14 +449,24 @@
     }
     const ver = ++seqVer;
     const id = "CR-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+String(ver).padStart(2,"0");
-    changeReqs.push({ id, ver, submitter:"李静·绩效专员", time:new Date().toLocaleString("zh-CN"), status:"待审批", details:changeSnapshot() });
+    changeReqs.push({ id, ver, submitter:"李静·绩效专员", time:new Date().toLocaleString("zh-CN"), status:"待审批", cur:0, effMode:effSel.mode, effLabel:effSel.label, chain:newChain(), details:changeSnapshot() });
     dirty=false; $("dirtyTag").style.display="none";
     document.querySelectorAll(".cell-in.dirty").forEach(i=>i.classList.remove("dirty"));
     renderCR();
     document.querySelectorAll('[data-tabs="rule"] .tabs button').forEach(b=>{ if(b.dataset.tab==="change") b.click(); });
-    showToast("已提交变更审批 ✓","规则 v"+ver+" 变更单已提交，待 HR 负责人复核通过后生效","blue");
+    showToast("已提交变更审批 ✓","规则 v"+ver+" 变更单已提交（"+effSel.label+"），需 主管→HR→分管领导 三级串签","blue");
   });
   renderCR();
+
+  // 从绩效单规则版本追溯跳转（?cr=）
+  window.addEventListener("DOMContentLoaded", ()=>{
+    const cr = new URLSearchParams(location.search).get("cr");
+    if(!cr) return;
+    document.querySelectorAll('[data-tabs="rule"] .tabs button').forEach(b=>{ if(b.dataset.tab==="change") b.click(); });
+    const card = document.getElementById("crcard-"+cr);
+    if(card){ card.scrollIntoView({behavior:"smooth",block:"center"}); card.style.boxShadow="0 0 0 3px var(--c-primary)";
+      showToast("已定位规则变更单","来自绩效单的规则版本追溯："+cr,"blue"); }
+  });
 
   // ===== 沙盘草稿打通 =====
   function loadDraft(){
