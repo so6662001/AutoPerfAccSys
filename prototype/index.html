@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>钢绩云 · 高保真原型总览</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body { background: radial-gradient(1200px 600px at 70% -10%, #1c2c50 0, #0f1b30 55%); color:#e7ecf6; min-height:100vh; }
+  .hero { max-width: 1160px; margin: 0 auto; padding: 60px 24px 30px; }
+  .hero .logo { width:56px;height:56px;border-radius:15px;background:linear-gradient(135deg,var(--c-accent),#f5a623);display:grid;place-items:center;color:#fff;font-weight:800;font-size:26px;box-shadow:0 10px 30px rgba(245,121,59,.45); }
+  .hero h1 { font-size:34px; font-weight:800; margin-top:20px; letter-spacing:.5px; }
+  .hero h1 small { display:block; font-size:15px; font-weight:500; color:#8fa0c4; letter-spacing:3px; margin-top:6px; }
+  .hero p { color:#aeb9d4; max-width:720px; margin-top:16px; font-size:15px; line-height:1.75; }
+  .chips { display:flex; gap:10px; flex-wrap:wrap; margin-top:22px; }
+  .chip { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); padding:7px 14px; border-radius:20px; font-size:12.5px; color:#c7d2ea; }
+  .grid-p { max-width:1160px; margin:10px auto 70px; padding:0 24px; display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .p-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:16px; overflow:hidden; transition:.2s; text-decoration:none; color:inherit; display:flex; flex-direction:column; }
+  .p-card:hover { transform:translateY(-4px); border-color:var(--c-primary); box-shadow:0 20px 50px rgba(0,0,0,.35); }
+  .p-thumb { height:120px; position:relative; overflow:hidden; display:grid; place-items:center; font-size:40px; }
+  .p-thumb.t1{background:linear-gradient(135deg,#2f5bea,#5478f0)} .p-thumb.t2{background:linear-gradient(135deg,#f5793b,#f5a623)}
+  .p-thumb.t3{background:linear-gradient(135deg,#1f9d6b,#37c98d)} .p-thumb.t4{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+  .p-thumb.t5{background:linear-gradient(135deg,#0ea5b7,#22c3d6)} .p-thumb.t6{background:linear-gradient(135deg,#e0483d,#f0736a)}
+  .p-thumb.t7{background:linear-gradient(135deg,#334166,#4a5b86)} .p-thumb.t8{background:linear-gradient(135deg,#c2410c,#ea7a3c)}
+  .p-thumb.t9{background:linear-gradient(135deg,#1e293b,#3b4d70)}
+  .p-body { padding:16px 18px 18px; }
+  .p-body .idx { font-size:11px; color:#8fa0c4; letter-spacing:1px; font-weight:600; }
+  .p-body h3 { font-size:16px; margin-top:5px; }
+  .p-body p { font-size:12.5px; color:#9fabc9; margin-top:7px; line-height:1.6; }
+  .foot { text-align:center; color:#7c88a8; font-size:12.5px; padding-bottom:40px; }
+  @media(max-width:900px){ .grid-p{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="logo">钢</div>
+    <h1>钢绩云 · 钢铁企业自动化绩效核算系统<small>STEEL PERFORMANCE ACCOUNTING · 高保真交互原型</small></h1>
+    <p>面向钢铁贸易/加工企业的绩效核算平台。以「ERP + 行情数据」为输入，以「可配置取数逻辑 + 核算规则引擎」为核心，自动完成采购、销售岗位的绩效工资、提成、计息与奖惩核算，全程可追溯、可复算。</p>
+    <div class="chips">
+      <span class="chip">采购 · 价格竞争力/行情掌控/超额奖</span>
+      <span class="chip">销售 · 现货/零调/直发</span>
+      <span class="chip">回款账期差异化提成</span>
+      <span class="chip">预收/预付账款计息</span>
+      <span class="chip">规则可视化配置</span>
+      <span class="chip">逐笔下钻追溯</span>
+    </div>
+  </div>
+
+  <div class="grid-p">
+    <a class="p-card" href="dashboard.html"><div class="p-thumb t1">▦</div><div class="p-body"><div class="idx">01 · 概览</div><h3>管理驾驶舱</h3><p>绩效总额、构成趋势、核算进度、异常待办的全局视图。</p></div></a>
+    <a class="p-card" href="calc-workbench.html"><div class="p-thumb t7">⚙</div><div class="p-body"><div class="idx">02 · 核算</div><h3>核算工作台</h3><p>数据就绪校验、跑批进度、结果明细、异常清单与跑批日志。</p></div></a>
+    <a class="p-card" href="payslip.html"><div class="p-thumb t3">🧾</div><div class="p-body"><div class="idx">03 · 核算</div><h3>个人绩效单（下钻追溯）</h3><p>核心页：每个数字可下钻到公式、指标与 ERP 原始单据。</p></div></a>
+    <a class="p-card" href="purchase-board.html"><div class="p-thumb t2">🛒</div><div class="p-body"><div class="idx">04 · 看板</div><h3>采购绩效看板</h3><p>价格竞争力、存货周转、结构健康度、超额奖与预付计息。</p></div></a>
+    <a class="p-card" href="sales-board.html"><div class="p-thumb t5">📈</div><div class="p-body"><div class="idx">05 · 看板</div><h3>销售绩效看板</h3><p>三类业务利润、账期结构、挂价溢价、应收周转与预收计息。</p></div></a>
+    <a class="p-card" href="rule-config.html"><div class="p-thumb t4">🧩</div><div class="p-body"><div class="idx">06 · 规则</div><h3>绩效规则配置中心</h3><p>方案设计器、账期分档、系数档、阶梯、计息参数、公式编辑器。</p></div></a>
+    <a class="p-card" href="data-integration.html"><div class="p-thumb t8">🔗</div><div class="p-body"><div class="idx">07 · 数据</div><h3>数据集成中心</h3><p>ERP/行情/考勤接入、每日快照调度、取数逻辑（Data DSL）。</p></div></a>
+    <a class="p-card" href="market-price.html"><div class="p-thumb t6">💹</div><div class="p-body"><div class="idx">08 · 数据</div><h3>行情价与价格竞争力</h3><p>行情基准价管理、进价对比、择时评分与品规映射。</p></div></a>
+    <a class="p-card" href="mobile.html"><div class="p-thumb t9">📱</div><div class="p-body"><div class="idx">09 · 员工端</div><h3>移动端绩效查询</h3><p>员工查看绩效构成、业绩完成度，支持下钻与在线申诉。</p></div></a>
+  </div>
+
+  <div class="foot">钢绩云 高保真原型 · 演示数据仅供交互展示 · 静态 HTML，可离线打开</div>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>销售绩效看板 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="sales" data-crumb="绩效看板 / <b>销售绩效看板</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>销售绩效看板</h1>
+        <p>现货 / 零调 / 直发民调 · 挂价溢价 · 回款账期 · 应收周转 · 预收计息</p>
+      </div>
+      <div class="actions">
+        <select class="select" style="width:auto"><option>销售部 · 全部</option><option>现货组</option><option>零调组</option></select>
+        <button class="btn">⬇ 导出</button>
+      </div>
+    </div>
+
+    <div class="grid kpi-grid">
+      <div class="kpi"><div class="icn bg-blue">📦</div><div class="lbl">本期销量</div><div class="val">1.24<small>万吨</small></div><div class="delta up">▲ 保底达成 118%</div></div>
+      <div class="kpi"><div class="icn bg-orange">💵</div><div class="lbl">挂价溢价合计</div><div class="val">¥42.6<small>万</small></div><div class="delta up">▲ 议价能力提升</div></div>
+      <div class="kpi"><div class="icn bg-green">📥</div><div class="lbl">预收计息收益</div><div class="val">+¥3.6<small>万</small></div><div class="delta up">现款/预收占比 41%</div></div>
+      <div class="kpi"><div class="icn bg-amber">⏳</div><div class="lbl">应收周转天数</div><div class="val">33.7<small>天</small></div><div class="delta down">逾期扣息 ¥1.9万</div></div>
+    </div>
+
+    <div class="grid mt16" style="grid-template-columns: 1fr 1fr;">
+      <div class="card">
+        <div class="card-h"><h3>三类业务利润贡献</h3></div>
+        <div class="card-b">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div><div class="flex between small"><span>现货销售</span><b>¥58.2万 · 52%</b></div><div class="bar mt8"><span style="width:52%"></span></div></div>
+            <div><div class="flex between small"><span>零调业务</span><b>¥31.4万 · 28%</b></div><div class="bar o mt8"><span style="width:28%"></span></div></div>
+            <div><div class="flex between small"><span>直发/民调</span><b>¥22.1万 · 20%</b></div><div class="bar g mt8"><span style="width:20%"></span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>回款账期结构（影响提成单价）</h3></div>
+        <div class="card-b">
+          <div class="barchart" style="height:150px">
+            <div class="col"><div class="bwrap"><div class="b g" style="height:41%;background:var(--c-green)"></div></div><div class="cap">现款/预收</div></div>
+            <div class="col"><div class="bwrap"><div class="b" style="height:33%"></div></div><div class="cap">≤30天</div></div>
+            <div class="col"><div class="bwrap"><div class="b" style="height:18%;background:var(--c-amber)"></div></div><div class="cap">31-60天</div></div>
+            <div class="col"><div class="bwrap"><div class="b" style="height:8%;background:var(--c-red)"></div></div><div class="cap">&gt;60天</div></div>
+          </div>
+          <div class="callout blue mt12"><span>ℹ</span><div>账期越长，吨位提成单价/提成系数越低。现款 8 元/吨 → 30 天 6 元/吨 → 60 天 4 元/吨。</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt16">
+      <div class="card-h"><h3>销售员绩效明细</h3><span class="sub">2026年6月</span></div>
+      <div class="card-b" style="padding:0">
+        <table class="table">
+          <thead><tr><th>销售员</th><th>业务类型</th><th>销量/净利润</th><th>吨位提成</th><th>挂价所得</th><th>预收计息</th><th>应收扣减</th><th class="right">绩效合计</th></tr></thead>
+          <tbody>
+            <tr><td><span class="mini-av">王</span>王海涛</td><td><span class="tag blue">现货</span></td><td class="num">800 吨</td><td class="num">5,400</td><td class="num">5,600</td><td class="num pos">+4,375</td><td class="num neg">−540</td><td class="money right pos">¥20,835</td></tr>
+            <tr><td><span class="mini-av">刘</span>刘敏</td><td><span class="tag orange">零调</span></td><td class="num">净 ¥24.5万</td><td class="num">—</td><td class="num">18,200</td><td class="num">0</td><td class="num neg">−300</td><td class="money right">¥23,900</td></tr>
+            <tr><td><span class="mini-av">陈</span>陈磊</td><td><span class="tag green">直发</span></td><td class="num">净 ¥21.0万</td><td class="num">—</td><td class="num">15,240</td><td class="num">0</td><td class="num">0</td><td class="money right">¥21,240</td></tr>
+            <tr><td><span class="mini-av">孙</span>孙磊</td><td><span class="tag blue">现货</span></td><td class="num">460 吨</td><td class="num">2,760</td><td class="num">6,140</td><td class="num pos">+1,200</td><td class="num neg">−150</td><td class="money right">¥15,950</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout green mt16"><span>💰</span><div><b>资金运用能力：</b>资金净收益 = 预收计息收益 ¥3.6万 − 应收逾期扣息 ¥1.9万 = <b>+¥1.7万</b>，可作为销售员资金管理综合评价项。</div></div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

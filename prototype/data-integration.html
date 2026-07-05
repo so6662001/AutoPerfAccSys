@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数据集成中心 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="data" data-crumb="数据与规则 / <b>数据集成中心</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>数据集成中心</h1>
+        <p>ERP / 行情平台 / 考勤 数据接入 · 每日快照调度 · 取数逻辑配置（Data DSL）</p>
+      </div>
+      <div class="actions">
+        <button class="btn">🔄 立即同步</button>
+        <button class="btn primary">+ 新增数据源</button>
+      </div>
+    </div>
+
+    <!-- data sources -->
+    <div class="grid" style="grid-template-columns: repeat(3,1fr);">
+      <div class="card"><div class="card-b">
+        <div class="flex between center"><div class="flex center gap12"><div class="icn bg-blue" style="position:static;width:42px;height:42px;border-radius:11px;display:grid;place-items:center">🗄</div><div><b>用友 U8 · ERP</b><div class="muted small">数据库直连</div></div></div><span class="tag green"><span class="dot" style="background:var(--c-green)"></span>正常</span></div>
+        <div class="divider"></div>
+        <div class="small muted">采购单/销售单/库存/应收应付/挂牌价 · 末次同步 06-30 23:50</div>
+      </div></div>
+      <div class="card"><div class="card-b">
+        <div class="flex between center"><div class="flex center gap12"><div class="icn bg-orange" style="position:static;width:42px;height:42px;border-radius:11px;display:grid;place-items:center">💹</div><div><b>钢银 / 钢之家</b><div class="muted small">行情平台 API</div></div></div><span class="tag green"><span class="dot" style="background:var(--c-green)"></span>正常</span></div>
+        <div class="divider"></div>
+        <div class="small muted">品规行情价 · 每日 09:00 拉取 · 覆盖 97.4%</div>
+      </div></div>
+      <div class="card"><div class="card-b">
+        <div class="flex between center"><div class="flex center gap12"><div class="icn bg-green" style="position:static;width:42px;height:42px;border-radius:11px;display:grid;place-items:center">🕓</div><div><b>钉钉考勤</b><div class="muted small">开放接口</div></div></div><span class="tag amber"><span class="dot" style="background:var(--c-amber)"></span>待校验</span></div>
+        <div class="divider"></div>
+        <div class="small muted">出勤/迟到/早退 · 末次同步 06-30 18:00</div>
+      </div></div>
+    </div>
+
+    <!-- snapshot schedule -->
+    <div class="card mt16">
+      <div class="card-h"><h3>每日快照采集调度</h3><span class="sub">日均库存/应收、计息的数据基础</span></div>
+      <div class="card-b" style="padding:0">
+        <table class="table">
+          <thead><tr><th>快照任务</th><th>来源表</th><th>频率</th><th>本月采集</th><th>状态</th><th>用途</th></tr></thead>
+          <tbody>
+            <tr><td>库存快照</td><td class="muted small">u8.stock_balance</td><td>每日 00:30</td><td class="num">30/30</td><td><span class="tag green">✓</span></td><td class="small">日均库存 → 存货周转率</td></tr>
+            <tr><td>应收快照</td><td class="muted small">u8.ar_balance</td><td>每日 00:30</td><td class="num">30/30</td><td><span class="tag green">✓</span></td><td class="small">日均应收 → 应收周转率 / 逾期计息</td></tr>
+            <tr><td>预收快照</td><td class="muted small">u8.advance_receipt</td><td>每日 00:30</td><td class="num">30/30</td><td><span class="tag green">✓</span></td><td class="small">预收计息（正向激励）</td></tr>
+            <tr><td>应付/预付快照</td><td class="muted small">u8.ap_prepay</td><td>每日 00:30</td><td class="num">30/30</td><td><span class="tag green">✓</span></td><td class="small">结构健康度 / 预付计息</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Data DSL -->
+    <div class="grid mt16" style="grid-template-columns: 1fr 320px">
+      <div class="card">
+        <div class="card-h"><h3>取数逻辑配置（Data DSL）· 日均库存</h3><span class="tag green">✓ 已发布</span></div>
+        <div class="card-b">
+          <div class="formula" style="line-height:2">
+<span class="cm"># 指标编码：METRIC_DAILY_INVENTORY</span><br>
+来源表：  <span class="var">dwd_inventory_snapshot</span><br>
+过滤条件：<span class="op">org</span> = :部门 <span class="op">AND</span> biz_date <span class="op">BETWEEN</span> :期初 <span class="op">AND</span> :期末<br>
+分组维度：[员工, 品规]<br>
+聚合方式：<span class="op">AVG</span>(qty)   <span class="cm"># 日均 = 每日快照求均值</span><br>
+参数：    [部门, 期初, 期末]
+          </div>
+          <div class="mt16 flex gap8"><button class="btn sm">编辑</button><button class="btn sm">🧪 预览取数</button><button class="btn sm ghost">版本对比</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>品规映射（ERP ↔ 行情）</h3></div>
+        <div class="card-b" style="padding:0"><table class="table">
+          <thead><tr><th>ERP 品规</th><th>行情平台</th></tr></thead>
+          <tbody>
+            <tr><td class="small">螺纹HRB400 Φ12</td><td class="small">HRB400E Φ12</td></tr>
+            <tr><td class="small">热卷Q235 3.0</td><td class="small">SPHC 3.0</td></tr>
+            <tr><td class="small">中板Q355 20</td><td class="small">Q355B 20mm</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="callout blue mt16"><span>🧱</span><div>数据经 <b>ODS 贴源 → DWD 标准中间库</b> 清洗对齐，核算引擎只面向标准模型，更换/升级 ERP 不影响上层规则。</div></div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

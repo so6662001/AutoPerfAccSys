@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>核算工作台 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="calc" data-crumb="绩效核算 / <b>核算工作台</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>核算工作台</h1>
+        <p>按周期执行绩效跑批，支持试算、正式核算、单人重算与异常处理</p>
+      </div>
+      <div class="actions">
+        <button class="btn">🧪 试算</button>
+        <button class="btn primary">▶ 正式核算</button>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="card">
+      <div class="card-b">
+        <div class="steps">
+          <div class="st done"><div class="n">✓</div><div class="lb">数据就绪校验</div></div>
+          <div class="line done"></div>
+          <div class="st done"><div class="n">✓</div><div class="lb">指标计算</div></div>
+          <div class="line done"></div>
+          <div class="st active"><div class="n">3</div><div class="lb">核算跑批</div></div>
+          <div class="line"></div>
+          <div class="st"><div class="n">4</div><div class="lb">主管审核</div></div>
+          <div class="line"></div>
+          <div class="st"><div class="n">5</div><div class="lb">员工确认</div></div>
+          <div class="line"></div>
+          <div class="st"><div class="n">6</div><div class="lb">核定归档</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- data readiness -->
+    <div class="grid mt16" style="grid-template-columns: repeat(4,1fr);">
+      <div class="card"><div class="card-b flex between center"><div><div class="muted small">销售单据完整性</div><div class="b700" style="font-size:19px">100%</div></div><span class="tag green">✓ 已封账</span></div></div>
+      <div class="card"><div class="card-b flex between center"><div><div class="muted small">库存/应收快照</div><div class="b700" style="font-size:19px">30/30 天</div></div><span class="tag green">✓ 齐全</span></div></div>
+      <div class="card"><div class="card-b flex between center"><div><div class="muted small">行情价覆盖率</div><div class="b700" style="font-size:19px">97.4%</div></div><span class="tag amber">3 笔缺失</span></div></div>
+      <div class="card"><div class="card-b flex between center"><div><div class="muted small">考勤/奖惩</div><div class="b700" style="font-size:19px">已同步</div></div><span class="tag green">✓</span></div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="mt24" data-tabs="calc">
+      <div class="tabs">
+        <button class="active" data-tab="list">核算结果（35）</button>
+        <button data-tab="exc">异常清单（7）</button>
+        <button data-tab="log">跑批日志</button>
+      </div>
+    </div>
+
+    <div data-tabgroup="calc" data-tab="list" class="tab-pane active">
+      <div class="card">
+        <div class="card-h">
+          <h3>核算结果明细</h3>
+          <div class="flex gap8">
+            <select class="select sm" style="width:auto;padding:6px 10px"><option>全部部门</option><option>采购部</option><option>销售部</option></select>
+            <button class="btn sm">⬇ 导出</button>
+          </div>
+        </div>
+        <div class="card-b" style="padding:0">
+          <table class="table">
+            <thead><tr><th>员工</th><th>岗位/方案</th><th>基础绩效</th><th>提成/超额奖</th><th>计息</th><th>奖惩</th><th class="right">应发合计</th><th>状态</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="mini-av">王</span>王海涛</td><td>销售·现货 <span class="muted small">/ 方案v3</span></td>
+                <td class="num">6,000</td><td class="num">11,000</td><td class="num pos">+4,375</td><td class="num">0</td>
+                <td class="money right pos">¥20,835</td><td><span class="tag blue">待审核</span></td>
+                <td><a href="payslip.html" class="btn sm">明细</a></td>
+              </tr>
+              <tr>
+                <td><span class="mini-av">张</span>张伟</td><td>采购 <span class="muted small">/ 方案v2</span></td>
+                <td class="num">8,000</td><td class="num">19,520</td><td class="num neg">−1,500</td><td class="num neg">−200</td>
+                <td class="money right">¥25,820</td><td><span class="tag blue">待审核</span></td>
+                <td><a href="payslip.html" class="btn sm">明细</a></td>
+              </tr>
+              <tr>
+                <td><span class="mini-av">刘</span>刘敏</td><td>销售·零调 <span class="muted small">/ 方案v3</span></td>
+                <td class="num">6,000</td><td class="num">18,200</td><td class="num neg">−300</td><td class="num">0</td>
+                <td class="money right">¥23,900</td><td><span class="tag green">已确认</span></td>
+                <td><a href="payslip.html" class="btn sm">明细</a></td>
+              </tr>
+              <tr>
+                <td><span class="mini-av">陈</span>陈磊</td><td>销售·直发 <span class="muted small">/ 方案v3</span></td>
+                <td class="num">6,000</td><td class="num">15,240</td><td class="num">0</td><td class="num">0</td>
+                <td class="money right">¥21,240</td><td><span class="tag green">已确认</span></td>
+                <td><a href="payslip.html" class="btn sm">明细</a></td>
+              </tr>
+              <tr>
+                <td><span class="mini-av">赵</span>赵倩</td><td>采购 <span class="muted small">/ 方案v2</span></td>
+                <td class="num">8,000</td><td class="num">11,600</td><td class="num">0</td><td class="num">0</td>
+                <td class="money right">¥19,600</td><td><span class="tag amber">异常</span></td>
+                <td><a href="payslip.html" class="btn sm">明细</a></td>
+              </tr>
+              <tr>
+                <td><span class="mini-av">孙</span>孙磊</td><td>销售·现货 <span class="muted small">/ 方案v3</span></td>
+                <td class="num">6,000</td><td class="num">8,900</td><td class="num pos">+1,200</td><td class="num neg">−150</td>
+                <td class="money right">¥15,950</td><td><span class="tag blue">待审核</span></td>
+                <td><a href="payslip.html" class="btn sm">明细</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div data-tabgroup="calc" data-tab="exc" class="tab-pane">
+      <div class="card"><div class="card-b" style="display:flex;flex-direction:column;gap:12px">
+        <div class="callout amber"><span>⚠</span><div><b>缺行情价基准 · 3 笔</b><br><span class="muted">HRB400E Φ12 唐山 06-18 / Q235B 6.0 天津 06-22 / SPHC 3.0 上海 06-25 —— 无匹配行情样本</span><div class="mt8"><button class="btn sm">人工补录</button> <button class="btn sm ghost">按就近日期回退</button></div></div></div>
+        <div class="callout amber"><span>⚠</span><div><b>超额奖负值 · 2 项</b><br><span class="muted">赵倩、周强：成本重估后能力性收益 &lt; 0，已按规则封底为 0，需复核确认</span><div class="mt8"><button class="btn sm">复核</button></div></div></div>
+        <div class="callout amber"><span>⚠</span><div><b>提成超阈值预警 · 2 项</b><br><span class="muted">王海涛挂价利润个人所得占比超 60%，超出方案上限阈值，待确认是否封顶</span></div></div>
+      </div></div>
+    </div>
+
+    <div data-tabgroup="calc" data-tab="log" class="tab-pane">
+      <div class="card"><div class="card-b">
+        <div class="formula" style="line-height:2">
+<span class="cm"># 2026-06 核算跑批日志</span><br>
+[07-01 09:02:11] 数据就绪校验 ...... <span class="var">PASS</span> (单据已封账, 快照 30/30)<br>
+[07-01 09:02:18] 指标计算 · 日均库存/周转率 ...... <span class="var">OK</span> (35 主体)<br>
+[07-01 09:02:24] 指标计算 · 挂价利润/净利润归集 ...... <span class="var">OK</span><br>
+[07-01 09:02:29] 指标计算 · 成本重估(市场基准法) ...... <span class="var">OK</span> <span class="op">2 项收益&lt;0 已标记</span><br>
+[07-01 09:02:33] 指标计算 · 预收/应收/预付计息(逐日) ...... <span class="var">OK</span><br>
+[07-01 09:02:40] 行情价匹配 ...... <span class="op">WARN 3 笔缺失</span><br>
+[07-01 09:02:55] 核算跑批 · 逐人套用方案 ...... <span class="var">进行中 24/35</span><br>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>
