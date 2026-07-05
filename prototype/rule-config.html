@@ -190,22 +190,35 @@
         </div>
       </div>
 
-      <!-- 系数分布模拟 -->
+      <!-- 系数分布模拟 · 权重方案回溯对比 -->
       <div class="card" style="margin-top:16px">
         <div class="card-h">
-          <h3>系数分布模拟 <span class="tag green">实时</span></h3>
-          <span class="sub" id="distSub">按当前评分规则，模拟全员系数分布</span>
+          <h3>系数分布模拟 · 权重方案回溯对比 <span class="tag green">实时</span></h3>
+          <span class="sub" id="distSub">样本：上期（2026-05）实际核算数据</span>
         </div>
         <div class="card-b">
-          <div class="callout blue" style="margin-bottom:14px"><span>📊</span><div>用<b>当前评分卡权重 + 定性折算 + 一票否决</b>规则，对样本员工整体跑一遍，预览系数分布。调整任一规则可即时观察全员系数如何变化，评估政策松紧。</div></div>
-          <div class="grid" style="grid-template-columns: 1.1fr 1fr;gap:18px">
-            <div>
-              <div class="barchart" id="distChart" style="height:180px"></div>
-              <div class="flex between small muted mt12"><span>样本人数 <b id="distN" style="color:var(--c-text)">—</b></span><span>平均系数 <b id="distAvg" style="color:var(--c-text)">—</b></span><span>否决人数 <b id="distVeto" style="color:var(--c-red)">—</b></span></div>
+          <div class="callout blue" style="margin-bottom:14px"><span>🕰</span><div><b>政策回溯测试：</b>用上期真实核算的员工达成率作样本，对比<b>方案A（现行权重）</b>与<b>方案B（候选权重）</b>下的系数分布差异，评估"若改权重，全员系数与绩效工资总额会怎么变"。定性折算表与一票否决规则两方案共用。</div></div>
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:18px">
+            <div class="card" style="box-shadow:none;border-color:var(--c-primary)">
+              <div class="sc-h" style="padding:12px 14px"><div class="flex between center"><b>方案A · 现行权重</b><span class="tag blue">当前生效</span></div></div>
+              <div class="sc-b" style="padding:12px 14px">
+                <div id="wA"></div>
+                <div class="barchart" id="chartA" style="height:130px"></div>
+                <div class="flex between small muted mt12"><span>平均系数 <b id="avgA" style="color:var(--c-primary)">—</b></span><span>否决 <b id="vetoA" style="color:var(--c-red)">—</b></span><span>绩效工资 <b id="wageA" style="color:var(--c-text)">—</b></span></div>
+              </div>
             </div>
-            <div style="max-height:240px;overflow-y:auto">
-              <table class="table"><thead><tr><th>员工</th><th class="right">综合达成率</th><th class="right">系数</th></tr></thead><tbody id="distRows"></tbody></table>
+            <div class="card" style="box-shadow:none;border-color:var(--c-amber)">
+              <div class="sc-h" style="padding:12px 14px"><div class="flex between center"><b>方案B · 候选权重</b><span class="tag amber">模拟（可编辑权重）</span></div></div>
+              <div class="sc-b" style="padding:12px 14px">
+                <div id="wB"></div>
+                <div class="barchart" id="chartB" style="height:130px"></div>
+                <div class="flex between small muted mt12"><span>平均系数 <b id="avgB" style="color:var(--c-amber)">—</b></span><span>否决 <b id="vetoB" style="color:var(--c-red)">—</b></span><span>绩效工资 <b id="wageB" style="color:var(--c-text)">—</b></span></div>
+              </div>
             </div>
+          </div>
+          <div id="shift" style="margin-top:14px"></div>
+          <div style="max-height:220px;overflow-y:auto;margin-top:14px">
+            <table class="table"><thead><tr><th>员工（上期）</th><th class="right">达成率A→B</th><th class="right">系数A</th><th class="right">系数B</th><th class="right">变化</th></tr></thead><tbody id="distRows"></tbody></table>
           </div>
         </div>
       </div>
@@ -452,9 +465,9 @@
     });
     if (typeof renderDistribution === "function") renderDistribution();
   }
-  // ===== 系数分布模拟（用当前评分规则跑样本员工）=====
+  // ===== 系数分布模拟 · 权重方案回溯对比 =====
+  // 样本：上期(2026-05)实际核算的各维度达成率 + 定性等级（顺序对应 cards[key] 量化维度）
   const cohorts = {
-    // 每人：各量化维度达成率 + 定性等级（顺序对应 cards[key] 维度）
     sales: [
       { n:"王海涛", r:[118,100,95], g:"A" }, { n:"孙磊", r:[92,80,88], g:"B" },
       { n:"刘敏", r:[105,120,100], g:"A" }, { n:"陈磊", r:[110,90,85], g:"B" },
@@ -467,65 +480,96 @@
       { n:"孙磊", r:[82,70,90], g:"B" },   { n:"钱进", r:[100,95,100], g:"B" },
     ],
   };
+  const baseWage = { sales:6000, pur:8000 };
+  // 方案B候选权重（默认加大关键维度权重）
+  const candidateW = { sales:[50,20,15,15], pur:[45,25,20,10] };
   const BANDS = [0, 0.6, 0.8, 1.0, 1.2];
   const BAND_COLORS = { "0":"var(--c-red)", "0.6":"var(--c-amber)", "0.8":"var(--c-amber)", "1":"var(--c-primary)", "1.2":"var(--c-green)" };
-  function personRate(key, p){
+
+  function personRateW(key, p, weights){
     const rows = cards[key]; const gm = gradeMap(); let wsum=0, wt=0, qi=0;
-    rows.forEach((row)=>{
-      const w = parseFloat(row.weight)||0; wsum += w;
-      let rate;
-      if(row.type==="qual"){ rate = gm[p.g]||0; }
-      else { rate = p.r[qi] ?? 0; qi++; }
+    rows.forEach((row, i)=>{
+      const w = parseFloat(weights[i])||0; wsum += w;
+      let rate = row.type==="qual" ? (gm[p.g]||0) : (p.r[qi++] ?? 0);
       wt += rate*w;
     });
     return wsum ? wt/wsum : 0;
   }
-  function personCoef(key, p, rate){
+  function personCoefW(key, p, rate){
     const v = vetoes[key];
-    // 判定否决维度达成率
-    let vetoRate = null;
     if(v.on){
-      const row = cards[key][v.dimIdx];
-      if(row){ let qi=0, idx=-1;
-        cards[key].forEach((r,i)=>{ if(r.type!=="qual"){ if(i===v.dimIdx) idx=qi; qi++; } });
-        vetoRate = row.type==="qual" ? (gradeMap()[p.g]||0) : p.r[idx];
-      }
+      const row = cards[key][v.dimIdx]; let qi=0, idx=-1;
+      cards[key].forEach((r,i)=>{ if(r.type!=="qual"){ if(i===v.dimIdx) idx=qi; qi++; } });
+      const vr = row.type==="qual" ? (gradeMap()[p.g]||0) : p.r[idx];
+      if(vr < v.line) return 0;
     }
-    if(v.on && vetoRate!==null && vetoRate < v.line) return 0;
     return bandOf(rate).c;
   }
-  function renderDistribution(){
-    const key = $("scCard").value;
-    const list = cohorts[key];
-    const counts = { "0":0,"0.6":0,"0.8":0,"1":0,"1.2":0 };
-    let sum=0, veto=0;
-    const rowsData = list.map(p=>{
-      const rate = personRate(key, p);
-      const coef = personCoef(key, p, rate);
-      const k = String(coef);
-      if(counts[k]!==undefined) counts[k]++;
-      sum += coef; if(coef===0) veto++;
+  function distOf(key, weights){
+    const counts={ "0":0,"0.6":0,"0.8":0,"1":0,"1.2":0 }; let sum=0, veto=0;
+    const per = cohorts[key].map(p=>{
+      const rate = personRateW(key,p,weights);
+      const coef = personCoefW(key,p,rate);
+      counts[String(coef)]++; sum+=coef; if(coef===0)veto++;
       return { n:p.n, rate, coef };
     });
-    const maxC = Math.max(1, ...Object.values(counts));
-    $("distChart").innerHTML = BANDS.map(b=>{
-      const k=String(b); const c=counts[k]; const h=Math.round(c/maxC*100);
-      return `<div class="col"><div class="bwrap"><div class="b" style="height:${h}%;background:${BAND_COLORS[k]}">${""}</div></div>
-        <div class="cap"><b>${c}</b> 人<br>系数 ${b}</div></div>`;
-    }).join("");
-    $("distN").textContent = list.length;
-    $("distAvg").textContent = (sum/list.length).toFixed(2);
-    $("distVeto").textContent = veto + " 人";
-    $("distRows").innerHTML = rowsData.map(d=>`<tr><td><span class="mini-av">${d.n[0]}</span>${d.n}</td>
-      <td class="right num">${d.rate.toFixed(1)}%</td>
-      <td class="right"><span class="tag ${d.coef===0?'red':d.coef>=1?'green':'amber'}">${d.coef.toFixed(1)}</span></td></tr>`).join("");
+    const wage = cohorts[key].reduce((s,p,i)=>s + baseWage[key]*per[i].coef, 0);
+    return { counts, avg:sum/cohorts[key].length, veto, per, wage };
   }
+  function chartHtml(counts){
+    const maxC = Math.max(1, ...Object.values(counts));
+    return BANDS.map(b=>{ const k=String(b); const c=counts[k]; const h=Math.round(c/maxC*100);
+      return `<div class="col"><div class="bwrap"><div class="b" style="height:${h}%;background:${BAND_COLORS[k]}"></div></div><div class="cap"><b>${c}</b>人<br>${b}</div></div>`;
+    }).join("");
+  }
+  function renderComparison(){
+    const key = $("scCard").value;
+    const wA = cards[key].map(r=>parseFloat(r.weight)||0);
+    const wB = candidateW[key];
+    const A = distOf(key, wA), B = distOf(key, wB);
 
-  $("scCard").addEventListener("change", ()=>{ renderVeto(); renderScorecard(); renderDistribution(); });
-  ["grade_A","grade_B","grade_C","grade_D"].forEach(id=>$(id).addEventListener("input", ()=>{ renderScorecard(); renderDistribution(); }));
+    // 权重展示
+    $("wA").innerHTML = cards[key].map((r,i)=>`<div class="flex between small" style="padding:3px 0"><span class="muted">${r.dim}</span><b>${wA[i]}%</b></div>`).join("") + `<div class="divider" style="margin:8px 0"></div>`;
+    $("wB").innerHTML = cards[key].map((r,i)=>`<div class="flex between small center" style="padding:2px 0"><span class="muted">${r.dim}</span><input class="cell-in" style="width:64px" type="number" data-wb="${i}" value="${wB[i]}"></div>`).join("") + `<div class="divider" style="margin:8px 0"></div>`;
+    $("wB").querySelectorAll("[data-wb]").forEach(el=>el.addEventListener("input",()=>{ candidateW[key][+el.dataset.wb]=parseFloat(el.value)||0; renderComparison(); }));
+
+    $("chartA").innerHTML = chartHtml(A.counts);
+    $("chartB").innerHTML = chartHtml(B.counts);
+    $("avgA").textContent = A.avg.toFixed(2); $("vetoA").textContent = A.veto+"人"; $("wageA").textContent = "¥"+Math.round(A.wage).toLocaleString("zh-CN");
+    $("avgB").textContent = B.avg.toFixed(2); $("vetoB").textContent = B.veto+"人"; $("wageB").textContent = "¥"+Math.round(B.wage).toLocaleString("zh-CN");
+
+    // 变动分析
+    let up=0,down=0,same=0;
+    const rows = A.per.map((a,i)=>{ const b=B.per[i];
+      if(b.coef>a.coef)up++; else if(b.coef<a.coef)down++; else same++;
+      return { n:a.n, rateA:a.rate, rateB:b.rate, cA:a.coef, cB:b.coef };
+    });
+    const wageDelta = B.wage - A.wage; const pct = A.wage? (wageDelta/A.wage*100):0;
+    const wsumB = wB.reduce((s,x)=>s+x,0);
+    $("shift").innerHTML = `
+      <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:12px">
+        <div class="callout green"><span>▲</span><div><b>${up} 人系数上升</b></div></div>
+        <div class="callout" style="background:var(--c-red-soft);color:var(--c-red)"><span>▼</span><div><b>${down} 人系数下降</b></div></div>
+        <div class="callout" style="background:#eef1f6;color:var(--c-text-2)"><span>＝</span><div><b>${same} 人持平</b></div></div>
+        <div class="callout ${wageDelta>=0?'amber':'blue'}"><span>💰</span><div><b>绩效工资总额 ${wageDelta>=0?'+':'−'}¥${Math.abs(Math.round(wageDelta)).toLocaleString("zh-CN")}</b><br><span>${pct>=0?'+':''}${pct.toFixed(1)}%${wsumB!==100?' · ⚠B权重'+wsumB+'%':''}</span></div></div>
+      </div>`;
+
+    $("distRows").innerHTML = rows.map(d=>{
+      const arrow = d.cB>d.cA?'<span class="tag green">▲ 升</span>':d.cB<d.cA?'<span class="tag red">▼ 降</span>':'<span class="tag gray">＝</span>';
+      return `<tr><td><span class="mini-av">${d.n[0]}</span>${d.n}</td>
+        <td class="right num">${d.rateA.toFixed(0)}→${d.rateB.toFixed(0)}%</td>
+        <td class="right"><span class="tag ${d.cA===0?'red':d.cA>=1?'green':'amber'}">${d.cA.toFixed(1)}</span></td>
+        <td class="right"><span class="tag ${d.cB===0?'red':d.cB>=1?'green':'amber'}">${d.cB.toFixed(1)}</span></td>
+        <td class="right">${arrow}</td></tr>`;
+    }).join("");
+  }
+  function renderDistribution(){ renderComparison(); }
+
+  $("scCard").addEventListener("change", ()=>{ renderVeto(); renderScorecard(); renderComparison(); });
+  ["grade_A","grade_B","grade_C","grade_D"].forEach(id=>$(id).addEventListener("input", ()=>{ renderScorecard(); renderComparison(); }));
   renderVeto();
   renderScorecard();
-  renderDistribution();
+  renderComparison();
 })();
 </script>
 </body>
