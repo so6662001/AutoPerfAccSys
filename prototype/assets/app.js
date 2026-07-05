@@ -10,6 +10,7 @@
       { id: "approval", label: "审批流", icon: "✅", href: "approval.html" },
       { id: "appeal", label: "申诉复核", icon: "⚖", href: "appeal.html" },
       { id: "simulator", label: "绩效试算器", icon: "🧮", href: "simulator.html" },
+      { id: "sandbox", label: "政策沙盘对比", icon: "⚖", href: "sandbox.html" },
     ]},
     { title: "绩效看板", items: [
       { id: "purchase", label: "采购绩效看板", icon: "🛒", href: "purchase-board.html" },
@@ -97,6 +98,17 @@
   function bindSwitch() {
     document.querySelectorAll(".sw").forEach(s => s.addEventListener("click", () => s.classList.toggle("on")));
   }
+
+  window.showToast = function (title, msg, type) {
+    let wrap = document.querySelector(".toast-wrap");
+    if (!wrap) { wrap = document.createElement("div"); wrap.className = "toast-wrap"; document.body.appendChild(wrap); }
+    const ic = { green: "✅", red: "⛔", amber: "⚠", blue: "ℹ" }[type] || "ℹ";
+    const t = document.createElement("div");
+    t.className = "toast " + (type || "");
+    t.innerHTML = `<span class="ic2">${ic}</span><div class="tx"><b>${title}</b>${msg ? `<span>${msg}</span>` : ""}</div>`;
+    wrap.appendChild(t);
+    setTimeout(() => { t.style.animation = "fadeOut .3s forwards"; setTimeout(() => t.remove(), 320); }, 3000);
+  };
 
   document.addEventListener("DOMContentLoaded", () => {
     renderShell();

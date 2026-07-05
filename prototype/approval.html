@@ -12,103 +12,151 @@
     <div class="page-head">
       <div>
         <h1>绩效审批流</h1>
-        <p>核算跑批 → 主管审核 → 员工确认 → 核定归档 → 发放对接，全流程留痕</p>
+        <p>核算跑批 → 主管审核 → 员工确认 → 核定归档 → 发放对接，全流程留痕（本页按钮可交互）</p>
       </div>
       <div class="actions">
-        <button class="btn">批量通过</button>
-        <button class="btn primary">✓ 一键提交核定</button>
-      </div>
-    </div>
-
-    <!-- Flow -->
-    <div class="card">
-      <div class="card-b">
-        <div class="steps">
-          <div class="st done"><div class="n">✓</div><div class="lb">核算跑批</div></div>
-          <div class="line done"></div>
-          <div class="st active"><div class="n">2</div><div class="lb">主管审核</div></div>
-          <div class="line"></div>
-          <div class="st"><div class="n">3</div><div class="lb">员工确认</div></div>
-          <div class="line"></div>
-          <div class="st"><div class="n">4</div><div class="lb">核定归档</div></div>
-          <div class="line"></div>
-          <div class="st"><div class="n">5</div><div class="lb">发放对接</div></div>
-        </div>
+        <button class="btn" id="btnBatch">批量通过</button>
+        <button class="btn primary" id="btnCommit">✓ 一键提交核定</button>
       </div>
     </div>
 
     <div class="grid mt16" style="grid-template-columns: repeat(4,1fr);">
-      <div class="card"><div class="card-b"><div class="muted small">待我审核</div><div class="b700" style="font-size:24px;color:var(--c-primary)">11</div></div></div>
-      <div class="card"><div class="card-b"><div class="muted small">已通过</div><div class="b700" style="font-size:24px;color:var(--c-green)">18</div></div></div>
-      <div class="card"><div class="card-b"><div class="muted small">已退回</div><div class="b700" style="font-size:24px;color:var(--c-red)">2</div></div></div>
-      <div class="card"><div class="card-b"><div class="muted small">待员工确认</div><div class="b700" style="font-size:24px;color:var(--c-amber)">4</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">待我审核</div><div class="b700" style="font-size:24px;color:var(--c-primary)" id="cPend">5</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">已通过</div><div class="b700" style="font-size:24px;color:var(--c-green)" id="cPass">18</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">已退回</div><div class="b700" style="font-size:24px;color:var(--c-red)" id="cRej">2</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">待员工确认</div><div class="b700" style="font-size:24px;color:var(--c-amber)" id="cConf">4</div></div></div>
     </div>
 
     <div class="grid mt16" style="grid-template-columns: 340px 1fr;">
       <!-- pending list -->
       <div class="card">
-        <div class="card-h"><h3>待审核绩效单</h3><span class="tag blue">11</span></div>
-        <div class="lst">
-          <div class="li sel"><span class="mini-av">王</span><div style="flex:1"><div class="nm">王海涛</div><div class="meta">销售·现货 · 2026-06</div></div><div class="right"><b>¥20,835</b><div class="meta">待审核</div></div></div>
-          <div class="li"><span class="mini-av">张</span><div style="flex:1"><div class="nm">张伟</div><div class="meta">采购 · 2026-06</div></div><div class="right"><b>¥25,820</b><div class="meta">待审核</div></div></div>
-          <div class="li"><span class="mini-av">孙</span><div style="flex:1"><div class="nm">孙磊</div><div class="meta">销售·现货 · 2026-06</div></div><div class="right"><b>¥15,950</b><div class="meta">待审核</div></div></div>
-          <div class="li"><span class="mini-av">赵</span><div style="flex:1"><div class="nm">赵倩 <span class="tag amber" style="margin-left:4px">异常</span></div><div class="meta">采购 · 超额奖负值</div></div><div class="right"><b>¥19,600</b><div class="meta">待审核</div></div></div>
-          <div class="li"><span class="mini-av">周</span><div style="flex:1"><div class="nm">周强</div><div class="meta">采购 · 2026-06</div></div><div class="right"><b>¥12,900</b><div class="meta">待审核</div></div></div>
-        </div>
+        <div class="card-h"><h3>待审核绩效单</h3><span class="tag blue" id="listTag">5</span></div>
+        <div class="lst" id="list"></div>
       </div>
 
       <!-- detail -->
       <div style="display:flex;flex-direction:column;gap:16px">
         <div class="card">
-          <div class="card-h"><h3>王海涛 · 销售现货绩效单</h3><span class="tag blue">待主管审核</span></div>
+          <div class="card-h"><h3 id="dTitle">—</h3><span class="tag blue" id="dStatus">待主管审核</span></div>
           <div class="card-b">
             <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:12px">
-              <div><div class="muted small">应发合计</div><div class="b700" style="font-size:20px;color:var(--c-primary)">¥20,835</div></div>
-              <div><div class="muted small">系统建议</div><div class="b700" style="font-size:15px;color:var(--c-green)">✓ 校验通过</div></div>
-              <div><div class="muted small">环比上月</div><div class="b700" style="font-size:15px;color:var(--c-green)">▲ 12.4%</div></div>
+              <div><div class="muted small">应发合计</div><div class="b700" style="font-size:20px;color:var(--c-primary)" id="dTotal">—</div></div>
+              <div><div class="muted small">系统建议</div><div class="b700" style="font-size:15px" id="dAdvice">—</div></div>
+              <div><div class="muted small">环比上月</div><div class="b700" style="font-size:15px;color:var(--c-green)" id="dMom">—</div></div>
             </div>
             <div class="divider"></div>
-            <table class="table">
-              <tbody>
-                <tr><td>基础绩效工资</td><td class="right money">¥6,000</td></tr>
-                <tr><td>吨位提成（阶梯×账期）</td><td class="right money">¥5,400</td></tr>
-                <tr><td>挂价利润分配</td><td class="right money">¥5,600</td></tr>
-                <tr><td>预收账款计息</td><td class="right money pos">+¥4,375</td></tr>
-                <tr><td>应收逾期扣减</td><td class="right money neg">−¥540</td></tr>
-              </tbody>
-            </table>
+            <table class="table"><tbody id="dRows"></tbody></table>
             <a href="payslip.html" class="btn sm mt12">🔍 查看逐笔下钻明细</a>
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="opCard">
           <div class="card-h"><h3>审核操作</h3></div>
           <div class="card-b">
-            <div class="field"><label>审核意见</label><textarea class="input" rows="2" placeholder="填写审核意见（退回时必填）">销量与挂价溢价属实，预收计息核对无误，同意。</textarea></div>
+            <div class="field"><label>审核意见（退回时必填）</label><textarea class="input" rows="2" id="comment" placeholder="填写审核意见…"></textarea></div>
             <div class="flex gap8">
-              <button class="btn primary">✓ 审核通过</button>
-              <button class="btn" style="border-color:var(--c-red);color:var(--c-red)">✕ 退回修正</button>
-              <button class="btn ghost">转交他人</button>
+              <button class="btn primary" id="btnPass">✓ 审核通过</button>
+              <button class="btn" style="border-color:var(--c-red);color:var(--c-red)" id="btnReject">✕ 退回修正</button>
+              <button class="btn ghost" id="btnTransfer">转交他人</button>
             </div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-h"><h3>流转记录</h3></div>
-          <div class="card-b">
-            <div class="timeline">
-              <div class="tl-item done"><div class="node"></div><div class="tl-t">核算跑批生成 <span class="tag gray">系统</span></div><div class="tl-time">07-01 09:03</div><div class="tl-body">按「销售现货方案 v3」自动核算，附数据快照与规则版本。</div></div>
-              <div class="tl-item done"><div class="node"></div><div class="tl-t">数据校验通过 <span class="tag green">系统</span></div><div class="tl-time">07-01 09:03</div><div class="tl-body">无缺数、无负值、未超阈值。</div></div>
-              <div class="tl-item active"><div class="node"></div><div class="tl-t">主管审核中 <span class="tag blue">陈组长</span></div><div class="tl-time">进行中</div><div class="tl-body">等待现货组主管审核。</div></div>
-              <div class="tl-item"><div class="node"></div><div class="tl-t">员工确认</div><div class="tl-time">待开始</div></div>
-              <div class="tl-item"><div class="node"></div><div class="tl-t">核定归档 → 发放</div><div class="tl-time">待开始</div></div>
-            </div>
-          </div>
+          <div class="card-b"><div class="timeline" id="tl"></div></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 <script src="assets/app.js"></script>
+<script>
+(function(){
+  const items = [
+    { id:"P1", name:"王海涛", av:"王", pos:"销售·现货", period:"2026-06", total:20835, advice:"✓ 校验通过", adviceOk:true, mom:"▲ 12.4%",
+      rows:[["基础绩效工资",6000,""],["吨位提成（阶梯×账期）",5400,""],["挂价利润分配",5600,""],["预收账款计息",4375,"pos"],["应收逾期扣减",-540,"neg"]], status:"待审核" },
+    { id:"P2", name:"张伟", av:"张", pos:"采购", period:"2026-06", total:25820, advice:"✓ 校验通过", adviceOk:true, mom:"▲ 5.1%",
+      rows:[["基础绩效工资",8000,""],["超额奖（能力性收益）",19520,""],["预付账款计息",-1500,"neg"],["行政奖惩（迟到）",-200,"neg"]], status:"待审核" },
+    { id:"P3", name:"孙磊", av:"孙", pos:"销售·现货", period:"2026-06", total:15950, advice:"✓ 校验通过", adviceOk:true, mom:"▲ 3.8%",
+      rows:[["基础绩效工资",6000,""],["吨位提成",2760,""],["挂价利润分配",6140,""],["预收账款计息",1200,"pos"],["应收逾期扣减",-150,"neg"]], status:"待审核" },
+    { id:"P4", name:"赵倩", av:"赵", pos:"采购", period:"2026-06", total:19600, advice:"⚠ 超额奖负值(已封底0)", adviceOk:false, mom:"▼ 2.1%",
+      rows:[["基础绩效工资",8000,""],["超额奖（封底为0）",0,""],["综合奖金系数 0.8",0,""],["基础绩效小计",19600,""]], status:"待审核" },
+    { id:"P5", name:"周强", av:"周", pos:"采购", period:"2026-06", total:12900, advice:"✓ 校验通过", adviceOk:true, mom:"▼ 1.2%",
+      rows:[["基础绩效工资",8000,""],["超额奖",5800,""],["预付账款计息",-900,"neg"]], status:"待审核" },
+  ];
+  const $ = id => document.getElementById(id);
+  const fmt = n => (n<0?"−":"") + "¥" + Math.abs(n).toLocaleString("zh-CN");
+  let sel = "P1";
+
+  function statusTag(s){
+    return { "待审核":'<span class="tag blue">待审核</span>', "已通过":'<span class="tag green">已通过</span>',
+             "已退回":'<span class="tag red">已退回</span>' }[s];
+  }
+  function renderList(){
+    $("list").innerHTML = items.map(it => `
+      <div class="li ${it.id===sel?'sel':''} ${it.status!=='待审核'?'row-out':''}" data-id="${it.id}">
+        <span class="mini-av">${it.av}</span>
+        <div style="flex:1"><div class="nm">${it.name} ${it.status!=='待审核'?statusTag(it.status):(it.adviceOk?'':'<span class="tag amber" style="margin-left:4px">异常</span>')}</div>
+          <div class="meta">${it.pos} · ${it.period}</div></div>
+        <div class="right"><b>${fmt(it.total)}</b><div class="meta">${it.status}</div></div>
+      </div>`).join("");
+    $("list").querySelectorAll(".li").forEach(li => li.addEventListener("click", () => { sel = li.dataset.id; renderDetail(); renderList(); }));
+    const pend = items.filter(i=>i.status==='待审核').length;
+    $("cPend").textContent = pend; $("listTag").textContent = pend;
+    $("cPass").textContent = 18 + items.filter(i=>i.status==='已通过').length;
+    $("cRej").textContent = 2 + items.filter(i=>i.status==='已退回').length;
+  }
+  function timelineHtml(it){
+    const base = [
+      {c:"done", t:"核算跑批生成 <span class='tag gray'>系统</span>", time:"07-01 09:03", b:"按方案自动核算，附数据快照与规则版本。"},
+      {c:"done", t:"数据校验 <span class='tag "+(it.adviceOk?'green':'amber')+"'>"+(it.adviceOk?'通过':'预警')+"</span>", time:"07-01 09:03", b:it.adviceOk?"无缺数、无负值、未超阈值。":"存在预警项，需复核确认。"},
+    ];
+    if(it.status==='待审核') base.push({c:"active", t:"主管审核中 <span class='tag blue'>陈组长</span>", time:"进行中", b:"等待审核操作。"},{c:"", t:"员工确认", time:"待开始"},{c:"", t:"核定归档 → 发放", time:"待开始"});
+    else if(it.status==='已通过') base.push({c:"done", t:"主管审核通过 <span class='tag green'>陈组长</span>", time:"刚刚", b:it.lastComment||"同意。"},{c:"active", t:"待员工确认", time:"进行中"},{c:"", t:"核定归档 → 发放", time:"待开始"});
+    else base.push({c:"reject", t:"主管退回修正 <span class='tag red'>陈组长</span>", time:"刚刚", b:it.lastComment||"退回。"},{c:"", t:"重新核算 / 复核", time:"待处理"});
+    return base.map(n => `<div class="tl-item ${n.c}"><div class="node"></div><div class="tl-t">${n.t}</div><div class="tl-time">${n.time}</div>${n.b?`<div class="tl-body">${n.b}</div>`:""}</div>`).join("");
+  }
+  function renderDetail(){
+    const it = items.find(i=>i.id===sel);
+    $("dTitle").textContent = `${it.name} · ${it.pos}绩效单`;
+    $("dStatus").outerHTML = `<span class="tag ${it.status==='已通过'?'green':it.status==='已退回'?'red':'blue'}" id="dStatus">${it.status==='待审核'?'待主管审核':it.status}</span>`;
+    $("dTotal").textContent = fmt(it.total);
+    $("dAdvice").innerHTML = `<span style="color:${it.adviceOk?'var(--c-green)':'var(--c-amber)'}">${it.advice}</span>`;
+    $("dMom").textContent = it.mom; $("dMom").style.color = it.mom.includes('▲')?'var(--c-green)':'var(--c-red)';
+    $("dRows").innerHTML = it.rows.map(r => `<tr><td>${r[0]}</td><td class="right money ${r[2]}">${(r[1]<0?'−':'')+'¥'+Math.abs(r[1]).toLocaleString('zh-CN')}</td></tr>`).join("");
+    $("tl").innerHTML = timelineHtml(it);
+    const done = it.status!=='待审核';
+    ["btnPass","btnReject","btnTransfer"].forEach(id=>{ $(id).classList.toggle("is-disabled", done); $(id).disabled = done; });
+    $("comment").value = it.lastComment || "";
+  }
+
+  function act(kind){
+    const it = items.find(i=>i.id===sel);
+    if(it.status!=='待审核'){ showToast("已处理","该绩效单已"+it.status+"，无需重复操作","amber"); return; }
+    if(kind==='reject' && !$("comment").value.trim()){ showToast("请填写退回意见","退回操作需说明原因","red"); return; }
+    it.lastComment = $("comment").value.trim();
+    if(kind==='pass'){ it.status='已通过'; showToast("审核通过 ✓", it.name+" 的绩效单已通过，进入员工确认","green"); }
+    else if(kind==='reject'){ it.status='已退回'; showToast("已退回修正", it.name+" 的绩效单已退回","red"); }
+    else { showToast("已转交","已转交至上级主管复核","blue"); return; }
+    renderList(); renderDetail();
+  }
+  $("btnPass").addEventListener("click",()=>act('pass'));
+  $("btnReject").addEventListener("click",()=>act('reject'));
+  $("btnTransfer").addEventListener("click",()=>act('transfer'));
+  $("btnBatch").addEventListener("click",()=>{
+    const n = items.filter(i=>i.status==='待审核').length;
+    items.forEach(i=>{ if(i.status==='待审核'){ i.status='已通过'; i.lastComment='批量通过'; }});
+    renderList(); renderDetail(); showToast("批量通过 ✓", "已通过 "+n+" 张待审核绩效单","green");
+  });
+  $("btnCommit").addEventListener("click",()=>{
+    const rest = items.filter(i=>i.status==='待审核').length;
+    if(rest) showToast("尚有待审核项","还有 "+rest+" 张未审核，无法提交核定","amber");
+    else showToast("提交核定 ✓","本期绩效已核定归档，可对接薪酬发放","green");
+  });
+
+  renderList(); renderDetail();
+})();
+</script>
 </body>
 </html>

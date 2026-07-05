@@ -12,7 +12,7 @@
     <div class="page-head">
       <div>
         <h1>绩效申诉与复核</h1>
-        <p>员工对绩效结果有异议可发起申诉，复核人基于下钻数据裁定「维持 / 调整」，全程留痕可追溯</p>
+        <p>员工对绩效结果有异议可发起申诉，复核人基于下钻数据裁定「维持 / 调整」，全程留痕（本页可交互）</p>
       </div>
       <div class="actions">
         <select class="select" style="width:auto"><option>全部状态</option><option>待复核</option><option>已处理</option></select>
@@ -21,27 +21,22 @@
 
     <div class="grid mt16" style="grid-template-columns: repeat(4,1fr);">
       <div class="card"><div class="card-b"><div class="muted small">本期申诉</div><div class="b700" style="font-size:24px">6</div></div></div>
-      <div class="card"><div class="card-b"><div class="muted small">待复核</div><div class="b700" style="font-size:24px;color:var(--c-amber)">2</div></div></div>
-      <div class="card"><div class="card-b"><div class="muted small">已调整</div><div class="b700" style="font-size:24px;color:var(--c-primary)">3</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">待复核</div><div class="b700" style="font-size:24px;color:var(--c-amber)" id="cTodo">2</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">已调整</div><div class="b700" style="font-size:24px;color:var(--c-primary)" id="cAdj">3</div></div></div>
       <div class="card"><div class="card-b"><div class="muted small">申诉率 / 解决率</div><div class="b700" style="font-size:20px">1.7% / 100%</div></div></div>
     </div>
 
     <div class="grid mt16" style="grid-template-columns: 340px 1fr;">
       <!-- appeal list -->
       <div class="card">
-        <div class="card-h"><h3>申诉工单</h3><span class="tag amber">2 待复核</span></div>
-        <div class="lst">
-          <div class="li sel"><span class="mini-av">孙</span><div style="flex:1"><div class="nm">孙磊 <span class="tag amber" style="margin-left:4px">待复核</span></div><div class="meta">AP-2606-03 · 挂价利润争议</div></div></div>
-          <div class="li"><span class="mini-av">周</span><div style="flex:1"><div class="nm">周强 <span class="tag amber" style="margin-left:4px">待复核</span></div><div class="meta">AP-2606-05 · 成本重估异议</div></div></div>
-          <div class="li"><span class="mini-av">刘</span><div style="flex:1"><div class="nm">刘敏 <span class="tag green" style="margin-left:4px">已调整</span></div><div class="meta">AP-2606-02 · 账期档位</div></div></div>
-          <div class="li"><span class="mini-av">赵</span><div style="flex:1"><div class="nm">赵倩 <span class="tag gray" style="margin-left:4px">已维持</span></div><div class="meta">AP-2606-01 · 应收扣减</div></div></div>
-        </div>
+        <div class="card-h"><h3>申诉工单</h3><span class="tag amber" id="todoTag">2 待复核</span></div>
+        <div class="lst" id="list"></div>
       </div>
 
       <!-- detail -->
       <div style="display:flex;flex-direction:column;gap:16px">
         <div class="card">
-          <div class="card-h"><h3>AP-2606-03 · 孙磊 挂价利润争议</h3><span class="tag amber">待复核</span></div>
+          <div class="card-h"><h3 id="dTitle">AP-2606-03 · 孙磊 挂价利润争议</h3><span class="tag amber" id="dStatus">待复核</span></div>
           <div class="card-b">
             <div class="callout amber"><span>🗣</span><div><b>员工申诉理由：</b>本人 6 月现货成交价高于挂牌价的溢价部分，系统只计了 6,140 元，但我实际谈下的溢价应更高，疑似有 2 张销售单（SO-2606-118 / 121）成交价取数偏低。</div></div>
             <div class="divider"></div>
@@ -71,37 +66,96 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="verdictCard">
           <div class="card-h"><h3>复核裁定</h3></div>
           <div class="card-b">
-            <div class="flex gap8 wrap" style="margin-bottom:14px">
-              <label class="btn" style="border-color:var(--c-primary);color:var(--c-primary)"><input type="radio" name="v" checked style="margin-right:6px">调整重算</label>
-              <label class="btn"><input type="radio" name="v" style="margin-right:6px">维持原判</label>
-              <label class="btn"><input type="radio" name="v" style="margin-right:6px">升级上级复核</label>
+            <div class="flex gap8 wrap" style="margin-bottom:14px" id="vradios">
+              <label class="btn" style="border-color:var(--c-primary);color:var(--c-primary)"><input type="radio" name="v" value="adjust" checked style="margin-right:6px">调整重算</label>
+              <label class="btn"><input type="radio" name="v" value="keep" style="margin-right:6px">维持原判</label>
+              <label class="btn"><input type="radio" name="v" value="up" style="margin-right:6px">升级上级复核</label>
             </div>
-            <div class="field"><label>裁定说明</label><textarea class="input" rows="2">确认取数口径缺陷，修正成交价取数并触发单人重算；同步反馈数据集成团队修复折扣行映射规则。</textarea></div>
+            <div class="field"><label>裁定说明</label><textarea class="input" rows="2" id="vtext">确认取数口径缺陷，修正成交价取数并触发单人重算；同步反馈数据集成团队修复折扣行映射规则。</textarea></div>
             <div class="flex gap8">
-              <button class="btn primary">✓ 提交裁定并重算</button>
-              <button class="btn ghost">保存草稿</button>
+              <button class="btn primary" id="btnSubmit">✓ 提交裁定并重算</button>
+              <button class="btn ghost" id="btnDraft">保存草稿</button>
             </div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-h"><h3>申诉流转记录</h3></div>
-          <div class="card-b">
-            <div class="timeline">
-              <div class="tl-item done"><div class="node"></div><div class="tl-t">员工发起申诉 <span class="tag gray">孙磊</span></div><div class="tl-time">07-02 10:12</div><div class="tl-body">对挂价利润取数提出异议。</div></div>
-              <div class="tl-item done"><div class="node"></div><div class="tl-t">受理并分派复核 <span class="tag gray">系统</span></div><div class="tl-time">07-02 10:12</div><div class="tl-body">分派至绩效专员 李静。</div></div>
-              <div class="tl-item active"><div class="node"></div><div class="tl-t">复核核查中 <span class="tag blue">李静</span></div><div class="tl-time">进行中</div><div class="tl-body">已下钻比对 ERP 原始单据，发现取数偏差。</div></div>
-              <div class="tl-item"><div class="node"></div><div class="tl-t">裁定 → 重算 → 反馈员工</div><div class="tl-time">待处理</div></div>
-            </div>
-          </div>
+          <div class="card-b"><div class="timeline" id="tl"></div></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 <script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const tickets = [
+    { id:"AP-2606-03", name:"孙磊", av:"孙", topic:"挂价利润争议", status:"待复核", sel:true },
+    { id:"AP-2606-05", name:"周强", av:"周", topic:"成本重估异议", status:"待复核" },
+    { id:"AP-2606-02", name:"刘敏", av:"刘", topic:"账期档位", status:"已调整" },
+    { id:"AP-2606-01", name:"赵倩", av:"赵", topic:"应收扣减", status:"已维持" },
+  ];
+  let sel = "AP-2606-03";
+  function stag(s){ return {"待复核":'tag amber',"已调整":'tag green',"已维持":'tag gray',"已升级":'tag blue'}[s]; }
+  function renderList(){
+    $("list").innerHTML = tickets.map(t=>`
+      <div class="li ${t.id===sel?'sel':''}" data-id="${t.id}">
+        <span class="mini-av">${t.av}</span>
+        <div style="flex:1"><div class="nm">${t.name} <span class="${stag(t.status)}" style="margin-left:4px">${t.status}</span></div>
+          <div class="meta">${t.id} · ${t.topic}</div></div>
+      </div>`).join("");
+    $("list").querySelectorAll(".li").forEach(li=>li.addEventListener("click",()=>{
+      sel = li.dataset.id; renderList();
+      const t = tickets.find(x=>x.id===sel);
+      if(t.id!=="AP-2606-03") showToast("加载工单 "+t.id, t.name+" · "+t.topic+"（演示仅 AP-2606-03 含完整核查数据）","blue");
+    }));
+    $("cTodo").textContent = tickets.filter(t=>t.status==='待复核').length;
+    $("todoTag").textContent = tickets.filter(t=>t.status==='待复核').length + " 待复核";
+    $("cAdj").textContent = tickets.filter(t=>t.status==='已调整').length;
+  }
+  function baseTl(){
+    return [
+      {c:"done", t:"员工发起申诉 <span class='tag gray'>孙磊</span>", time:"07-02 10:12", b:"对挂价利润取数提出异议。"},
+      {c:"done", t:"受理并分派复核 <span class='tag gray'>系统</span>", time:"07-02 10:12", b:"分派至绩效专员 李静。"},
+      {c:"done", t:"复核核查 <span class='tag green'>李静</span>", time:"07-02 14:30", b:"已下钻比对 ERP 原始单据，发现取数偏差。"},
+    ];
+  }
+  function renderTl(extra){
+    const nodes = baseTl();
+    if(extra) nodes.push(extra); else nodes.push({c:"active", t:"待裁定", time:"进行中", b:"选择裁定结论并提交。"});
+    $("tl").innerHTML = nodes.map(n=>`<div class="tl-item ${n.c}"><div class="node"></div><div class="tl-t">${n.t}</div><div class="tl-time">${n.time}</div>${n.b?`<div class="tl-body">${n.b}</div>`:""}</div>`).join("");
+  }
+  function submit(){
+    const t = tickets.find(x=>x.id==="AP-2606-03");
+    if(t.status!=='待复核'){ showToast("已裁定","该工单已处理完成","amber"); return; }
+    const v = document.querySelector("input[name=v]:checked").value;
+    if(!$("vtext").value.trim()){ showToast("请填写裁定说明","裁定需附说明","red"); return; }
+    if(v==='adjust'){ t.status='已调整';
+      $("dStatus").outerHTML='<span class="tag green" id="dStatus">已调整</span>';
+      renderTl({c:"done", t:"裁定：调整重算 <span class='tag green'>李静</span>", time:"刚刚", b:"挂价利润 ¥6,140 → ¥8,020，已触发单人重算并反馈员工。"});
+      showToast("裁定完成 · 调整重算 ✓","已修正取数并触发重算，个人所得 +¥1,316","green");
+    } else if(v==='keep'){ t.status='已维持';
+      $("dStatus").outerHTML='<span class="tag gray" id="dStatus">已维持</span>';
+      renderTl({c:"done", t:"裁定：维持原判 <span class='tag gray'>李静</span>", time:"刚刚", b:"经核查原核算无误，维持原结果并反馈员工。"});
+      showToast("裁定完成 · 维持原判","已维持原核算结果","blue");
+    } else { t.status='已升级';
+      $("dStatus").outerHTML='<span class="tag blue" id="dStatus">已升级</span>';
+      renderTl({c:"active", t:"升级上级复核 <span class='tag blue'>销售总监</span>", time:"进行中", b:"已升级至上级复核。"});
+      showToast("已升级复核","工单已转上级复核","amber");
+    }
+    $("vradios").querySelectorAll("input").forEach(i=>i.disabled=true);
+    $("btnSubmit").classList.add("is-disabled"); $("btnSubmit").disabled=true;
+    renderList();
+  }
+  $("btnSubmit").addEventListener("click",submit);
+  $("btnDraft").addEventListener("click",()=>showToast("草稿已保存","裁定说明已暂存","blue"));
+  renderList(); renderTl();
+})();
+</script>
 </body>
 </html>
