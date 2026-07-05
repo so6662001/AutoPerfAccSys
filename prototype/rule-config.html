@@ -111,9 +111,39 @@
 
     <!-- 系数档表 -->
     <div data-tabgroup="rule" data-tab="coef" class="tab-pane">
+
+      <!-- 评分卡：系数从哪来 -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-h">
+          <h3>基础绩效评分卡（评分规则引擎）</h3>
+          <div class="flex gap8 center">
+            <select class="select sm" id="scCard" style="width:auto;padding:6px 10px">
+              <option value="sales">销售·基础绩效评分卡</option>
+              <option value="pur">采购·基础绩效评分卡</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-b">
+          <div class="callout blue" style="margin-bottom:14px"><span>🧭</span><div><b>系数不是直接给的，而是"算"出来的：</b>每个维度按其取数方式得到一个达成率（自动量化 或 主管定性打分折算），按权重加权得到<b>综合达成率</b>，再进下方"系数档表"映射为最终系数。修改权重或达成率可实时看到系数变化。</div></div>
+          <table class="table">
+            <thead><tr><th>考核维度</th><th>取数方式</th><th>权重(%)</th><th>本期达成率(%) / 定性折算</th><th class="right">加权贡献</th></tr></thead>
+            <tbody id="scRows"></tbody>
+          </table>
+          <div class="flex between center wrap gap12" style="margin-top:14px;padding:14px 16px;background:var(--c-surface-2);border-radius:10px">
+            <div class="flex gap16 wrap">
+              <div><div class="muted small">权重合计</div><div class="b700" id="scWeight" style="font-size:16px">100%</div></div>
+              <div><div class="muted small">综合达成率</div><div class="b700" id="scRate" style="font-size:20px;color:var(--c-primary)">—</div></div>
+              <div><div class="muted small">命中系数档</div><div class="b700" id="scBand" style="font-size:14px">—</div></div>
+            </div>
+            <div style="text-align:right"><div class="muted small">最终基础绩效系数</div><div class="b700" id="scCoef" style="font-size:30px;color:var(--c-green);letter-spacing:-.5px">—</div></div>
+          </div>
+          <div class="callout amber mt16"><span>🖊</span><div><b>定性维度评分规则：</b>主管按等级打分 A / B / C / D，系统按映射折算为达成率（A=110% · B=100% · C=80% · D=50%，可配置）。自动量化维度则由 ERP 实际值 ÷ 目标值直接得出，不受人为干预。</div></div>
+        </div>
+      </div>
+
       <div class="grid" style="grid-template-columns:1fr 1fr">
         <div class="card">
-          <div class="card-h"><h3>基础绩效系数档</h3><span class="sub">评分/达成率 → 系数</span></div>
+          <div class="card-h"><h3>基础绩效系数档</h3><span class="sub">综合达成率 → 系数</span></div>
           <div class="card-b" style="padding:0"><table class="table">
             <thead><tr><th>区间</th><th>系数</th></tr></thead>
             <tbody>
@@ -276,6 +306,66 @@
     });
   }
   loadDraft();
+
+  // ===== 评分卡：系数评分规则引擎 =====
+  const gradeMap = { A:110, B:100, C:80, D:50 };
+  const cards = {
+    sales: [
+      { dim:"月度保底销量达成", type:"auto", weight:40, val:118 },
+      { dim:"新客户开发", type:"auto", weight:20, val:100 },
+      { dim:"客户维护 / 复购率", type:"auto", weight:20, val:95 },
+      { dim:"日常客情维系", type:"qual", weight:20, grade:"A" },
+    ],
+    pur: [
+      { dim:"采购价格竞争力", type:"auto", weight:35, val:105 },
+      { dim:"行情掌控 / 择时", type:"auto", weight:25, val:100 },
+      { dim:"存货周转达成", type:"auto", weight:25, val:96 },
+      { dim:"采购纪律 / 协作", type:"qual", weight:15, grade:"A" },
+    ],
+  };
+  function bandOf(rate){
+    if(rate<60) return {c:0, t:"&lt; 60%（不达标）"};
+    if(rate<80) return {c:0.6, t:"60% ~ 80%"};
+    if(rate<100) return {c:0.8, t:"80% ~ 100%"};
+    if(rate<120) return {c:1.0, t:"100% ~ 120%"};
+    return {c:1.2, t:"≥ 120%（超额）"};
+  }
+  function rowRate(r){ return r.type==="qual" ? (gradeMap[r.grade]||0) : (parseFloat(r.val)||0); }
+  function renderScorecard(){
+    const key = $("scCard").value;
+    const rows = cards[key];
+    $("scRows").innerHTML = rows.map((r,i)=>{
+      const rate = rowRate(r);
+      const contrib = rate * r.weight/100;
+      const valCell = r.type==="qual"
+        ? `<select class="cell-in" style="width:150px;text-align:left" data-sc="${i}" data-f="grade">
+             <option ${r.grade==="A"?"selected":""}>A</option><option ${r.grade==="B"?"selected":""}>B</option>
+             <option ${r.grade==="C"?"selected":""}>C</option><option ${r.grade==="D"?"selected":""}>D</option>
+           </select> <span class="muted small">→ ${gradeMap[r.grade]}%</span>`
+        : `<input class="cell-in" type="number" data-sc="${i}" data-f="val" value="${r.val}">`;
+      const typeTag = r.type==="qual" ? '<span class="tag amber">定性·主管打分</span>' : '<span class="tag green">自动量化(ERP)</span>';
+      return `<tr><td>${r.dim}</td><td>${typeTag}</td>
+        <td><input class="cell-in" style="width:70px" type="number" data-sc="${i}" data-f="weight" value="${r.weight}"></td>
+        <td>${valCell}</td><td class="right money">${contrib.toFixed(1)}</td></tr>`;
+    }).join("");
+    const wsum = rows.reduce((s,r)=>s+(parseFloat(r.weight)||0),0);
+    const wtotal = rows.reduce((s,r)=>s + rowRate(r)*(parseFloat(r.weight)||0),0);
+    const rate = wsum ? wtotal/wsum : 0;
+    const band = bandOf(rate);
+    $("scWeight").innerHTML = wsum + "%" + (wsum!==100 ? ' <span class="tag red" style="margin-left:4px">≠100%</span>' : ' <span class="tag green" style="margin-left:4px">✓</span>');
+    $("scRate").textContent = rate.toFixed(1) + "%";
+    $("scBand").innerHTML = band.t;
+    $("scCoef").textContent = band.c.toFixed(1);
+    $("scRows").querySelectorAll("[data-sc]").forEach(el=>{
+      el.addEventListener("input", ()=>{
+        const r = cards[key][+el.dataset.sc];
+        r[el.dataset.f] = el.dataset.f==="grade" ? el.value : parseFloat(el.value)||0;
+        renderScorecard();
+      });
+    });
+  }
+  $("scCard").addEventListener("change", renderScorecard);
+  renderScorecard();
 })();
 </script>
 </body>
