@@ -137,7 +137,27 @@
             </div>
             <div style="text-align:right"><div class="muted small">最终基础绩效系数</div><div class="b700" id="scCoef" style="font-size:30px;color:var(--c-green);letter-spacing:-.5px">—</div></div>
           </div>
-          <div class="callout amber mt16"><span>🖊</span><div><b>定性维度评分规则：</b>主管按等级打分 A / B / C / D，系统按映射折算为达成率（A=110% · B=100% · C=80% · D=50%，可配置）。自动量化维度则由 ERP 实际值 ÷ 目标值直接得出，不受人为干预。</div></div>
+          <div class="callout red mt16" id="vetoAlert" style="display:none;background:var(--c-red-soft);color:var(--c-red)"><span>⛔</span><div id="vetoAlertTx"></div></div>
+        </div>
+      </div>
+
+      <!-- 定性折算表 + 一票否决 -->
+      <div class="grid" style="grid-template-columns:1fr 1fr;margin-bottom:16px">
+        <div class="card">
+          <div class="card-h"><h3>定性等级折算表</h3><span class="sub">主管打分 → 达成率(%)</span></div>
+          <div class="card-b" style="padding:0"><table class="table">
+            <thead><tr><th>等级</th><th>含义</th><th>折算达成率(%)</th></tr></thead>
+            <tbody>
+              <tr><td><span class="tag green">A</span></td><td class="muted small">优秀</td><td><input class="cell-in" id="grade_A" type="number" value="110"></td></tr>
+              <tr><td><span class="tag blue">B</span></td><td class="muted small">良好 / 达标</td><td><input class="cell-in" id="grade_B" type="number" value="100"></td></tr>
+              <tr><td><span class="tag amber">C</span></td><td class="muted small">合格待改进</td><td><input class="cell-in" id="grade_C" type="number" value="80"></td></tr>
+              <tr><td><span class="tag red">D</span></td><td class="muted small">不合格</td><td><input class="cell-in" id="grade_D" type="number" value="50"></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>一票否决规则</h3><span class="sub">关键维度未达线 → 系数强制为 0</span></div>
+          <div class="card-b" id="vetoBox"></div>
         </div>
       </div>
 
@@ -308,7 +328,7 @@
   loadDraft();
 
   // ===== 评分卡：系数评分规则引擎 =====
-  const gradeMap = { A:110, B:100, C:80, D:50 };
+  function gradeMap(){ return { A:parseFloat($("grade_A").value)||0, B:parseFloat($("grade_B").value)||0, C:parseFloat($("grade_C").value)||0, D:parseFloat($("grade_D").value)||0 }; }
   const cards = {
     sales: [
       { dim:"月度保底销量达成", type:"auto", weight:40, val:118 },
@@ -323,6 +343,11 @@
       { dim:"采购纪律 / 协作", type:"qual", weight:15, grade:"A" },
     ],
   };
+  // 一票否决配置：关键维度 + 否决线
+  const vetoes = {
+    sales: { on:true, dimIdx:0, line:60 },
+    pur:   { on:true, dimIdx:0, line:60 },
+  };
   function bandOf(rate){
     if(rate<60) return {c:0, t:"&lt; 60%（不达标）"};
     if(rate<80) return {c:0.6, t:"60% ~ 80%"};
@@ -330,7 +355,25 @@
     if(rate<120) return {c:1.0, t:"100% ~ 120%"};
     return {c:1.2, t:"≥ 120%（超额）"};
   }
-  function rowRate(r){ return r.type==="qual" ? (gradeMap[r.grade]||0) : (parseFloat(r.val)||0); }
+  function rowRate(r){ return r.type==="qual" ? (gradeMap()[r.grade]||0) : (parseFloat(r.val)||0); }
+  function renderVeto(){
+    const key = $("scCard").value; const v = vetoes[key]; const rows = cards[key];
+    $("vetoBox").innerHTML = `
+      <div class="flex between center" style="margin-bottom:12px">
+        <span class="small b700">启用一票否决</span>
+        <span class="sw ${v.on?'on':''}" id="vetoSw"></span>
+      </div>
+      <div class="field sm" style="margin-bottom:10px"><label>否决维度（低于否决线即系数=0）</label>
+        <select class="select" id="vetoDim" ${v.on?'':'disabled'}>
+          ${rows.map((r,i)=>`<option value="${i}" ${i===v.dimIdx?'selected':''}>${r.dim}</option>`).join("")}
+        </select></div>
+      <div class="field sm"><label>否决线（达成率 % 下限）</label>
+        <input class="input" type="number" id="vetoLine" value="${v.line}" ${v.on?'':'disabled'}></div>
+      <div class="callout amber" style="margin-top:6px"><span>⚖</span><div>例：保底销量达成率低于 <b>${v.line}%</b> 时，无论其他维度多高，基础绩效系数直接封底为 <b>0</b>。</div></div>`;
+    $("vetoSw").addEventListener("click", ()=>{ v.on=!v.on; renderVeto(); renderScorecard(); });
+    const dimSel=$("vetoDim"); if(dimSel) dimSel.addEventListener("change",()=>{ v.dimIdx=+dimSel.value; renderVeto(); renderScorecard(); });
+    const lineIn=$("vetoLine"); if(lineIn) lineIn.addEventListener("input",()=>{ v.line=parseFloat(lineIn.value)||0; renderScorecard(); });
+  }
   function renderScorecard(){
     const key = $("scCard").value;
     const rows = cards[key];
@@ -352,10 +395,22 @@
     const wtotal = rows.reduce((s,r)=>s + rowRate(r)*(parseFloat(r.weight)||0),0);
     const rate = wsum ? wtotal/wsum : 0;
     const band = bandOf(rate);
+    // 一票否决判定
+    const v = vetoes[key];
+    const vetoDim = rows[v.dimIdx];
+    const vetoTriggered = v.on && vetoDim && rowRate(vetoDim) < v.line;
+    const finalCoef = vetoTriggered ? 0 : band.c;
+
     $("scWeight").innerHTML = wsum + "%" + (wsum!==100 ? ' <span class="tag red" style="margin-left:4px">≠100%</span>' : ' <span class="tag green" style="margin-left:4px">✓</span>');
     $("scRate").textContent = rate.toFixed(1) + "%";
-    $("scBand").innerHTML = band.t;
-    $("scCoef").textContent = band.c.toFixed(1);
+    $("scBand").innerHTML = vetoTriggered ? '<span class="tag red">一票否决</span>' : band.t;
+    $("scCoef").textContent = finalCoef.toFixed(1);
+    $("scCoef").style.color = vetoTriggered ? "var(--c-red)" : "var(--c-green)";
+    if(vetoTriggered){
+      $("vetoAlert").style.display="flex";
+      $("vetoAlertTx").innerHTML = `<b>触发一票否决：</b>「${vetoDim.dim}」达成率 ${rowRate(vetoDim)}% 低于否决线 ${v.line}%，基础绩效系数强制封底为 <b>0</b>（综合达成率 ${rate.toFixed(1)}% 不再生效）。`;
+    } else { $("vetoAlert").style.display="none"; }
+
     $("scRows").querySelectorAll("[data-sc]").forEach(el=>{
       el.addEventListener("input", ()=>{
         const r = cards[key][+el.dataset.sc];
@@ -364,7 +419,9 @@
       });
     });
   }
-  $("scCard").addEventListener("change", renderScorecard);
+  $("scCard").addEventListener("change", ()=>{ renderVeto(); renderScorecard(); });
+  ["grade_A","grade_B","grade_C","grade_D"].forEach(id=>$(id).addEventListener("input", renderScorecard));
+  renderVeto();
   renderScorecard();
 })();
 </script>
