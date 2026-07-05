@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>合规审计查询 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="audit" data-crumb="数据与规则 / <b>合规审计查询</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>合规审计查询</h1>
+        <p>规则变更全量留痕的在线查询：按单号 / 状态 / 范围筛选，下钻三级串签与参数快照，支持导出</p>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btnAudit">⬇ 导出审计报告</button>
+      </div>
+    </div>
+
+    <div class="grid kpi-grid" style="margin-bottom:16px">
+      <div class="kpi"><div class="lbl">变更单总数</div><div class="val" id="kTotal">—</div></div>
+      <div class="kpi"><div class="lbl">已生效</div><div class="val" id="kDone" style="color:var(--c-green)">—</div></div>
+      <div class="kpi"><div class="lbl">待处理</div><div class="val" id="kPend" style="color:var(--c-amber)">—</div></div>
+      <div class="kpi"><div class="lbl">已退回</div><div class="val" id="kRej" style="color:var(--c-red)">—</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <h3>变更单审计台账</h3>
+        <div class="flex gap8 center wrap">
+          <input class="input" id="fSearch" placeholder="搜索单号 / 提交人…" style="width:180px;padding:7px 10px">
+          <select class="select" id="fStatus" style="width:auto;padding:7px 10px"><option value="">全部状态</option><option>已生效</option><option>待审批</option><option>待生效</option><option>已退回</option></select>
+          <select class="select" id="fScope" style="width:auto;padding:7px 10px"><option value="">全部范围</option><option value="full">全公司</option><option value="gray">灰度试点</option></select>
+        </div>
+      </div>
+      <div class="card-b" style="padding:0">
+        <table class="table">
+          <thead><tr><th>单号</th><th>版本</th><th>提交人</th><th>时间</th><th>生效方式</th><th>范围</th><th>串签</th><th>状态</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div id="empty" class="muted small" style="padding:24px;text-align:center;display:none">无匹配的变更单。</div>
+      </div>
+    </div>
+    <div class="callout blue mt16"><span>🔗</span><div>数据实时取自规则中心（本地）。在规则中心发布 / 审批变更后，此处台账与统计自动更新。点击任意行可展开三级串签留痕与参数快照。</div></div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const SEED = [
+    { id:"CR-20260502-03", ver:3, submitter:"李静·绩效专员", time:"2026-05-02 10:20", effLabel:"立即生效", scopeLabel:"全公司", status:"已生效",
+      chain:[{role:"部门主管",name:"陈组长",status:"通过",time:"05-02 11:00"},{role:"HR负责人",name:"王总监",status:"通过",time:"05-02 14:30"},{role:"分管领导",name:"周总",status:"通过",time:"05-02 16:00"}],
+      details:["销售评分卡权重 40/20/20/20","启用回款账期差异化提成","预收 / 预付账款计息上线"],
+      params:{ "销售权重":"40/20/20/20","采购权重":"35/25/25/15","定性折算(A/B/C/D)":"110/100/80/50","预收日利率":"5‱","预付日利率":"4‱" } },
+    { id:"CR-20260601-04", ver:4, submitter:"李静·绩效专员", time:"2026-06-01 09:30", effLabel:"立即生效", scopeLabel:"灰度·华东销售部", status:"已生效",
+      chain:[{role:"部门主管",name:"陈组长",status:"通过",time:"06-01 10:10"},{role:"HR负责人",name:"王总监",status:"通过",time:"06-01 11:40"},{role:"分管领导",name:"周总",status:"通过",time:"06-01 15:20"}],
+      details:["销售评分卡权重调整为 50/20/15/15（加大保底权重）","≤30天账期吨位单价下调至 5 元/吨"],
+      params:{ "销售权重":"50/20/15/15","采购权重":"35/25/25/15","定性折算(A/B/C/D)":"110/100/80/50","预收日利率":"5‱","预付日利率":"4‱" } },
+  ];
+  let data = SEED;
+  try{ const s = JSON.parse(localStorage.getItem("steel_change_reqs")||"null"); if(Array.isArray(s)&&s.length) data = s; }catch(e){}
+
+  function filtered(){
+    const q = $("fSearch").value.trim(); const st = $("fStatus").value; const sc = $("fScope").value;
+    return data.filter(r=>{
+      if(q && !(r.id.includes(q) || (r.submitter||"").includes(q))) return false;
+      if(st && r.status!==st) return false;
+      if(sc==="full" && r.scopeLabel!=="全公司") return false;
+      if(sc==="gray" && !(r.scopeLabel&&r.scopeLabel.indexOf("灰度")===0)) return false;
+      return true;
+    });
+  }
+  function stag(s){ return s==="已生效"?'<span class="tag green">已生效</span>':s==="已退回"?'<span class="tag red">已退回</span>':s==="待生效"?'<span class="tag blue">待生效</span>':'<span class="tag amber">审批中</span>'; }
+  function render(){
+    $("kTotal").textContent = data.length;
+    $("kDone").textContent = data.filter(r=>r.status==="已生效").length;
+    $("kPend").textContent = data.filter(r=>r.status==="待审批"||r.status==="待生效").length;
+    $("kRej").textContent = data.filter(r=>r.status==="已退回").length;
+    const list = filtered();
+    $("empty").style.display = list.length?"none":"block";
+    $("rows").innerHTML = list.map((r,i)=>{
+      const passed = r.chain.filter(s=>s.status==="通过").length;
+      const detail = `<tr id="d-${i}" style="display:none;background:var(--c-surface-2)"><td colspan="8">
+        <div class="steps" style="margin:8px 0;flex-wrap:wrap">${r.chain.map((s,j)=>{
+          const cls=s.status==="通过"?"done":s.status==="退回"?"reject":"active";
+          const line=j<r.chain.length-1?`<div class="line ${s.status==='通过'?'done':''}"></div>`:"";
+          return `<div class="st ${cls}"><div class="n">${s.status==="通过"?"✓":s.status==="退回"?"✕":j+1}</div><div class="lb">${s.role}·${s.name}${s.mode==="或签"?"(或签)":""}${s.delegatedFrom?"(受"+s.delegatedFrom+"委托)":""}${s.added?"(加签)":""}<br><span class="muted" style="font-size:10px">${s.status}${s.time?" "+s.time:""}</span></div></div>${line}`;
+        }).join("")}</div>
+        <div class="small"><b>变更内容：</b>${(r.details||[]).join("；")}</div>
+        ${r.params?`<div class="small mt8"><b>参数快照：</b>${Object.entries(r.params).map(([k,v])=>k+"="+v).join(" · ")}</div>`:""}
+      </td></tr>`;
+      return `<tr data-i="${i}" style="cursor:pointer"><td><b>${r.id}</b></td><td class="num">v${r.ver}</td><td>${r.submitter}</td><td class="small">${r.time}</td>
+        <td class="small">${r.effLabel}</td><td><span class="tag ${r.scopeLabel==="全公司"?"gray":"orange"}">${r.scopeLabel}</span></td>
+        <td class="num">${passed}/${r.chain.length}</td><td>${stag(r.status)}</td></tr>${detail}`;
+    }).join("");
+    $("rows").querySelectorAll("tr[data-i]").forEach(tr=>tr.addEventListener("click",()=>{
+      const d=$("d-"+tr.dataset.i); if(d) d.style.display = d.style.display==="none"?"table-row":"none";
+    }));
+  }
+  ["fSearch","fStatus","fScope"].forEach(id=>$(id).addEventListener("input",render));
+  $("fStatus").addEventListener("change",render); $("fScope").addEventListener("change",render);
+  $("btnAudit").addEventListener("click",()=>{
+    let md = `# 绩效规则变更 · 合规审计报告\n\n- 导出时间：${new Date().toLocaleString("zh-CN")}\n- 变更单总数：${data.length}\n\n`;
+    data.slice().sort((a,b)=>a.time<b.time?-1:1).forEach(r=>{
+      md += `## ${r.id} · 规则 v${r.ver}（${r.status}）\n\n- 提交人：${r.submitter} · ${r.time}\n- 生效方式：${r.effLabel} · 范围：${r.scopeLabel}\n- 变更内容：\n${(r.details||[]).map(x=>"    - "+x).join("\n")}\n- 审批链：\n${r.chain.map((s,i)=>`    ${i+1}. ${s.role}·${s.name}${s.mode==="或签"?"(或签)":""}${s.delegatedFrom?"(受"+s.delegatedFrom+"委托)":""}${s.added?"(加签)":""} — ${s.status}${s.time?" @"+s.time:""}`).join("\n")}\n${r.params?"- 参数快照：\n"+Object.entries(r.params).map(([k,v])=>"    - "+k+"："+v).join("\n")+"\n":""}\n`;
+    });
+    const blob=new Blob([md],{type:"text/markdown;charset=utf-8"}); const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=`绩效规则合规审计_${new Date().toISOString().slice(0,10)}.md`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    showToast("审计报告已导出 ✓","含全量变更单与三级串签留痕","green");
+  });
+  render();
+})();
+</script>
+</body>
+</html>

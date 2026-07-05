@@ -503,6 +503,7 @@
     $("crList").querySelectorAll("[data-promote]").forEach(b=>b.addEventListener("click",()=>promote(b.dataset.promote)));
     renderTimeline();
     if(typeof renderPilot==="function") renderPilot();
+    try{ localStorage.setItem("steel_change_reqs", JSON.stringify(changeReqs)); }catch(e){}
   }
   function delegate(id){
     const r=changeReqs.find(x=>x.id===id); const c=r.chain[r.cur];
@@ -605,15 +606,16 @@
   // 试点效果 mock 指标（试点部门 vs 对照组），按变更单 id 关联
   const pilotData = {
     "CR-20260601-04": {
-      dept:"华东销售部", ctrl:"华北销售部（对照）",
+      dept:"华东销售部", ctrl:"华北销售部（对照）", week:3, weeks:4,
       metrics:[
         { k:"人均应发绩效", t:"¥18,900", c:"¥17,400", up:true, note:"+8.6%" },
         { k:"平均基础绩效系数", t:"0.92", c:"0.86", up:true, note:"+0.06" },
         { k:"保底销量达成率", t:"112%", c:"104%", up:true, note:"+8pct" },
         { k:"回款账期(平均)", t:"26 天", c:"33 天", up:true, note:"−7 天(更优)" },
         { k:"应收逾期率", t:"4.1%", c:"6.8%", up:true, note:"−2.7pct" },
+        { k:"绩效成本/毛利占比", t:"6.4%", c:"6.1%", up:false, note:"+0.3pct(需关注)" },
       ],
-      verdict:"正向", advice:"试点各项指标均优于对照组，账期与逾期显著改善，建议推广至全公司。"
+      verdict:"正向", advice:"试点核心指标优于对照组，账期与逾期显著改善；绩效成本占比略升，建议推广并监控成本。"
     }
   };
   function renderPilot(){
@@ -633,14 +635,25 @@
         <td style="width:34%"><div class="flex between small"><b class="muted">${m.c}</b></div><div class="bar mt8"><span style="width:${Math.round(cv/max*100)}%;background:var(--c-text-3)"></span></div></td>
         <td class="right"><span class="tag ${m.up?'green':'red'}">${m.up?'▲':'▼'} ${m.note}</span></td></tr>`;
     }).join("");
+    // 自动效果监测预警
+    const alerts = d.metrics.filter(m=>!m.up);
+    const warnLvl = alerts.length===0 ? "正常" : alerts.length<=1 ? "关注" : "预警";
+    const monTag = warnLvl==="正常"?'<span class="tag green">监测正常</span>':warnLvl==="关注"?'<span class="tag amber">需关注</span>':'<span class="tag red">预警</span>';
+    const monCall = warnLvl==="正常"
+      ? `<div class="callout green"><span>✅</span><div><b>自动监测：无预警</b>，所有受监控指标均优于或持平对照组。</div></div>`
+      : `<div class="callout ${warnLvl==='预警'?'':'amber'}" ${warnLvl==='预警'?'style="background:var(--c-red-soft);color:var(--c-red)"':''}><span>${warnLvl==='预警'?'⛔':'⚠'}</span><div><b>自动监测：${alerts.length} 项指标触发${warnLvl}</b> —— ${alerts.map(a=>a.k+"("+a.note+")").join("、")}。建议评估后再决定推广节奏。</div></div>`;
+    const progPct = Math.round(d.week/d.weeks*100);
+
     $("pilotBoard").innerHTML = `
       <div class="flex between center wrap gap12" style="margin-bottom:12px">
         <div><div class="muted small">试点变更单</div><b>${r.id} · v${r.ver}</b></div>
         <div><div class="muted small">试点 / 对照</div><b>${d.dept} vs ${d.ctrl}</b></div>
-        <div><div class="muted small">试点效果</div><span class="tag ${d.verdict==='正向'?'green':d.verdict==='负向'?'red':'gray'}">${d.verdict}</span></div>
+        <div><div class="muted small">试点效果</div><span class="tag ${d.verdict==='正向'?'green':d.verdict==='负向'?'red':'gray'}">${d.verdict}</span> ${monTag}</div>
       </div>
-      <table class="table"><thead><tr><th>指标</th><th>试点部门</th><th>对照组</th><th class="right">对比</th></tr></thead><tbody>${rows}</tbody></table>
-      <div class="callout green" style="margin-top:14px"><span>🏁</span><div><b>推广建议：</b>${d.advice}</div>
+      <div style="margin-bottom:12px"><div class="flex between small"><span class="muted">试点周期进度 · 第 ${d.week}/${d.weeks} 周</span><b>${progPct}%${d.week>=d.weeks?' · 试点期将满,建议决策':''}</b></div><div class="bar mt8 ${d.week>=d.weeks?'a':''}"><span style="width:${progPct}%"></span></div></div>
+      <table class="table"><thead><tr><th>指标（受监控）</th><th>试点部门</th><th>对照组</th><th class="right">对比/预警</th></tr></thead><tbody>${rows}</tbody></table>
+      <div style="margin-top:14px">${monCall}</div>
+      <div class="callout green" style="margin-top:12px"><span>🏁</span><div><b>推广建议：</b>${d.advice}</div>
         <button class="btn sm accent" style="margin-left:auto" data-promote="${r.id}">🚀 推广至全公司</button></div>`;
     $("pilotBoard").querySelectorAll("[data-promote]").forEach(b=>b.addEventListener("click",()=>promote(b.dataset.promote)));
   }

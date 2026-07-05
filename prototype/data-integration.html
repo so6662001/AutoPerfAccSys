@@ -15,8 +15,8 @@
         <p>ERP / 行情平台 / 考勤 数据接入 · 每日快照调度 · 取数逻辑配置（Data DSL）</p>
       </div>
       <div class="actions">
-        <button class="btn">🔄 立即同步</button>
-        <button class="btn primary">+ 新增数据源</button>
+        <button class="btn" id="btnSync">🔄 立即同步</button>
+        <button class="btn primary" id="btnAddSrc">+ 新增数据源</button>
       </div>
     </div>
 
@@ -68,25 +68,75 @@
 聚合方式：<span class="op">AVG</span>(qty)   <span class="cm"># 日均 = 每日快照求均值</span><br>
 参数：    [部门, 期初, 期末]
           </div>
-          <div class="mt16 flex gap8"><button class="btn sm">编辑</button><button class="btn sm">🧪 预览取数</button><button class="btn sm ghost">版本对比</button></div>
+          <div class="mt16 flex gap8"><button class="btn sm" id="btnDslEdit">编辑</button><button class="btn sm" id="btnDslPreview">🧪 预览取数</button><button class="btn sm ghost" id="btnDslDiff">版本对比</button></div>
         </div>
       </div>
       <div class="card">
-        <div class="card-h"><h3>品规映射（ERP ↔ 行情）</h3></div>
+        <div class="card-h"><h3>品规映射（ERP ↔ 行情）</h3><button class="btn sm" id="btnAddMap">+ 映射</button></div>
         <div class="card-b" style="padding:0"><table class="table">
           <thead><tr><th>ERP 品规</th><th>行情平台</th></tr></thead>
-          <tbody>
-            <tr><td class="small">螺纹HRB400 Φ12</td><td class="small">HRB400E Φ12</td></tr>
-            <tr><td class="small">热卷Q235 3.0</td><td class="small">SPHC 3.0</td></tr>
-            <tr><td class="small">中板Q355 20</td><td class="small">Q355B 20mm</td></tr>
-          </tbody>
+          <tbody id="mapRows"></tbody>
         </table></div>
       </div>
     </div>
 
-    <div class="callout blue mt16"><span>🧱</span><div>数据经 <b>ODS 贴源 → DWD 标准中间库</b> 清洗对齐，核算引擎只面向标准模型，更换/升级 ERP 不影响上层规则。</div></div>
+    <!-- ERP 字段映射 -->
+    <div class="card mt16">
+      <div class="card-h"><h3>ERP 字段映射（源字段 → 标准中间库字段）</h3><span class="tag green" id="fmState">✓ 已保存</span></div>
+      <div class="card-b" style="padding:0">
+        <table class="table">
+          <thead><tr><th>标准字段</th><th>ERP 源表.字段</th><th>数据类型</th><th>转换/说明</th></tr></thead>
+          <tbody id="fieldRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout blue mt16"><span>🧱</span><div>数据经 <b>ODS 贴源 → DWD 标准中间库</b> 清洗对齐，核算引擎只面向标准模型，更换/升级 ERP 不影响上层规则。字段/品规映射均可在此可视化维护。</div></div>
   </div>
 </div>
 <script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  let dirty = false;
+  const mark = ()=>{ if(!dirty){ dirty=true; $("fmState").className="tag amber"; $("fmState").textContent="● 未保存"; } };
+
+  // 品规映射（可编辑）
+  let maps = [
+    ["螺纹HRB400 Φ12","HRB400E Φ12"],["热卷Q235 3.0","SPHC 3.0"],["中板Q355 20","Q355B 20mm"],
+  ];
+  function renderMaps(){
+    $("mapRows").innerHTML = maps.map((m,i)=>`<tr>
+      <td><input class="input" style="padding:5px 8px;font-size:12px" data-m="${i}" data-c="0" value="${m[0]}"></td>
+      <td><input class="input" style="padding:5px 8px;font-size:12px" data-m="${i}" data-c="1" value="${m[1]}"></td></tr>`).join("");
+    $("mapRows").querySelectorAll("input").forEach(inp=>inp.addEventListener("input",()=>{ maps[+inp.dataset.m][+inp.dataset.c]=inp.value; mark(); }));
+  }
+  $("btnAddMap").addEventListener("click",()=>{ maps.push(["新ERP品规","行情品规"]); renderMaps(); mark(); showToast("已添加映射行","请填写 ERP 与行情平台品规名称","blue"); });
+
+  // ERP 字段映射（可编辑）
+  const fields = [
+    ["销售员 emp_id","sales_dtl.saler_code","string","按工号主数据匹配"],
+    ["回款账期 credit_term","sales_dtl.credit_days","int","天"],
+    ["挂牌价 list_price","price_pub.pub_price","decimal","元/吨"],
+    ["预收余额 advance","ar_prepay.pre_amt","decimal","每日快照"],
+  ];
+  function renderFields(){
+    $("fieldRows").innerHTML = fields.map((f,i)=>`<tr>
+      <td class="small b700">${f[0]}</td>
+      <td><input class="input" style="padding:5px 8px;font-size:12px" data-f="${i}" data-c="1" value="${f[1]}"></td>
+      <td><input class="input" style="padding:5px 8px;font-size:12px;width:90px" data-f="${i}" data-c="2" value="${f[2]}"></td>
+      <td><input class="input" style="padding:5px 8px;font-size:12px" data-f="${i}" data-c="3" value="${f[3]}"></td></tr>`).join("");
+    $("fieldRows").querySelectorAll("input").forEach(inp=>inp.addEventListener("input",()=>{ fields[+inp.dataset.f][+inp.dataset.c]=inp.value; mark(); }));
+  }
+
+  $("btnSync").addEventListener("click",()=>showToast("同步已触发 ✓","正在从 ERP / 行情 / 考勤 拉取增量数据…","green"));
+  $("btnAddSrc").addEventListener("click",()=>showToast("新增数据源","打开数据源接入向导（API / 数据库 / 文件）","blue"));
+  $("btnDslEdit").addEventListener("click",()=>showToast("进入取数逻辑编辑","可修改来源表 / 过滤 / 聚合方式","blue"));
+  $("btnDslPreview").addEventListener("click",()=>showToast("取数预览 ✓","日均库存样例：华东仓 1,240 吨（近30日均值）","green"));
+  $("btnDslDiff").addEventListener("click",()=>showToast("版本对比","当前取数规则与上一版本无字段差异","blue"));
+
+  renderMaps(); renderFields();
+})();
+</script>
 </body>
 </html>

@@ -22,6 +22,7 @@
       { id: "data", label: "数据集成中心", icon: "🔗", href: "data-integration.html" },
       { id: "market", label: "行情价与竞争力", icon: "💹", href: "market-price.html" },
       { id: "rule", label: "绩效规则配置", icon: "🧩", href: "rule-config.html" },
+      { id: "audit", label: "合规审计查询", icon: "🔎", href: "audit.html" },
     ]},
     { title: "员工端", items: [
       { id: "mobile", label: "移动端绩效", icon: "📱", href: "mobile.html" },
