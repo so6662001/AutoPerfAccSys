@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>采购政策沙盘对比 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .sk-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .sk-in { width:100%; padding:6px 9px; border:1px solid var(--c-border-strong); border-radius:7px; font-size:12.5px; font-family:inherit; }
+  .sk-in:focus{ outline:none; border-color:var(--c-accent); box-shadow:0 0 0 3px var(--c-accent-soft); }
+  .sk-row { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
+  .sk-row label{ font-size:12px; color:var(--c-text-2); flex:1; } .sk-row .sk-in{ width:96px; text-align:right; }
+  .brk { display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-bottom:1px dashed var(--c-border); }
+  .brk:last-child{ border-bottom:none; }
+  .facts-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px 18px; }
+  .scheme.base { border-color: var(--c-accent); box-shadow: 0 0 0 3px var(--c-accent-soft); }
+  @media(max-width:1000px){ .sk-grid{grid-template-columns:1fr} .facts-grid{grid-template-columns:repeat(2,1fr)} }
+</style>
+</head>
+<body data-page="sandbox-pur" data-crumb="绩效核算 / <b>政策沙盘 · 采购</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>采购政策沙盘对比 <span class="tag orange" style="vertical-align:middle">可交互</span></h1>
+        <p>固定同一采购业绩事实，并排试算多套采购激励政策（提成阶梯 / 分配系数 / 预付计息），评估激励与成本</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btnReset">↺ 重置</button>
+        <button class="btn accent" id="btnApply">采用胜出方案</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>共享业绩事实（同一采购员·同一月）</h3><span class="sub">来自 ERP / 成本重估，各方案共用</span></div>
+      <div class="card-b">
+        <div class="facts-grid">
+          <div><div class="muted small" style="margin-bottom:4px">能力性收益(元，重估后)</div><input class="sk-in" type="number" id="f_ability" value="600000"></div>
+          <div><div class="muted small" style="margin-bottom:4px">基础采购量完成率(%)</div><input class="sk-in" type="number" id="f_baseRate" value="85"></div>
+          <div><div class="muted small" style="margin-bottom:4px">绩效基数(元)</div><input class="sk-in" type="number" id="f_base" value="8000"></div>
+          <div><div class="muted small" style="margin-bottom:4px">基础绩效系数</div><input class="sk-in" type="number" step="0.1" id="f_coef" value="1"></div>
+          <div><div class="muted small" style="margin-bottom:4px">预付金额(元)</div><input class="sk-in" type="number" id="f_prepay" value="200000"></div>
+          <div><div class="muted small" style="margin-bottom:4px">预付占用天数</div><input class="sk-in" type="number" id="f_prepayDays" value="15"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout amber mt16"><span>ℹ</span><div>三套方案共用上方业绩事实，仅<b>激励政策不同</b>。修改任意参数即时重算，系统标出相对「方案A（现行）」的差异，并高亮采购员到手最高方案。（行政奖惩不参与政策对比）</div></div>
+
+    <div class="sk-grid mt16" id="schemes"></div>
+
+    <div class="card mt16">
+      <div class="card-h"><h3>对比结论</h3></div>
+      <div class="card-b" id="summary"></div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const fmt = n => "¥" + Math.round(n).toLocaleString("zh-CN");
+  const factDefs = ["f_ability","f_baseRate","f_base","f_coef","f_prepay","f_prepayDays"];
+  const factDefaults = {f_ability:600000,f_baseRate:85,f_base:8000,f_coef:1,f_prepay:200000,f_prepayDays:15};
+
+  const schemes = [
+    { key:"A", name:"方案A · 现行", tag:"base", desc:"当前生效政策", p:{ t1:5,t2:8,t3:12, alloc:0.8, bp:5 } },
+    { key:"B", name:"方案B · 强激励", tag:"", desc:"提高提成比例与分配系数", p:{ t1:6,t2:10,t3:15, alloc:0.9, bp:4 } },
+    { key:"C", name:"方案C · 控资金成本", tag:"", desc:"降低提成、加重预付计息", p:{ t1:4,t2:6,t3:9, alloc:0.7, bp:6 } },
+  ];
+  const pFields = [
+    ["t1","提成 ≤50万(%)",1],["t2","提成 50~100万(%)",1],["t3","提成 >100万(%)",1],
+    ["alloc","超额奖分配系数",0.05],["bp","预付日利率(万分)",1],
+  ];
+
+  function facts(){ const o={}; factDefs.forEach(k=>o[k]=parseFloat($(k).value)||0); return o; }
+  function tier(a,t1,t2,t3){ let b=Math.min(a,500000)*t1/100; if(a>500000)b+=(Math.min(a,1000000)-500000)*t2/100; if(a>1000000)b+=(a-1000000)*t3/100; return b; }
+  function cbCoef(r){ if(r<60)return 0; if(r<80)return .6; if(r<100)return .8; if(r<120)return 1; return 1.2; }
+  function calc(p,f){
+    const baseSalary=f.f_base*f.f_coef;
+    const commission=tier(f.f_ability,p.t1,p.t2,p.t3);
+    const bonus=commission*p.alloc;
+    const subtotal=baseSalary+bonus;
+    const cb=cbCoef(f.f_baseRate);
+    const afterCb=subtotal*cb;
+    const prepayInt=f.f_prepay*(p.bp/10000)*f.f_prepayDays;
+    return { baseSalary, bonus, afterCb, prepayInt, total: afterCb-prepayInt, cb };
+  }
+
+  function render(){
+    const f=facts();
+    const results=schemes.map(s=>({s, r:calc(s.p,f)}));
+    const baseTotal=results[0].r.total;
+    const maxTotal=Math.max(...results.map(x=>x.r.total));
+
+    $("schemes").innerHTML = results.map(({s,r})=>{
+      const isWin=r.total===maxTotal; const delta=r.total-baseTotal;
+      const dpill = s.key==="A" ? '<span class="delta-pill zero">基准</span>'
+        : `<span class="delta-pill ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ −'}${fmt(Math.abs(delta))}</span>`;
+      return `<div class="scheme ${s.tag} ${isWin?'win':''}">
+        <div class="sc-h"><div class="nm">${s.name} ${isWin?'<span class="tag green">采购员最优</span>':''}</div><div class="ds">${s.desc}</div></div>
+        <div class="sc-b">
+          ${pFields.map(pf=>`<div class="sk-row"><label>${pf[1]}</label><input class="sk-in" type="number" step="${pf[2]}" data-k="${s.key}" data-p="${pf[0]}" value="${s.p[pf[0]]}"></div>`).join("")}
+          <div class="divider"></div>
+          <div class="brk"><span>基础绩效</span><b>${fmt(r.baseSalary)}</b></div>
+          <div class="brk"><span>超额奖(分配后)</span><b>${fmt(r.bonus)}</b></div>
+          <div class="brk"><span>×综合系数 ${r.cb.toFixed(1)}</span><b>${fmt(r.afterCb)}</b></div>
+          <div class="brk"><span>预付计息</span><b class="neg">−${fmt(r.prepayInt)}</b></div>
+        </div>
+        <div class="sc-total">
+          <div class="flex between center"><span class="muted small">采购员应发</span>${dpill}</div>
+          <div class="b700" style="font-size:26px;color:${isWin?'var(--c-green)':'var(--c-accent)'}">${fmt(r.total)}</div>
+        </div>
+      </div>`;
+    }).join("");
+
+    $("schemes").querySelectorAll("input[data-k]").forEach(inp=>inp.addEventListener("input",()=>{
+      const s=schemes.find(x=>x.key===inp.dataset.k); s.p[inp.dataset.p]=parseFloat(inp.value)||0; render();
+    }));
+
+    const winner=results.find(x=>x.r.total===maxTotal).s;
+    const lowest=results.reduce((a,b)=>a.r.total<b.r.total?a:b);
+    $("summary").innerHTML = `
+      <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:14px">
+        <div class="callout green"><span>🏆</span><div><b>采购员到手最高：${winner.name}</b><br><span>${fmt(maxTotal)}，激励力度最强</span></div></div>
+        <div class="callout amber"><span>💰</span><div><b>公司成本最低：${lowest.s.name}</b><br><span>${fmt(lowest.r.total)}，控本更优</span></div></div>
+        <div class="callout blue"><span>⚖</span><div><b>方案B vs 现行 差额</b><br><span>${fmt(results[1].r.total-baseTotal)} / 人·月</span></div></div>
+      </div>`;
+  }
+
+  factDefs.forEach(k=>$(k).addEventListener("input",render));
+  $("btnReset").addEventListener("click",()=>{
+    factDefs.forEach(k=>$(k).value=factDefaults[k]);
+    schemes[0].p={t1:5,t2:8,t3:12,alloc:0.8,bp:5};
+    schemes[1].p={t1:6,t2:10,t3:15,alloc:0.9,bp:4};
+    schemes[2].p={t1:4,t2:6,t3:9,alloc:0.7,bp:6};
+    render(); showToast("已重置","恢复默认业绩事实与三套采购方案","blue");
+  });
+  $("btnApply").addEventListener("click",()=>{
+    const f=facts(); const results=schemes.map(s=>({s,r:calc(s.p,f)}));
+    const max=Math.max(...results.map(x=>x.r.total)); const w=results.find(x=>x.r.total===max).s;
+    const draft={ source:"政策沙盘", plan:"采购绩效方案", scheme:w.name, time:new Date().toLocaleString("zh-CN"),
+      apply:[
+        {id:"rc_pur_t1", label:"采购提成 ≤50万(%)", value:w.p.t1},
+        {id:"rc_pur_t2", label:"采购提成 50~100万(%)", value:w.p.t2},
+        {id:"rc_pur_t3", label:"采购提成 >100万(%)", value:w.p.t3},
+        {id:"rc_int_prepay_bp", label:"预付账款日利率(万分)", value:w.p.bp},
+      ],
+      info:[{label:"超额奖分配系数", value:w.p.alloc}]
+    };
+    localStorage.setItem("steel_rule_draft", JSON.stringify(draft));
+    showToast("已采用 "+w.name+" ✓","已生成草稿，正在跳转规则配置中心…","green");
+    setTimeout(()=>location.href="rule-config.html?draft=1", 950);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -155,7 +155,22 @@
     const f=facts(); const results=schemes.map(s=>({s,r:calc(s.p,f)}));
     const max=Math.max(...results.map(x=>x.r.total));
     const w=results.find(x=>x.r.total===max).s;
-    showToast("已采用 "+w.name,"该方案参数将提交至规则中心生成新版本（草稿）","green");
+    const draft = {
+      source:"政策沙盘", plan:"销售现货方案", scheme:w.name, time:new Date().toLocaleString("zh-CN"),
+      apply:[
+        {id:"rc_cash_rate", label:"账期分档·现款吨位单价", value:w.p.cashRate},
+        {id:"rc_term30_rate", label:"账期分档·≤30天吨位单价", value:w.p.termRate},
+        {id:"rc_int_advance_bp", label:"预收账款日利率(万分)", value:w.p.bp},
+      ],
+      info:[
+        {label:"挂价分配系数", value:w.p.alloc},
+        {label:"应收逾期扣款(%)", value:w.p.arPct},
+        {label:"基础绩效系数", value:w.p.coef},
+      ]
+    };
+    localStorage.setItem("steel_rule_draft", JSON.stringify(draft));
+    showToast("已采用 "+w.name+" ✓","已生成草稿，正在跳转规则配置中心…","green");
+    setTimeout(()=>location.href="rule-config.html?draft=1", 950);
   });
   render();
 })();

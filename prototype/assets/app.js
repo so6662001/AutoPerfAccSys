@@ -9,8 +9,10 @@
       { id: "payslip", label: "个人绩效单", icon: "🧾", href: "payslip.html" },
       { id: "approval", label: "审批流", icon: "✅", href: "approval.html" },
       { id: "appeal", label: "申诉复核", icon: "⚖", href: "appeal.html" },
-      { id: "simulator", label: "绩效试算器", icon: "🧮", href: "simulator.html" },
-      { id: "sandbox", label: "政策沙盘对比", icon: "⚖", href: "sandbox.html" },
+      { id: "simulator", label: "试算器 · 销售", icon: "🧮", href: "simulator.html" },
+      { id: "simulator-pur", label: "试算器 · 采购", icon: "🧮", href: "simulator-purchase.html" },
+      { id: "sandbox", label: "政策沙盘 · 销售", icon: "⚖", href: "sandbox.html" },
+      { id: "sandbox-pur", label: "政策沙盘 · 采购", icon: "⚖", href: "sandbox-purchase.html" },
     ]},
     { title: "绩效看板", items: [
       { id: "purchase", label: "采购绩效看板", icon: "🛒", href: "purchase-board.html" },

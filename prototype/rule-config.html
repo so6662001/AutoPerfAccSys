@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>绩效规则配置中心 · 钢绩云</title>
 <link rel="stylesheet" href="assets/style.css">
+<style>
+  .cell-in { width:90px; padding:5px 8px; border:1px solid var(--c-border-strong); border-radius:6px; font-size:13px; text-align:right; font-family:inherit; font-variant-numeric:tabular-nums; }
+  .cell-in:focus{ outline:none; border-color:var(--c-primary); box-shadow:0 0 0 3px var(--c-primary-soft); }
+  .cell-in.dirty{ border-color:var(--c-amber); background:var(--c-amber-soft); }
+  .draft-banner{ display:none; }
+</style>
 </head>
 <body data-page="rule" data-crumb="数据与规则 / <b>绩效规则配置中心</b>">
 <div class="main">
@@ -12,11 +18,29 @@
     <div class="page-head">
       <div>
         <h1>绩效规则配置中心</h1>
-        <p>取数逻辑与核算规则全部可视化配置、版本化管理，政策调整无需研发介入</p>
+        <p>取数逻辑与核算规则全部可视化配置、版本化管理，政策调整无需研发介入（本页可交互）</p>
       </div>
       <div class="actions">
+        <span class="tag amber" id="dirtyTag" style="display:none">● 有未保存更改</span>
         <button class="btn">🕘 版本历史</button>
-        <button class="btn primary">💾 保存并发布 v4</button>
+        <button class="btn primary" id="btnPublish">💾 保存并发布 <span id="nextVer">v4</span></button>
+      </div>
+    </div>
+
+    <!-- 沙盘草稿 banner -->
+    <div class="card draft-banner" id="draftBanner" style="border-color:var(--c-primary);box-shadow:0 0 0 3px var(--c-primary-soft);margin-bottom:16px">
+      <div class="card-b flex between center wrap gap12">
+        <div class="flex center gap12">
+          <div class="icn bg-blue" style="position:static;width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-size:20px">⚖</div>
+          <div>
+            <div class="b700">检测到来自政策沙盘的草稿方案 · <span id="dbScheme">—</span></div>
+            <div class="muted small" id="dbInfo">应用后将写入对应核算项参数，可另存为草稿版本再发布。</div>
+          </div>
+        </div>
+        <div class="flex gap8">
+          <button class="btn primary" id="btnApplyDraft">✓ 应用参数</button>
+          <button class="btn ghost" id="btnIgnoreDraft">忽略</button>
+        </div>
       </div>
     </div>
 
@@ -37,12 +61,11 @@
         <div class="card">
           <div class="card-h"><h3>绩效方案</h3><button class="btn sm">+ 新建</button></div>
           <div class="card-b" style="padding:0">
-            <div class="drill" style="border:none">
+            <div class="drill" style="border:none" id="planList">
               <div class="row open" style="cursor:default"><div style="flex:1"><b>销售现货方案</b><br><span class="muted small">v3 · 生效中</span></div><span class="tag green">启用</span></div>
               <div class="row" style="cursor:default"><div style="flex:1">销售零调方案 <br><span class="muted small">v3 · 生效中</span></div><span class="tag green">启用</span></div>
               <div class="row" style="cursor:default"><div style="flex:1">销售直发/民调方案<br><span class="muted small">v2 · 生效中</span></div><span class="tag green">启用</span></div>
               <div class="row" style="cursor:default"><div style="flex:1">采购绩效方案<br><span class="muted small">v2 · 生效中</span></div><span class="tag green">启用</span></div>
-              <div class="row" style="cursor:default"><div style="flex:1">采购绩效方案<br><span class="muted small">v4 · 草稿</span></div><span class="tag amber">草稿</span></div>
             </div>
           </div>
         </div>
@@ -51,39 +74,39 @@
           <div class="card-b" style="padding:0">
             <table class="table">
               <thead><tr><th>核算项</th><th>类型</th><th>依赖指标 / 参数</th><th>公式摘要</th><th>启用</th></tr></thead>
-              <tbody>
-                <tr><td>基础绩效工资</td><td><span class="tag gray">系数</span></td><td>绩效基数 · 评分卡</td><td class="small">基数 × 基础绩效系数</td><td><span class="sw on"></span></td></tr>
-                <tr><td>吨位提成</td><td><span class="tag blue">阶梯×账期</span></td><td>销量 · 账期分档表</td><td class="small">Σ(吨位×账期档单价)</td><td><span class="sw on"></span></td></tr>
-                <tr><td>挂价利润分配</td><td><span class="tag gray">公式</span></td><td>挂价利润 · 分配系数</td><td class="small">(成交−挂牌)×吨位×系数</td><td><span class="sw on"></span></td></tr>
-                <tr><td>预收账款计息</td><td><span class="tag green">计息</span></td><td>预收快照 · 日利率</td><td class="small">Σ(日余额×日利率)×系数</td><td><span class="sw on"></span></td></tr>
-                <tr><td>应收账款考核</td><td><span class="tag amber">扣减</span></td><td>回款天数 · 扣款表</td><td class="small">提成×扣款比例(天数)</td><td><span class="sw on"></span></td></tr>
-                <tr><td>行政奖惩</td><td><span class="tag gray">加减</span></td><td>考勤 · 奖惩录入</td><td class="small">迟到扣款 + 纪律罚款</td><td><span class="sw on"></span></td></tr>
+              <tbody id="compRows">
+                <tr><td>基础绩效工资</td><td><span class="tag gray">系数</span></td><td>绩效基数 · 评分卡</td><td class="small">基数 × 基础绩效系数</td><td><span class="sw on" data-comp="基础绩效工资"></span></td></tr>
+                <tr><td>吨位提成</td><td><span class="tag blue">阶梯×账期</span></td><td>销量 · 账期分档表</td><td class="small">Σ(吨位×账期档单价)</td><td><span class="sw on" data-comp="吨位提成"></span></td></tr>
+                <tr><td>挂价利润分配</td><td><span class="tag gray">公式</span></td><td>挂价利润 · 分配系数</td><td class="small">(成交−挂牌)×吨位×系数</td><td><span class="sw on" data-comp="挂价利润分配"></span></td></tr>
+                <tr><td>预收账款计息</td><td><span class="tag green">计息</span></td><td>预收快照 · 日利率</td><td class="small">Σ(日余额×日利率)×系数</td><td><span class="sw on" data-comp="预收账款计息"></span></td></tr>
+                <tr><td>应收账款考核</td><td><span class="tag amber">扣减</span></td><td>回款天数 · 扣款表</td><td class="small">提成×扣款比例(天数)</td><td><span class="sw on" data-comp="应收账款考核"></span></td></tr>
+                <tr><td>行政奖惩</td><td><span class="tag gray">加减</span></td><td>考勤 · 奖惩录入</td><td class="small">迟到扣款 + 纪律罚款</td><td><span class="sw on" data-comp="行政奖惩"></span></td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
-      <div class="callout blue mt16"><span>🧩</span><div>方案 = 适用范围 + 核算项组合 + 系数规则 + 生效期。每次发布生成新版本，历史绩效按<b>当时版本复算</b>，确保口径可追溯。</div></div>
+      <div class="callout blue mt16"><span>🧩</span><div>方案 = 适用范围 + 核算项组合 + 系数规则 + 生效期。每次发布生成新版本，历史绩效按<b>当时版本复算</b>，确保口径可追溯。开关可点击启用/停用核算项。</div></div>
     </div>
 
     <!-- 账期分档表 -->
     <div data-tabgroup="rule" data-tab="term" class="tab-pane">
       <div class="card">
-        <div class="card-h"><h3>回款账期分档表 v1</h3><div class="flex gap8"><span class="tag gray">适用：销售现货 / 零调 / 直发</span><button class="btn sm">+ 增加档位</button></div></div>
+        <div class="card-h"><h3>回款账期分档表 v1</h3><div class="flex gap8"><span class="tag gray">适用：销售现货 / 零调 / 直发</span><button class="btn sm" id="btnAddTier">+ 增加档位</button></div></div>
         <div class="card-b" style="padding:0">
           <table class="table">
-            <thead><tr><th>账期档</th><th>现货·吨位单价(元/吨)</th><th>零调/直发·提成系数</th><th>说明</th><th></th></tr></thead>
+            <thead><tr><th>账期档</th><th>现货·吨位单价(元/吨)</th><th>零调/直发·提成系数</th><th>说明</th></tr></thead>
             <tbody>
-              <tr><td><span class="tag green">现款 / 预收</span></td><td class="num">8.0</td><td class="num">1.20</td><td class="muted small">资金零占用，最高激励</td><td><button class="btn sm ghost">编辑</button></td></tr>
-              <tr><td>≤ 30 天</td><td class="num">6.0</td><td class="num">1.00</td><td class="muted small">标准档</td><td><button class="btn sm ghost">编辑</button></td></tr>
-              <tr><td>31 ~ 60 天</td><td class="num">4.0</td><td class="num">0.70</td><td class="muted small">资金占用升高</td><td><button class="btn sm ghost">编辑</button></td></tr>
-              <tr><td>61 ~ 90 天</td><td class="num">2.0</td><td class="num">0.40</td><td class="muted small">高风险</td><td><button class="btn sm ghost">编辑</button></td></tr>
-              <tr><td><span class="tag red">&gt; 90 天</span></td><td class="num">0</td><td class="num">0</td><td class="muted small">不予计提</td><td><button class="btn sm ghost">编辑</button></td></tr>
+              <tr><td><span class="tag green">现款 / 预收</span></td><td><input class="cell-in" id="rc_cash_rate" type="number" value="8"></td><td><input class="cell-in" id="rc_cash_coef" type="number" step="0.1" value="1.2"></td><td class="muted small">资金零占用，最高激励</td></tr>
+              <tr><td>≤ 30 天</td><td><input class="cell-in" id="rc_term30_rate" type="number" value="6"></td><td><input class="cell-in" id="rc_term30_coef" type="number" step="0.1" value="1.0"></td><td class="muted small">标准档</td></tr>
+              <tr><td>31 ~ 60 天</td><td><input class="cell-in" id="rc_term60_rate" type="number" value="4"></td><td><input class="cell-in" type="number" step="0.1" value="0.7"></td><td class="muted small">资金占用升高</td></tr>
+              <tr><td>61 ~ 90 天</td><td><input class="cell-in" id="rc_term90_rate" type="number" value="2"></td><td><input class="cell-in" type="number" step="0.1" value="0.4"></td><td class="muted small">高风险</td></tr>
+              <tr><td><span class="tag red">&gt; 90 天</span></td><td><input class="cell-in" type="number" value="0"></td><td><input class="cell-in" type="number" step="0.1" value="0"></td><td class="muted small">不予计提</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-      <div class="callout amber mt16"><span>⚖</span><div><b>口径分工：</b>账期分档决定"计提多少"（单价/系数，按每笔约定账期）；实际逾期与否由"应收考核"决定"扣减多少"，两者不重复计。</div></div>
+      <div class="callout amber mt16"><span>⚖</span><div><b>口径分工：</b>账期分档决定"计提多少"（单价/系数，按每笔约定账期）；实际逾期与否由"应收考核"决定"扣减多少"，两者不重复计。修改单价即时进入"未保存"状态。</div></div>
     </div>
 
     <!-- 系数档表 -->
@@ -94,11 +117,11 @@
           <div class="card-b" style="padding:0"><table class="table">
             <thead><tr><th>区间</th><th>系数</th></tr></thead>
             <tbody>
-              <tr><td>&lt; 60% / 严重不达标</td><td><span class="tag red">0</span></td></tr>
-              <tr><td>60% ~ 80%</td><td><span class="tag amber">0.6</span></td></tr>
-              <tr><td>80% ~ 100%</td><td><span class="tag amber">0.8</span></td></tr>
-              <tr><td>100% ~ 120%</td><td><span class="tag green">1.0</span></td></tr>
-              <tr><td>≥ 120% / 超额</td><td><span class="tag green">1.2</span></td></tr>
+              <tr><td>&lt; 60% / 严重不达标</td><td><input class="cell-in" type="number" step="0.1" value="0"></td></tr>
+              <tr><td>60% ~ 80%</td><td><input class="cell-in" type="number" step="0.1" value="0.6"></td></tr>
+              <tr><td>80% ~ 100%</td><td><input class="cell-in" type="number" step="0.1" value="0.8"></td></tr>
+              <tr><td>100% ~ 120%</td><td><input class="cell-in" type="number" step="0.1" value="1.0"></td></tr>
+              <tr><td>≥ 120% / 超额</td><td><input class="cell-in" type="number" step="0.1" value="1.2"></td></tr>
             </tbody>
           </table></div>
         </div>
@@ -107,11 +130,11 @@
           <div class="card-b" style="padding:0"><table class="table">
             <thead><tr><th>基础量完成率</th><th>综合系数</th></tr></thead>
             <tbody>
-              <tr><td>&lt; 60%</td><td><span class="tag red">0（无奖金）</span></td></tr>
-              <tr><td>60% ~ 80%</td><td><span class="tag amber">0.6</span></td></tr>
-              <tr><td>80% ~ 100%</td><td><span class="tag amber">0.8</span></td></tr>
-              <tr><td>100% ~ 120%</td><td><span class="tag green">1.0</span></td></tr>
-              <tr><td>≥ 120%</td><td><span class="tag green">1.2</span></td></tr>
+              <tr><td>&lt; 60%</td><td><input class="cell-in" type="number" step="0.1" value="0"></td></tr>
+              <tr><td>60% ~ 80%</td><td><input class="cell-in" type="number" step="0.1" value="0.6"></td></tr>
+              <tr><td>80% ~ 100%</td><td><input class="cell-in" type="number" step="0.1" value="0.8"></td></tr>
+              <tr><td>100% ~ 120%</td><td><input class="cell-in" type="number" step="0.1" value="1.0"></td></tr>
+              <tr><td>≥ 120%</td><td><input class="cell-in" type="number" step="0.1" value="1.2"></td></tr>
             </tbody>
           </table></div>
         </div>
@@ -126,20 +149,20 @@
           <div class="card-b" style="padding:0"><table class="table">
             <thead><tr><th>累计销量(吨)</th><th>单价(元/吨)</th></tr></thead>
             <tbody>
-              <tr><td>0 ~ 500</td><td class="num">3</td></tr>
-              <tr><td>500 ~ 1000（超出部分）</td><td class="num">5</td></tr>
-              <tr><td>&gt; 1000（超出部分）</td><td class="num">8</td></tr>
+              <tr><td>0 ~ 500</td><td><input class="cell-in" type="number" value="3"></td></tr>
+              <tr><td>500 ~ 1000（超出部分）</td><td><input class="cell-in" type="number" value="5"></td></tr>
+              <tr><td>&gt; 1000（超出部分）</td><td><input class="cell-in" type="number" value="8"></td></tr>
             </tbody>
           </table></div>
         </div>
         <div class="card">
           <div class="card-h"><h3>采购超额奖提成阶梯</h3><span class="tag blue">累进</span></div>
           <div class="card-b" style="padding:0"><table class="table">
-            <thead><tr><th>能力性收益(万元)</th><th>提成比例</th></tr></thead>
+            <thead><tr><th>能力性收益(万元)</th><th>提成比例(%)</th></tr></thead>
             <tbody>
-              <tr><td>0 ~ 50</td><td class="num">5%</td></tr>
-              <tr><td>50 ~ 100（超出部分）</td><td class="num">8%</td></tr>
-              <tr><td>&gt; 100（超出部分）</td><td class="num">12%</td></tr>
+              <tr><td>0 ~ 50</td><td><input class="cell-in" id="rc_pur_t1" type="number" value="5"></td></tr>
+              <tr><td>50 ~ 100（超出部分）</td><td><input class="cell-in" id="rc_pur_t2" type="number" value="8"></td></tr>
+              <tr><td>&gt; 100（超出部分）</td><td><input class="cell-in" id="rc_pur_t3" type="number" value="12"></td></tr>
             </tbody>
           </table></div>
         </div>
@@ -152,12 +175,12 @@
         <div class="card-h"><h3>计息参数配置</h3><span class="sub">按"每日余额 × 日利率"逐日计息</span></div>
         <div class="card-b" style="padding:0">
           <table class="table">
-            <thead><tr><th>类型</th><th>方向</th><th>日利率</th><th>起算阈值</th><th>封顶</th><th>启用</th></tr></thead>
+            <thead><tr><th>类型</th><th>方向</th><th>日利率(万分之)</th><th>起算阈值</th><th>封顶</th><th>启用</th></tr></thead>
             <tbody>
-              <tr><td>预收账款（销售）</td><td><span class="tag green">正向 +</span></td><td class="num">万分之 5</td><td class="num">¥10万</td><td class="num">¥2万/人</td><td><span class="sw on"></span></td></tr>
-              <tr><td>应收逾期（销售）</td><td><span class="tag red">扣减 −</span></td><td class="num">万分之 5</td><td class="num">逾期即算</td><td class="num">不封顶</td><td><span class="sw on"></span></td></tr>
-              <tr><td>预付账款（采购）</td><td><span class="tag red">扣减 −</span></td><td class="num">万分之 4</td><td class="num">¥20万</td><td class="num">不封顶</td><td><span class="sw on"></span></td></tr>
-              <tr><td>应付账款（采购）</td><td><span class="tag green">正向 +</span></td><td class="num">万分之 4</td><td class="num">—</td><td class="num">—</td><td><span class="sw"></span></td></tr>
+              <tr><td>预收账款（销售）</td><td><span class="tag green">正向 +</span></td><td><input class="cell-in" id="rc_int_advance_bp" type="number" value="5"></td><td class="num">¥10万</td><td class="num">¥2万/人</td><td><span class="sw on" data-comp="预收计息"></span></td></tr>
+              <tr><td>应收逾期（销售）</td><td><span class="tag red">扣减 −</span></td><td><input class="cell-in" type="number" value="5"></td><td class="num">逾期即算</td><td class="num">不封顶</td><td><span class="sw on" data-comp="应收逾期计息"></span></td></tr>
+              <tr><td>预付账款（采购）</td><td><span class="tag red">扣减 −</span></td><td><input class="cell-in" id="rc_int_prepay_bp" type="number" value="4"></td><td class="num">¥20万</td><td class="num">不封顶</td><td><span class="sw on" data-comp="预付计息"></span></td></tr>
+              <tr><td>应付账款（采购）</td><td><span class="tag green">正向 +</span></td><td><input class="cell-in" type="number" value="4"></td><td class="num">—</td><td class="num">—</td><td><span class="sw" data-comp="应付计息"></span></td></tr>
             </tbody>
           </table>
         </div>
@@ -181,7 +204,7 @@
 )
             </div>
             <div class="mt16 flex gap8">
-              <button class="btn sm">插入变量</button><button class="btn sm">插入函数</button><button class="btn sm">🧪 试算校验</button>
+              <button class="btn sm">插入变量</button><button class="btn sm">插入函数</button><button class="btn sm" id="btnCheck">🧪 试算校验</button>
             </div>
           </div>
         </div>
@@ -202,5 +225,58 @@
   </div>
 </div>
 <script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  let dirty = false;
+  function markDirty(){ if(!dirty){ dirty=true; $("dirtyTag").style.display="inline-flex"; } }
+
+  // 输入框改动 → dirty
+  document.querySelectorAll(".cell-in").forEach(inp => inp.addEventListener("input", ()=>{ inp.classList.add("dirty"); markDirty(); }));
+
+  // 开关点击 → toast（app.js 已处理 toggle 视觉）
+  document.querySelectorAll(".sw[data-comp]").forEach(sw => sw.addEventListener("click", ()=>{
+    const on = sw.classList.contains("on");
+    showToast((on?"已启用":"已停用")+"核算项", sw.dataset.comp + (on?"：将计入本方案核算":"：本方案将不再计算该项"), on?"green":"amber");
+    markDirty();
+  }));
+
+  $("btnAddTier").addEventListener("click", ()=>showToast("新增账期档","已添加空白档位，请填写账期区间与单价","blue"));
+  $("btnCheck").addEventListener("click", ()=>showToast("语法校验通过 ✓","公式依赖：账期分档表.现货吨位单价","green"));
+
+  // 发布
+  let curVer = 3;
+  $("btnPublish").addEventListener("click", ()=>{
+    curVer++; $("nextVer").textContent = "v"+(curVer+1);
+    dirty=false; $("dirtyTag").style.display="none";
+    document.querySelectorAll(".cell-in.dirty").forEach(i=>i.classList.remove("dirty"));
+    showToast("已发布 v"+curVer+" ✓","新版本已生效，历史绩效仍按旧版本复算","green");
+  });
+
+  // ===== 沙盘草稿打通 =====
+  function loadDraft(){
+    const raw = localStorage.getItem("steel_rule_draft");
+    if(!raw) return;
+    let d; try{ d=JSON.parse(raw); }catch(e){ return; }
+    $("draftBanner").style.display="block";
+    $("dbScheme").textContent = d.scheme + "（→ " + d.plan + "）";
+    const infoTxt = (d.info||[]).map(i=>i.label+" "+i.value).join(" · ");
+    $("dbInfo").textContent = "来源：" + d.source + " · " + d.time + "　其余参数：" + infoTxt;
+    $("btnApplyDraft").addEventListener("click", ()=>{
+      let applied=0;
+      (d.apply||[]).forEach(a=>{ const el=$(a.id); if(el){ el.value=a.value; el.classList.add("dirty"); applied++; } });
+      markDirty();
+      $("draftBanner").style.display="none";
+      localStorage.removeItem("steel_rule_draft");
+      showToast("已应用沙盘草稿 ✓","写入 "+applied+" 项参数（"+d.scheme+"），确认后可发布新版本","green");
+    });
+    $("btnIgnoreDraft").addEventListener("click", ()=>{
+      $("draftBanner").style.display="none"; localStorage.removeItem("steel_rule_draft");
+      showToast("已忽略草稿","未改动现有规则","blue");
+    });
+  }
+  loadDraft();
+})();
+</script>
 </body>
 </html>
