@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>审批流 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="approval" data-crumb="绩效核算 / <b>审批流</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>绩效审批流</h1>
+        <p>核算跑批 → 主管审核 → 员工确认 → 核定归档 → 发放对接，全流程留痕</p>
+      </div>
+      <div class="actions">
+        <button class="btn">批量通过</button>
+        <button class="btn primary">✓ 一键提交核定</button>
+      </div>
+    </div>
+
+    <!-- Flow -->
+    <div class="card">
+      <div class="card-b">
+        <div class="steps">
+          <div class="st done"><div class="n">✓</div><div class="lb">核算跑批</div></div>
+          <div class="line done"></div>
+          <div class="st active"><div class="n">2</div><div class="lb">主管审核</div></div>
+          <div class="line"></div>
+          <div class="st"><div class="n">3</div><div class="lb">员工确认</div></div>
+          <div class="line"></div>
+          <div class="st"><div class="n">4</div><div class="lb">核定归档</div></div>
+          <div class="line"></div>
+          <div class="st"><div class="n">5</div><div class="lb">发放对接</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid mt16" style="grid-template-columns: repeat(4,1fr);">
+      <div class="card"><div class="card-b"><div class="muted small">待我审核</div><div class="b700" style="font-size:24px;color:var(--c-primary)">11</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">已通过</div><div class="b700" style="font-size:24px;color:var(--c-green)">18</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">已退回</div><div class="b700" style="font-size:24px;color:var(--c-red)">2</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">待员工确认</div><div class="b700" style="font-size:24px;color:var(--c-amber)">4</div></div></div>
+    </div>
+
+    <div class="grid mt16" style="grid-template-columns: 340px 1fr;">
+      <!-- pending list -->
+      <div class="card">
+        <div class="card-h"><h3>待审核绩效单</h3><span class="tag blue">11</span></div>
+        <div class="lst">
+          <div class="li sel"><span class="mini-av">王</span><div style="flex:1"><div class="nm">王海涛</div><div class="meta">销售·现货 · 2026-06</div></div><div class="right"><b>¥20,835</b><div class="meta">待审核</div></div></div>
+          <div class="li"><span class="mini-av">张</span><div style="flex:1"><div class="nm">张伟</div><div class="meta">采购 · 2026-06</div></div><div class="right"><b>¥25,820</b><div class="meta">待审核</div></div></div>
+          <div class="li"><span class="mini-av">孙</span><div style="flex:1"><div class="nm">孙磊</div><div class="meta">销售·现货 · 2026-06</div></div><div class="right"><b>¥15,950</b><div class="meta">待审核</div></div></div>
+          <div class="li"><span class="mini-av">赵</span><div style="flex:1"><div class="nm">赵倩 <span class="tag amber" style="margin-left:4px">异常</span></div><div class="meta">采购 · 超额奖负值</div></div><div class="right"><b>¥19,600</b><div class="meta">待审核</div></div></div>
+          <div class="li"><span class="mini-av">周</span><div style="flex:1"><div class="nm">周强</div><div class="meta">采购 · 2026-06</div></div><div class="right"><b>¥12,900</b><div class="meta">待审核</div></div></div>
+        </div>
+      </div>
+
+      <!-- detail -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-h"><h3>王海涛 · 销售现货绩效单</h3><span class="tag blue">待主管审核</span></div>
+          <div class="card-b">
+            <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:12px">
+              <div><div class="muted small">应发合计</div><div class="b700" style="font-size:20px;color:var(--c-primary)">¥20,835</div></div>
+              <div><div class="muted small">系统建议</div><div class="b700" style="font-size:15px;color:var(--c-green)">✓ 校验通过</div></div>
+              <div><div class="muted small">环比上月</div><div class="b700" style="font-size:15px;color:var(--c-green)">▲ 12.4%</div></div>
+            </div>
+            <div class="divider"></div>
+            <table class="table">
+              <tbody>
+                <tr><td>基础绩效工资</td><td class="right money">¥6,000</td></tr>
+                <tr><td>吨位提成（阶梯×账期）</td><td class="right money">¥5,400</td></tr>
+                <tr><td>挂价利润分配</td><td class="right money">¥5,600</td></tr>
+                <tr><td>预收账款计息</td><td class="right money pos">+¥4,375</td></tr>
+                <tr><td>应收逾期扣减</td><td class="right money neg">−¥540</td></tr>
+              </tbody>
+            </table>
+            <a href="payslip.html" class="btn sm mt12">🔍 查看逐笔下钻明细</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h3>审核操作</h3></div>
+          <div class="card-b">
+            <div class="field"><label>审核意见</label><textarea class="input" rows="2" placeholder="填写审核意见（退回时必填）">销量与挂价溢价属实，预收计息核对无误，同意。</textarea></div>
+            <div class="flex gap8">
+              <button class="btn primary">✓ 审核通过</button>
+              <button class="btn" style="border-color:var(--c-red);color:var(--c-red)">✕ 退回修正</button>
+              <button class="btn ghost">转交他人</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h3>流转记录</h3></div>
+          <div class="card-b">
+            <div class="timeline">
+              <div class="tl-item done"><div class="node"></div><div class="tl-t">核算跑批生成 <span class="tag gray">系统</span></div><div class="tl-time">07-01 09:03</div><div class="tl-body">按「销售现货方案 v3」自动核算，附数据快照与规则版本。</div></div>
+              <div class="tl-item done"><div class="node"></div><div class="tl-t">数据校验通过 <span class="tag green">系统</span></div><div class="tl-time">07-01 09:03</div><div class="tl-body">无缺数、无负值、未超阈值。</div></div>
+              <div class="tl-item active"><div class="node"></div><div class="tl-t">主管审核中 <span class="tag blue">陈组长</span></div><div class="tl-time">进行中</div><div class="tl-body">等待现货组主管审核。</div></div>
+              <div class="tl-item"><div class="node"></div><div class="tl-t">员工确认</div><div class="tl-time">待开始</div></div>
+              <div class="tl-item"><div class="node"></div><div class="tl-t">核定归档 → 发放</div><div class="tl-time">待开始</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

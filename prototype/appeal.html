@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>申诉复核 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="appeal" data-crumb="绩效核算 / <b>申诉复核</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>绩效申诉与复核</h1>
+        <p>员工对绩效结果有异议可发起申诉，复核人基于下钻数据裁定「维持 / 调整」，全程留痕可追溯</p>
+      </div>
+      <div class="actions">
+        <select class="select" style="width:auto"><option>全部状态</option><option>待复核</option><option>已处理</option></select>
+      </div>
+    </div>
+
+    <div class="grid mt16" style="grid-template-columns: repeat(4,1fr);">
+      <div class="card"><div class="card-b"><div class="muted small">本期申诉</div><div class="b700" style="font-size:24px">6</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">待复核</div><div class="b700" style="font-size:24px;color:var(--c-amber)">2</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">已调整</div><div class="b700" style="font-size:24px;color:var(--c-primary)">3</div></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">申诉率 / 解决率</div><div class="b700" style="font-size:20px">1.7% / 100%</div></div></div>
+    </div>
+
+    <div class="grid mt16" style="grid-template-columns: 340px 1fr;">
+      <!-- appeal list -->
+      <div class="card">
+        <div class="card-h"><h3>申诉工单</h3><span class="tag amber">2 待复核</span></div>
+        <div class="lst">
+          <div class="li sel"><span class="mini-av">孙</span><div style="flex:1"><div class="nm">孙磊 <span class="tag amber" style="margin-left:4px">待复核</span></div><div class="meta">AP-2606-03 · 挂价利润争议</div></div></div>
+          <div class="li"><span class="mini-av">周</span><div style="flex:1"><div class="nm">周强 <span class="tag amber" style="margin-left:4px">待复核</span></div><div class="meta">AP-2606-05 · 成本重估异议</div></div></div>
+          <div class="li"><span class="mini-av">刘</span><div style="flex:1"><div class="nm">刘敏 <span class="tag green" style="margin-left:4px">已调整</span></div><div class="meta">AP-2606-02 · 账期档位</div></div></div>
+          <div class="li"><span class="mini-av">赵</span><div style="flex:1"><div class="nm">赵倩 <span class="tag gray" style="margin-left:4px">已维持</span></div><div class="meta">AP-2606-01 · 应收扣减</div></div></div>
+        </div>
+      </div>
+
+      <!-- detail -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-h"><h3>AP-2606-03 · 孙磊 挂价利润争议</h3><span class="tag amber">待复核</span></div>
+          <div class="card-b">
+            <div class="callout amber"><span>🗣</span><div><b>员工申诉理由：</b>本人 6 月现货成交价高于挂牌价的溢价部分，系统只计了 6,140 元，但我实际谈下的溢价应更高，疑似有 2 张销售单（SO-2606-118 / 121）成交价取数偏低。</div></div>
+            <div class="divider"></div>
+            <div class="flex between wrap gap12">
+              <div><div class="muted small">争议项</div><div class="b700">挂价利润分配</div></div>
+              <div><div class="muted small">原核算金额</div><div class="b700">¥6,140</div></div>
+              <div><div class="muted small">申诉期望</div><div class="b700">复核成交价取数</div></div>
+              <div><div class="muted small">影响绩效</div><div class="b700">¥15,950 起</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h3>复核核查 · 下钻比对</h3><span class="sub">ERP 原始单据 vs 系统取数</span></div>
+          <div class="card-b" style="padding:0">
+            <table class="table">
+              <thead><tr><th>销售单</th><th>挂牌价</th><th>ERP成交价</th><th>系统取数</th><th>核查</th></tr></thead>
+              <tbody>
+                <tr><td class="muted small">SO-2606-118</td><td class="num">4,150</td><td class="num">4,210</td><td class="num neg">4,150</td><td><span class="tag red">取数偏低</span></td></tr>
+                <tr><td class="muted small">SO-2606-121</td><td class="num">3,980</td><td class="num">4,020</td><td class="num neg">3,980</td><td><span class="tag red">取数偏低</span></td></tr>
+                <tr><td class="muted small">SO-2606-130</td><td class="num">4,050</td><td class="num">4,090</td><td class="num pos">4,090</td><td><span class="tag green">一致</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-b">
+            <div class="callout blue"><span>🔎</span><div>核查发现 2 张单据的成交价字段被 ERP 折扣行覆盖，取数口径需修正。修正后挂价利润 <b>¥6,140 → ¥8,020</b>，个人所得 +¥1,316。</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h3>复核裁定</h3></div>
+          <div class="card-b">
+            <div class="flex gap8 wrap" style="margin-bottom:14px">
+              <label class="btn" style="border-color:var(--c-primary);color:var(--c-primary)"><input type="radio" name="v" checked style="margin-right:6px">调整重算</label>
+              <label class="btn"><input type="radio" name="v" style="margin-right:6px">维持原判</label>
+              <label class="btn"><input type="radio" name="v" style="margin-right:6px">升级上级复核</label>
+            </div>
+            <div class="field"><label>裁定说明</label><textarea class="input" rows="2">确认取数口径缺陷，修正成交价取数并触发单人重算；同步反馈数据集成团队修复折扣行映射规则。</textarea></div>
+            <div class="flex gap8">
+              <button class="btn primary">✓ 提交裁定并重算</button>
+              <button class="btn ghost">保存草稿</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h3>申诉流转记录</h3></div>
+          <div class="card-b">
+            <div class="timeline">
+              <div class="tl-item done"><div class="node"></div><div class="tl-t">员工发起申诉 <span class="tag gray">孙磊</span></div><div class="tl-time">07-02 10:12</div><div class="tl-body">对挂价利润取数提出异议。</div></div>
+              <div class="tl-item done"><div class="node"></div><div class="tl-t">受理并分派复核 <span class="tag gray">系统</span></div><div class="tl-time">07-02 10:12</div><div class="tl-body">分派至绩效专员 李静。</div></div>
+              <div class="tl-item active"><div class="node"></div><div class="tl-t">复核核查中 <span class="tag blue">李静</span></div><div class="tl-time">进行中</div><div class="tl-body">已下钻比对 ERP 原始单据，发现取数偏差。</div></div>
+              <div class="tl-item"><div class="node"></div><div class="tl-t">裁定 → 重算 → 反馈员工</div><div class="tl-time">待处理</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

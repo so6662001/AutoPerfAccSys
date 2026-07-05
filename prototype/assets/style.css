@@ -218,6 +218,27 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .callout.amber { background: var(--c-amber-soft); color: #96690b; }
 .callout.green { background: var(--c-green-soft); color: #14724d; }
 
+/* timeline */
+.timeline { position: relative; padding-left: 26px; }
+.timeline::before { content: ""; position: absolute; left: 8px; top: 4px; bottom: 4px; width: 2px; background: var(--c-border); }
+.tl-item { position: relative; padding-bottom: 20px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item .node { position: absolute; left: -26px; top: 1px; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid var(--c-border-strong); }
+.tl-item.done .node { border-color: var(--c-green); background: var(--c-green); }
+.tl-item.active .node { border-color: var(--c-primary); background: var(--c-primary); box-shadow: 0 0 0 4px var(--c-primary-soft); }
+.tl-item.reject .node { border-color: var(--c-red); background: var(--c-red); }
+.tl-item .tl-t { font-weight: 700; font-size: 13.5px; }
+.tl-item .tl-time { color: var(--c-text-3); font-size: 11.5px; }
+.tl-item .tl-body { color: var(--c-text-2); font-size: 12.5px; margin-top: 4px; }
+
+/* list select rows */
+.lst .li { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--c-border); cursor: pointer; }
+.lst .li:last-child { border-bottom: none; }
+.lst .li:hover { background: var(--c-surface-2); }
+.lst .li.sel { background: var(--c-primary-soft); box-shadow: inset 3px 0 0 var(--c-primary); }
+.lst .li .nm { font-weight: 600; font-size: 13.5px; }
+.lst .li .meta { color: var(--c-text-3); font-size: 11.5px; }
+
 .formula { font-family: "SF Mono","Consolas",monospace; background: #0f1b30; color: #d6e0f5; padding: 12px 15px; border-radius: 9px; font-size: 12.5px; line-height: 1.7; overflow-x: auto; }
 .formula .op { color: #f5a623; } .formula .var { color: #6fd3ff; } .formula .cm { color: #6c7793; }
 

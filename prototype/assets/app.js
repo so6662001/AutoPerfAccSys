@@ -7,6 +7,9 @@
     { title: "绩效核算", items: [
       { id: "calc", label: "核算工作台", icon: "⚙", href: "calc-workbench.html" },
       { id: "payslip", label: "个人绩效单", icon: "🧾", href: "payslip.html" },
+      { id: "approval", label: "审批流", icon: "✅", href: "approval.html" },
+      { id: "appeal", label: "申诉复核", icon: "⚖", href: "appeal.html" },
+      { id: "simulator", label: "绩效试算器", icon: "🧮", href: "simulator.html" },
     ]},
     { title: "绩效看板", items: [
       { id: "purchase", label: "采购绩效看板", icon: "🛒", href: "purchase-board.html" },
