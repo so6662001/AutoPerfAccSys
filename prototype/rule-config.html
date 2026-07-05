@@ -194,7 +194,11 @@
       <div class="card" style="margin-top:16px">
         <div class="card-h">
           <h3>系数分布模拟 · 权重方案回溯对比 <span class="tag green">实时</span></h3>
-          <span class="sub" id="distSub">样本：上期（2026-05）实际核算数据</span>
+          <div class="flex gap8 center">
+            <span class="sub">样本：上期(2026-05)实际核算</span>
+            <button class="btn sm" id="btnExport">⬇ 导出报告</button>
+            <button class="btn sm primary" id="btnAdoptB">✓ 采用方案B</button>
+          </div>
         </div>
         <div class="card-b">
           <div class="callout blue" style="margin-bottom:14px"><span>🕰</span><div><b>政策回溯测试：</b>用上期真实核算的员工达成率作样本，对比<b>方案A（现行权重）</b>与<b>方案B（候选权重）</b>下的系数分布差异，评估"若改权重，全员系数与绩效工资总额会怎么变"。定性折算表与一票否决规则两方案共用。</div></div>
@@ -562,8 +566,49 @@
         <td class="right"><span class="tag ${d.cB===0?'red':d.cB>=1?'green':'amber'}">${d.cB.toFixed(1)}</span></td>
         <td class="right">${arrow}</td></tr>`;
     }).join("");
+
+    lastAB = { key, wA, wB, A, B, up, down, same, rows };
   }
   function renderDistribution(){ renderComparison(); }
+
+  // 记录最近一次对比结果，供采用/导出使用
+  let lastAB = null;
+
+  // 采用方案B：写回评分卡权重 → 触发校验流程
+  $("btnAdoptB").addEventListener("click", ()=>{
+    const key = $("scCard").value;
+    cards[key].forEach((r,i)=>{ r.weight = candidateW[key][i]; });
+    renderScorecard(); renderComparison();
+    markDirty();
+    const sum = cards[key].reduce((s,r)=>s+(parseFloat(r.weight)||0),0);
+    if(sum===100) showToast("已采用方案B权重 ✓","已写入"+(key==="sales"?"销售":"采购")+"评分卡，点击右上『保存并发布』即可生效","green");
+    else showToast("已采用方案B权重 ⚠","权重合计 "+sum+"%，发布将被拦截，请调整至 100%","amber");
+  });
+
+  // 导出对比决策报告（Markdown 下载）
+  $("btnExport").addEventListener("click", ()=>{
+    if(!lastAB){ showToast("暂无数据","请先查看对比","amber"); return; }
+    const d = lastAB; const label = d.key==="sales"?"销售":"采购";
+    const bandCount = c => BANDS.map(b=>`系数${b}: ${c[String(b)]}人`).join(" / ");
+    let md = `# 绩效系数权重方案回溯对比报告\n\n`;
+    md += `- 岗位评分卡：${label}·基础绩效\n- 样本：上期(2026-05)实际核算 ${d.rows.length} 人\n- 生成时间：${new Date().toLocaleString("zh-CN")}\n\n`;
+    md += `## 权重对比\n\n| 维度 | 方案A(现行) | 方案B(候选) |\n| --- | --- | --- |\n`;
+    cards[d.key].forEach((r,i)=>{ md += `| ${r.dim} | ${d.wA[i]}% | ${d.wB[i]}% |\n`; });
+    md += `\n## 分布与总额\n\n| 指标 | 方案A | 方案B |\n| --- | --- | --- |\n`;
+    md += `| 系数分布 | ${bandCount(d.A.counts)} | ${bandCount(d.B.counts)} |\n`;
+    md += `| 平均系数 | ${d.A.avg.toFixed(2)} | ${d.B.avg.toFixed(2)} |\n`;
+    md += `| 否决人数 | ${d.A.veto} | ${d.B.veto} |\n`;
+    md += `| 绩效工资总额 | ¥${Math.round(d.A.wage).toLocaleString("zh-CN")} | ¥${Math.round(d.B.wage).toLocaleString("zh-CN")} |\n`;
+    md += `\n## 变动分析\n\n- 系数上升：${d.up} 人；下降：${d.down} 人；持平：${d.same} 人\n`;
+    const wd = d.B.wage-d.A.wage; md += `- 绩效工资总额变动：${wd>=0?"+":"−"}¥${Math.abs(Math.round(wd)).toLocaleString("zh-CN")}（${(d.A.wage?wd/d.A.wage*100:0).toFixed(1)}%）\n\n`;
+    md += `## 逐人明细\n\n| 员工 | 达成率A→B | 系数A | 系数B | 变化 |\n| --- | --- | --- | --- | --- |\n`;
+    d.rows.forEach(r=>{ md += `| ${r.n} | ${r.rateA.toFixed(0)}→${r.rateB.toFixed(0)}% | ${r.cA.toFixed(1)} | ${r.cB.toFixed(1)} | ${r.cB>r.cA?"▲升":r.cB<r.cA?"▼降":"＝"} |\n`; });
+    const blob = new Blob([md], {type:"text/markdown;charset=utf-8"});
+    const url = URL.createObjectURL(blob); const a = document.createElement("a");
+    a.href = url; a.download = `权重方案回溯对比_${label}_${new Date().toISOString().slice(0,10)}.md`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    showToast("报告已导出 ✓","已下载 Markdown 决策报告","green");
+  });
 
   $("scCard").addEventListener("change", ()=>{ renderVeto(); renderScorecard(); renderComparison(); });
   ["grade_A","grade_B","grade_C","grade_D"].forEach(id=>$(id).addEventListener("input", ()=>{ renderScorecard(); renderComparison(); }));
