@@ -2,6 +2,8 @@
 
 面向钢铁贸易 / 加工 / 生产制造企业的自动化绩效核算平台产品设计方案。
 
+> **开始开发**：将 [`CURSOR开发提示词.md`](./CURSOR开发提示词.md) 作为 Cursor 首条上下文（连同 `docs/` 与 `prototype/`），然后说「请开始编码」即可按规划实现（多租户 · Java + Vue3 · SQL Server 2008+ ERP 只读）。
+
 完整设计文档见 [`docs/`](./docs/README.md)：
 
 - 需求分析与梳理
