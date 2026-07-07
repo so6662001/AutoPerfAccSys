@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>成本口径 · 封顶 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="cap-cost" data-crumb="平台基础能力 / <b>成本口径·封顶</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>成本口径引擎 · 单位封顶 <span class="tag red" style="vertical-align:middle">P0</span></h1>
+        <p>名亿：成本随结算方式变化（现款/欠款/垫资）；信桥：吨利润封顶 50 元 + 一票制成本 + 账期系数</p>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+      <!-- 结算方式驱动成本 -->
+      <div class="card">
+        <div class="card-h"><h3>结算方式驱动成本（名亿）</h3><span class="tag green">实时</span></div>
+        <div class="card-b">
+          <table class="table"><thead><tr><th>结算方式</th><th>成本公式</th></tr></thead><tbody>
+            <tr><td>现款</td><td>销量 × <input class="input" id="cCash" type="number" value="50" style="width:70px;padding:4px 8px"> 元</td></tr>
+            <tr><td>欠款</td><td>0</td></tr>
+            <tr><td>垫资</td><td><input class="input" id="cAdv" type="number" value="-200" style="width:80px;padding:4px 8px"> 元（固定）</td></tr>
+          </tbody></table>
+          <div class="frm" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+            <div class="field"><label>结算方式</label><select class="select" id="settle"><option>现款</option><option>欠款</option><option>垫资</option></select></div>
+            <div class="field"><label>销量（吨）</label><input class="input" type="number" id="qtyA" value="1000"></div>
+          </div>
+          <div class="card" style="background:var(--c-surface-2);border:none"><div class="card-b flex between center">
+            <span class="muted small">成本金额</span><b id="costA" style="font-size:22px;color:var(--c-accent)">—</b></div></div>
+        </div>
+      </div>
+
+      <!-- 吨利润封顶 + 一票制成本 -->
+      <div class="card">
+        <div class="card-h"><h3>吨利润封顶 + 一票制成本（信桥）</h3><span class="tag green">实时</span></div>
+        <div class="card-b">
+          <div class="frm" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field"><label>业务类型</label><select class="select" id="biz">
+              <option>普通现货</option><option>钢厂直发</option><option>临调</option><option>期货</option><option>特殊材质</option></select></div>
+            <div class="field"><label>吨利润封顶（元/吨）</label><input class="input" type="number" id="cap" value="50"></div>
+            <div class="field"><label>销量（吨）</label><input class="input" type="number" id="qtyB" value="100"></div>
+            <div class="field"><label>销售价（元/吨）</label><input class="input" type="number" id="deal" value="5120"></div>
+            <div class="field"><label>开单日挂牌价</label><input class="input" type="number" id="list" value="5000"></div>
+            <div class="field"><label>一票制成本（元）</label><input class="input" type="number" id="onebill" value="2000"></div>
+            <div class="field"><label>账期系数</label><select class="select" id="term"><option value="0.4">现款 0.4</option><option value="0.32">1-10天 0.32</option><option value="0.24">10-20 0.24</option><option value="0.16">20-30 0.16</option><option value="0.08">泰安 0.08</option></select></div>
+          </div>
+          <div class="card" style="background:var(--c-surface-2);border:none"><div class="card-b">
+            <div class="flex between"><span class="muted small">单位吨利润（封顶前→后）</span><b id="unit">—</b></div>
+            <div class="flex between mt8"><span class="muted small">毛利（封顶后×量−一票制）</span><b id="gross">—</b></div>
+            <div class="divider"></div>
+            <div class="flex between"><span class="b700">利润绩效（×账期系数）</span><b id="res" style="font-size:20px;color:var(--c-primary)">—</b></div>
+          </div></div>
+          <div class="callout amber mt12"><span>⚖</span><div>钢厂直发 / 临调 / 期货 / 特殊材质 <b>不封顶</b>；其余吨利润上限 50 元。</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const num=id=>parseFloat($(id).value)||0;
+  const money=n=>(n<0?"−":"")+"¥"+Math.abs(Math.round(n)).toLocaleString("zh-CN");
+  const exempt=["钢厂直发","临调","期货","特殊材质"];
+  function calcA(){
+    const s=$("settle").value, q=num("qtyA");
+    const cost = s==="现款"? q*num("cCash") : s==="欠款"? 0 : num("cAdv");
+    $("costA").textContent = money(cost);
+  }
+  function calcB(){
+    const biz=$("biz").value, cap=num("cap"), q=num("qtyB"), unit0=num("deal")-num("list");
+    const unit = exempt.includes(biz)? unit0 : Math.min(unit0, cap);
+    $("unit").textContent = unit0.toFixed(0)+" → "+unit.toFixed(0)+" 元/吨"+(exempt.includes(biz)?"（不封顶）":"");
+    const gross = unit*q - num("onebill");
+    $("gross").textContent = money(gross);
+    const res = gross*parseFloat($("term").value);
+    $("res").textContent = money(res);
+  }
+  document.querySelectorAll("#cCash,#cAdv,#settle,#qtyA").forEach(e=>{e.addEventListener("input",calcA);e.addEventListener("change",calcA);});
+  document.querySelectorAll("#biz,#cap,#qtyB,#deal,#list,#onebill,#term").forEach(e=>{e.addEventListener("input",calcB);e.addEventListener("change",calcB);});
+  calcA(); calcB();
+})();
+</script>
+</body>
+</html>

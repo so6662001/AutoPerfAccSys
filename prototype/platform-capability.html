@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>平台基础能力总览 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="platform-capability" data-crumb="平台基础能力 / <b>能力总览·四客户</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>平台基础能力总览</h1>
+        <p>合并 超扑越 / 岳洋通 / 信桥 / 名亿 四家真实方案，抽象为可配置的平台基础能力</p>
+      </div>
+    </div>
+
+    <!-- 分层架构 -->
+    <div class="card">
+      <div class="card-h"><h3>能力分层：取数 → 计算 → 汇总 → 治理</h3></div>
+      <div class="card-b">
+        <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:12px">
+          <div class="callout blue"><span>①</span><div><b>取数层</b><br>多维作用域 · 计量口径 · 成本口径 · 取数DSL→SQL</div></div>
+          <div class="callout amber"><span>②</span><div><b>计算层</b><br>阶梯/门槛/阶跃/封顶 · 达成率映射 · 系数/计息</div></div>
+          <div class="callout green"><span>③</span><div><b>汇总层</b><br>个人/团队(GROUP BY) · 跨期引用 · 条件豁免</div></div>
+          <div class="callout" style="background:#eef1f6;color:var(--c-text-2)"><span>④</span><div><b>治理层</b><br>目标单 · 发布串签 · 灰度/审计 · 明细追溯</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 能力覆盖矩阵 -->
+    <div class="card mt16">
+      <div class="card-h"><h3>十二项基础能力 · 四客户覆盖矩阵</h3><span class="sub">✔强需求 · ○潜在 · —暂无</span></div>
+      <div class="card-b" style="padding:0">
+        <table class="table">
+          <thead><tr><th>#</th><th>基础能力</th><th>超扑越</th><th>岳洋通</th><th>信桥</th><th>名亿</th><th>现状</th><th>优先级</th></tr></thead>
+          <tbody id="capRows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid mt16" style="grid-template-columns:repeat(3,1fr);gap:16px">
+      <div class="card"><div class="card-b"><div class="muted small">P0 · 平台地基</div><div class="b700" style="font-size:15px;line-height:1.9">核算项引擎 · 多维参数作用域 · 计量口径 · 阶梯门槛封顶 · 达成率映射 · 成本口径</div><a href="cap-scope.html" class="btn sm mt12">查看示例 →</a></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">P1 · 强需求复用</div><div class="b700" style="font-size:15px;line-height:1.9">取数DSL→SQL · 条件豁免 · 明细×期间关联</div><a href="cap-metric-dsl.html" class="btn sm mt12">查看示例 →</a></div></div>
+      <div class="card"><div class="card-b"><div class="muted small">P2 · 专项排期</div><div class="b700" style="font-size:15px;line-height:1.9">合同滚动计息(岳洋通) · 过磅加磅/点数(超扑越) · 加工费提成</div><a href="cap-cost-cap.html" class="btn sm mt12">查看示例 →</a></div></div>
+    </div>
+
+    <div class="callout green mt16"><span>✅</span><div>四家客户 <b>约 90% 的差异</b>被 P0 六项 + P1 三项通用能力吸收，仅剩少量专项。印证"可配置核算项 + 公式引擎 + 参数化规则"的架构方向。</div></div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const caps = [
+    [1,"核算项引擎","✔","✔","✔","✔","🟡","P0"],
+    [2,"多维参数作用域引擎","✔时段/组别","✔库别/分支/类别","✔业务×账期×材质×品类×供应商","✔业务类型","🟡","P0"],
+    [3,"计量口径引擎","✔吨量","✔理算+折半","✔重量","✔销量","🔴","P0"],
+    [4,"阶梯/门槛/阶跃/封顶","✔阶梯","✔阶跃/门槛","✔矩阵/封顶","✔累进/目标行","🟡","P0"],
+    [5,"达成率/完成率映射","✔定档+上月","✔团队系数","—","✔目标/阶段","🟡","P0"],
+    [6,"成本口径引擎","✔混合归集","—","✔一票制","✔结算方式","🔴","P0"],
+    [7,"取数DSL(配置转SQL)","○","○","○","✔明确","🟡","P1"],
+    [8,"条件规则与豁免","✔低价","✔低价备案","✔欠款/终端","—","🟡","P1"],
+    [9,"计息引擎","—","✔期货滚动","✔账期相关","○","🟡","P1/P2"],
+    [10,"激励专项","✔地推/加磅/点数","✔新户/加工","—","—","🔴","P2"],
+    [11,"明细级×期间级关联","○","○","○","✔问题","🟡","P1"],
+    [12,"绩效明细+规则治理","✔","✔","✔","✔","✅","已具备"],
+  ];
+  const tag=v=> v==="✅"?'<span class="tag green">已具备</span>':v==="🟡"?'<span class="tag amber">部分</span>':v==="🔴"?'<span class="tag red">缺失</span>':v;
+  const pr=v=> v.indexOf("P0")===0?'<span class="tag red">'+v+'</span>':v.indexOf("P1")===0?'<span class="tag amber">'+v+'</span>':v.indexOf("P2")===0?'<span class="tag blue">'+v+'</span>':'<span class="tag green">'+v+'</span>';
+  document.getElementById("capRows").innerHTML = caps.map(c=>`<tr>
+    <td class="num">${c[0]}</td><td class="b700 small">${c[1]}</td>
+    <td class="small">${c[2]}</td><td class="small">${c[3]}</td><td class="small">${c[4]}</td><td class="small">${c[5]}</td>
+    <td>${tag(c[6])}</td><td>${pr(c[7])}</td></tr>`).join("");
+})();
+</script>
+</body>
+</html>

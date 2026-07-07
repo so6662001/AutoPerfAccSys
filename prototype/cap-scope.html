@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>多维参数作用域引擎 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="cap-scope" data-crumb="平台基础能力 / <b>多维参数作用域引擎</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>多维参数作用域引擎 <span class="tag red" style="vertical-align:middle">P0</span></h1>
+        <p>同一参数（如吨位单价）按"默认 → 维度组合"逐级覆盖，运行时取最具体命中值。覆盖 信桥/岳洋通/超扑越/名亿 的分档差异</p>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1.3fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-h"><h3>参数「吨位提成单价」· 作用域规则</h3><span class="sub">条件越多越具体，优先级越高</span></div>
+        <div class="card-b" style="padding:0">
+          <table class="table">
+            <thead><tr><th>作用域条件</th><th>来源</th><th class="right">值(元/吨)</th><th class="right">具体度</th></tr></thead>
+            <tbody id="ruleRows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>作用域解析器</h3><span class="tag green">实时</span></div>
+        <div class="card-b">
+          <div class="field"><label>业务类型</label><select class="select" id="biz"><option value="">—</option><option>现货</option><option>直发</option><option>外调</option></select></div>
+          <div class="field"><label>账期</label><select class="select" id="term"><option value="">—</option><option>10天内</option><option>40-50天</option></select></div>
+          <div class="field"><label>库别</label><select class="select" id="store"><option value="">—</option><option>配货</option><option>加工</option></select></div>
+          <div class="field"><label>类别</label><select class="select" id="cat"><option value="">—</option><option>板材</option><option>管材</option></select></div>
+          <div class="field"><label>分支机构</label><select class="select" id="org"><option value="">—</option><option>华东</option><option>华北</option></select></div>
+          <div class="field"><label>时间段 / 岗位</label>
+            <div class="flex gap8"><select class="select" id="season"><option value="">时段—</option><option>旺季</option><option>淡季</option></select>
+            <select class="select" id="post"><option value="">岗位—</option><option>正式</option><option>实习</option></select></div>
+          </div>
+          <div class="card mt16" style="background:var(--c-surface-2);border:none"><div class="card-b">
+            <div class="muted small">命中作用域</div>
+            <div class="b700" id="hitScope" style="font-size:14px">—</div>
+            <div class="muted small mt12">生效单价</div>
+            <div class="b700" id="hitVal" style="font-size:30px;color:var(--c-primary)">—</div>
+            <div class="muted small mt8" id="hitNote"></div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+    <div class="callout blue mt16"><span>🎯</span><div>规则匹配算法：命中"所有条件都等于上下文"的规则，取<b>条件数最多（最具体）</b>者生效；默认规则（无条件）兜底。同一引擎支撑各客户的多维分档，无需为每家写代码。</div></div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  // 规则：cond 为维度→值 的对象；来源 src
+  const rules = [
+    { cond:{}, val:1, src:"默认" },
+    { cond:{biz:"现货"}, val:9, src:"信桥·现货" },
+    { cond:{biz:"现货", term:"40-50天"}, val:-5, src:"信桥·现货·40-50天" },
+    { cond:{biz:"外调"}, val:6, src:"信桥·外调" },
+    { cond:{store:"加工"}, val:2, src:"岳洋通·加工库" },
+    { cond:{org:"华东", cat:"板材", store:"配货"}, val:1.5, src:"岳洋通·华东·板材·配货库" },
+    { cond:{season:"淡季", biz:"现货"}, val:6, src:"超扑越·淡季·现货" },
+    { cond:{post:"实习", biz:"现货"}, val:4, src:"信桥·实习·现货" },
+  ];
+  const dimName={biz:"业务",term:"账期",store:"库别",cat:"类别",org:"分支",season:"时段",post:"岗位"};
+  function renderRules(){
+    $("ruleRows").innerHTML = rules.map(r=>{
+      const conds=Object.entries(r.cond).map(([k,v])=>`${dimName[k]}=${v}`).join(" · ")||"（默认，无条件）";
+      const spec=Object.keys(r.cond).length;
+      return `<tr data-src="${r.src}"><td class="small">${conds}</td><td class="muted small">${r.src}</td><td class="right money ${r.val<0?'neg':''}">${r.val}</td><td class="right num">${spec}</td></tr>`;
+    }).join("");
+  }
+  function ctx(){ return { biz:$("biz").value, term:$("term").value, store:$("store").value, cat:$("cat").value, org:$("org").value, season:$("season").value, post:$("post").value }; }
+  function resolve(){
+    const c=ctx();
+    let best=null, bestSpec=-1;
+    rules.forEach(r=>{
+      const ok=Object.entries(r.cond).every(([k,v])=>c[k]===v);
+      if(ok){ const s=Object.keys(r.cond).length; if(s>=bestSpec){ bestSpec=s; best=r; } }
+    });
+    $("ruleRows").querySelectorAll("tr").forEach(tr=>tr.style.background = (best&&tr.dataset.src===best.src)?"var(--c-primary-soft)":"");
+    if(best){
+      const conds=Object.entries(best.cond).map(([k,v])=>`${dimName[k]}=${v}`).join(" · ")||"默认";
+      $("hitScope").textContent = best.src+"（"+conds+"）";
+      $("hitVal").textContent = best.val+" 元/吨"; $("hitVal").style.color = best.val<0?"var(--c-red)":"var(--c-primary)";
+      $("hitNote").textContent = "具体度 "+bestSpec+"，优先于更泛化的规则";
+    }
+  }
+  document.querySelectorAll(".field select").forEach(s=>s.addEventListener("change",resolve));
+  renderRules();
+  $("biz").value="现货"; $("term").value="40-50天"; resolve();
+})();
+</script>
+</body>
+</html>

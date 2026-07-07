@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>账期×业务单价矩阵 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>.mx input{width:56px;padding:4px 6px;border:1px solid var(--c-border-strong);border-radius:6px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums}</style>
+</head>
+<body data-page="cap-tier" data-crumb="平台基础能力 / <b>账期×业务单价矩阵</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>账期 × 业务类型 单价矩阵 <span class="tag red" style="vertical-align:middle">P0</span></h1>
+        <p>信桥吨位绩效：单价随业务类型与账期变化（账期越长越低，可为负）。矩阵可编辑，右侧即时试算</p>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1.5fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-h"><h3>吨位绩效单价矩阵（元/吨）</h3><span class="sub">信桥</span></div>
+        <div class="card-b" style="padding:0;overflow-x:auto"><table class="table mx">
+          <thead><tr><th>业务类型</th><th>10天内</th><th>10-20</th><th>20-30</th><th>30-40</th><th>40-50</th><th>50-60</th><th>60-70</th></tr></thead>
+          <tbody id="mxRows"></tbody>
+        </table></div>
+        <div class="card-b"><div class="callout amber"><span>⚖</span><div>欠款不计入当月绩效；终端客户账期延长 10 天；单价可变动。60 天以上为负值扣减。</div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>吨位绩效试算</h3><span class="tag green">实时</span></div>
+        <div class="card-b">
+          <div class="field"><label>业务类型</label><select class="select" id="biz"></select></div>
+          <div class="field"><label>账期档</label><select class="select" id="term">
+            <option value="0">10天内</option><option value="1">10-20</option><option value="2">20-30</option><option value="3">30-40</option><option value="4">40-50</option><option value="5">50-60</option><option value="6">60-70</option></select></div>
+          <div class="field"><label>销售重量（吨）</label><input class="input" type="number" id="wt" value="100"></div>
+          <div class="field"><label>&nbsp;</label><div class="flex center gap8"><input type="checkbox" id="terminal"><label for="terminal" style="margin:0;font-size:13px">终端客户（账期+10天）</label></div></div>
+          <div class="card mt12" style="background:var(--c-surface-2);border:none"><div class="card-b">
+            <div class="muted small">生效单价</div><div class="b700" id="unit" style="font-size:20px">—</div>
+            <div class="muted small mt8">吨位绩效</div><div class="b700" id="res" style="font-size:28px;color:var(--c-primary)">—</div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const matrix = [
+    ["现货销售(钢厂)",        [9,7,5,0,-5,-7,-9]],
+    ["直发(供应商A)",         [9,7,5,0,-5,-7,-9]],
+    ["直发(供应商B)",         [6,4,2,0,-2,-4,-6]],
+    ["期货合同(供应商A)",     [9,7,5,0,-5,-7,-9]],
+    ["期货合同(供应商B)",     [6,4,2,0,-2,-4,-6]],
+    ["外调",                  [6,4,2,0,-2,-4,-6]],
+    ["特殊材质(指定)",        [30,23,15,0,-15,-23,-30]],
+    ["指定品类+材质",         [6,4,2,0,-2,-4,-6]],
+  ];
+  function renderMx(){
+    $("mxRows").innerHTML = matrix.map((row,i)=>`<tr><td class="small b700">${row[0]}</td>${
+      row[1].map((v,j)=>`<td><input type="number" data-i="${i}" data-j="${j}" value="${v}"></td>`).join("")}</tr>`).join("");
+    $("mxRows").querySelectorAll("input").forEach(inp=>inp.addEventListener("input",()=>{ matrix[+inp.dataset.i][1][+inp.dataset.j]=parseFloat(inp.value)||0; calc(); }));
+    $("biz").innerHTML = matrix.map((r,i)=>`<option value="${i}">${r[0]}</option>`).join("");
+  }
+  function calc(){
+    const bi=parseInt($("biz").value)||0; let tj=parseInt($("term").value)||0;
+    if($("terminal").checked) tj=Math.max(0,tj-1); // 终端客户账期+10天 → 相当于往前挪一档(更宽松)
+    const unit=matrix[bi][1][tj];
+    $("unit").textContent = unit+" 元/吨"+($("terminal").checked?"（终端+10天）":"");
+    const r=(parseFloat($("wt").value)||0)*unit;
+    $("res").textContent = (r<0?"−":"")+"¥"+Math.abs(Math.round(r)).toLocaleString("zh-CN");
+    $("res").style.color = r<0?"var(--c-red)":"var(--c-primary)";
+  }
+  document.querySelectorAll("#biz,#term,#wt,#terminal").forEach(e=>{ e.addEventListener("input",calc); e.addEventListener("change",calc); });
+  renderMx(); calc();
+})();
+</script>
+</body>
+</html>

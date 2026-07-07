@@ -24,6 +24,13 @@
       { id: "rule", label: "绩效规则配置", icon: "🧩", href: "rule-config.html" },
       { id: "audit", label: "合规审计查询", icon: "🔎", href: "audit.html" },
     ]},
+    { title: "平台基础能力", items: [
+      { id: "platform-capability", label: "能力总览·四客户", icon: "🧱", href: "platform-capability.html" },
+      { id: "cap-scope", label: "多维参数作用域", icon: "🎯", href: "cap-scope.html" },
+      { id: "cap-tier", label: "账期×业务单价矩阵", icon: "🔢", href: "cap-tier-matrix.html" },
+      { id: "cap-dsl", label: "绩效项·取数DSL", icon: "🧬", href: "cap-metric-dsl.html" },
+      { id: "cap-cost", label: "成本口径·封顶", icon: "🧾", href: "cap-cost-cap.html" },
+    ]},
     { title: "员工端", items: [
       { id: "mobile", label: "移动端绩效", icon: "📱", href: "mobile.html" },
     ]},
