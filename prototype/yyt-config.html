@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>岳洋通方案配置 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="yyt-config" data-crumb="岳洋通落地案例 / <b>方案配置</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>岳洋通绩效方案配置</h1>
+        <p>按核算项展示配置形态，标注一期可配置 / 二期扩展 / 三期专项</p>
+      </div>
+      <div class="actions"><a class="btn primary" href="yyt-simulator.html">🧮 试算验证</a></div>
+    </div>
+
+    <div data-tabs="yyt">
+      <div class="tabs">
+        <button class="active" data-tab="sales">销量 / 差价绩效</button>
+        <button data-tab="other">加工 / 新户 / 团队</button>
+        <button data-tab="scope">参数作用域 & 规则</button>
+      </div>
+    </div>
+
+    <!-- 销量/差价 -->
+    <div data-tabgroup="yyt" data-tab="sales" class="tab-pane active">
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card">
+          <div class="card-h"><h3>销量绩效 · 库别单价</h3><span class="tag green">一期</span></div>
+          <div class="card-b" style="padding:0"><table class="table">
+            <thead><tr><th>库别</th><th>销售方式</th><th>单价(元/吨)</th></tr></thead>
+            <tbody>
+              <tr><td>院内 / 调拨库</td><td><span class="tag blue">现货</span></td><td><input class="cell-in" type="number" value="1" style="width:70px"></td></tr>
+              <tr><td>直发库</td><td><span class="tag gray">非现货</span></td><td><input class="cell-in" type="number" step="0.5" value="0.5" style="width:70px"></td></tr>
+              <tr><td>配货库</td><td><span class="tag gray">非现货</span></td><td><input class="cell-in" type="number" value="1" style="width:70px"></td></tr>
+              <tr><td>加工库</td><td><span class="tag gray">非现货</span></td><td><input class="cell-in" type="number" value="2" style="width:70px"></td></tr>
+            </tbody>
+          </table>
+          <div class="card-b"><div class="callout blue"><span>ℹ</span><div>销量绩效 = 理算重量 × 库别单价 ×（团队系数）。内部销售量按一半计。</div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>差价绩效 · 库别公式</h3><span class="tag amber">二期(门槛/阶跃)</span></div>
+          <div class="card-b" style="padding:0"><table class="table">
+            <thead><tr><th>库别</th><th>公式</th></tr></thead>
+            <tbody>
+              <tr><td>院内/调拨</td><td class="small">(成交单价 − 挂牌价 − 20)/10 × 理算重量 × 1</td></tr>
+              <tr><td>新品种库</td><td class="small">销售利润2 × 10%</td></tr>
+              <tr><td>直发库</td><td class="small">(差价 − 10)/10 × 理算重量 × 0.5</td></tr>
+              <tr><td>配货库</td><td class="small">(差价 − 10)/10 × 理算重量 × 1</td></tr>
+              <tr><td>加工库</td><td class="small">(差价 − 10)/10 × 理算重量 × 1</td></tr>
+            </tbody>
+          </table>
+          <div class="card-b"><div class="callout amber"><span>⚖</span><div>差价 = 销售利润2 / 理算重量，<b>差价 ≥ 10 才有</b>；<b>低价销售（备案）不算差价绩效</b>。</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加工/新户/团队 -->
+    <div data-tabgroup="yyt" data-tab="other" class="tab-pane">
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card">
+          <div class="card-h"><h3>院内加工绩效</h3><span class="tag green">一期</span></div>
+          <div class="card-b"><div class="formula">院内加工绩效 = <span class="var">销售单加工费支出</span> × <span class="op">3%</span></div></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>团队任务考核系数</h3><span class="tag amber">二期</span></div>
+          <div class="card-b">
+            <div class="formula">团队系数 = 分支机构完成量(理算重量) ÷ 设定量<br><span class="cm"># 内部销售算一半量；系数乘到 销量绩效 + 差价绩效</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card mt16">
+        <div class="card-h"><h3>开发新户 / 外地新户激励</h3><span class="tag red">三期</span></div>
+        <div class="card-b" style="padding:0"><table class="table">
+          <thead><tr><th>类型</th><th>条件</th><th>奖励</th></tr></thead>
+          <tbody>
+            <tr><td>开发新户</td><td class="small">月提货≥4万元的钢贸通新增客户（经理审核）</td><td>前 3 个月各 50 元/月</td></tr>
+            <tr><td>外地新户（地区区分）</td><td class="small">月提货≥4万；且 6 个月累计提货 ≥ 300 吨</td><td>前 3 月各 50 元 + 1 元/吨</td></tr>
+          </tbody>
+        </table>
+        <div class="card-b"><div class="callout amber"><span>🔴</span><div>需新户判定（钢贸通新增、录入日期、月提货额）、地区档案、累计提货量与经理审核流程。</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 参数作用域 -->
+    <div data-tabgroup="yyt" data-tab="scope" class="tab-pane">
+      <div class="card">
+        <div class="card-h"><h3>多级参数作用域</h3><span class="tag amber">二期</span></div>
+        <div class="card-b" style="padding:0"><table class="table">
+          <thead><tr><th>作用域</th><th>示例</th><th>覆盖优先级</th></tr></thead>
+          <tbody>
+            <tr><td>全公司默认</td><td class="small">配货库 1 元/吨</td><td>低</td></tr>
+            <tr><td><span class="tag orange">分支机构</span>（红色）</td><td class="small">华东分支 配货库 1.2 元/吨</td><td>中</td></tr>
+            <tr><td><span class="tag orange">分支机构 + 类别</span>（橙色）</td><td class="small">华东分支 · 板材类 配货库 1.5 元/吨</td><td>高</td></tr>
+          </tbody>
+        </table>
+        <div class="card-b"><div class="callout blue"><span>🧩</span><div>单价/系数按"默认 → 分支机构 → 分支机构+类别"逐级覆盖，取最具体的生效值。</div></div></div>
+        </div>
+      </div>
+      <div class="card mt16">
+        <div class="card-h"><h3>专有取数口径</h3><span class="tag amber">二期</span></div>
+        <div class="card-b" style="padding:0"><table class="table">
+          <thead><tr><th>口径</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>理算重量</td><td class="small">按理论计重（钢材规格计算），非过磅实重</td></tr>
+            <tr><td>理算重量挂牌价格</td><td class="small">对应品规的挂牌单价</td></tr>
+            <tr><td>销售利润2</td><td class="small">用于非现货差价与新品种库计算的利润口径</td></tr>
+            <tr><td>内部销售</td><td class="small">院内销售，销量计一半，用于团队与个人计量</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

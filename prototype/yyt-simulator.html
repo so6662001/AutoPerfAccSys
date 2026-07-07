@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>岳洋通销售绩效试算器 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .sim-grid { display:grid; grid-template-columns:1.05fr 1fr; gap:16px; align-items:start; }
+  .frm-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; }
+  .grp-title { font-size:12.5px; font-weight:700; color:var(--c-primary-d); background:var(--c-primary-soft); padding:6px 11px; border-radius:7px; margin:6px 0 12px; }
+  .field.sm { margin-bottom:8px; } .field.sm label { margin-bottom:4px; font-size:12px; color:var(--c-text-2); display:block; }
+  .field.sm .input, .field.sm .select { padding:7px 10px; }
+  .chk { display:flex; align-items:center; gap:8px; font-size:13px; padding:8px 0; }
+  .res-line { display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom:1px dashed var(--c-border); }
+  .res-line .k { font-size:13px; color:var(--c-text-2); } .res-line .k b{ color:var(--c-text); }
+  .res-line .v { font-weight:700; font-variant-numeric:tabular-nums; font-size:14px; }
+  .res-line.sub { background:var(--c-surface-2); margin:0 -18px; padding:11px 18px; }
+  .total-box { background:linear-gradient(135deg,#2f5bea,#2244c4); color:#fff; border-radius:14px; padding:18px 20px; margin-top:14px; }
+  .total-box .l { font-size:12.5px; opacity:.85; } .total-box .v { font-size:34px; font-weight:800; letter-spacing:-.5px; margin-top:3px; }
+  @media(max-width:900px){ .sim-grid{grid-template-columns:1fr} .frm-grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body data-page="yyt-sim" data-crumb="岳洋通落地案例 / <b>销售绩效试算器</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>岳洋通销售绩效试算器 <span class="tag green" style="vertical-align:middle">可交互 · 实时</span></h1>
+        <p>按库别演算：销量绩效 + 差价绩效，×团队系数，再加 加工绩效 + 新户开发</p>
+      </div>
+      <div class="actions"><button class="btn" id="btnReset">↺ 重置示例</button></div>
+    </div>
+
+    <div class="sim-grid">
+      <div class="card">
+        <div class="card-h"><h3>业务参数</h3><span class="sub">修改即时重算</span></div>
+        <div class="card-b">
+          <div class="grp-title">① 库别与计量</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>库别</label>
+              <select class="select" id="store">
+                <option value="yn">院内/调拨库（现货）</option>
+                <option value="zf">直发库（非现货）</option>
+                <option value="ph" selected>配货库（非现货）</option>
+                <option value="jg">加工库（非现货）</option>
+                <option value="xp">新品种库（非现货）</option>
+              </select></div>
+            <div class="field sm"><label>理算重量（吨）</label><input class="input" type="number" id="wt" value="100"></div>
+            <div class="field sm"><label>&nbsp;</label><div class="chk"><input type="checkbox" id="inner"><label for="inner" style="margin:0">内部销售（量算一半）</label></div></div>
+            <div class="field sm"><label>&nbsp;</label><div class="chk"><input type="checkbox" id="lowprice"><label for="lowprice" style="margin:0">低价销售备案（不算差价）</label></div></div>
+          </div>
+
+          <div class="grp-title">② 差价计算依据</div>
+          <div class="frm-grid">
+            <div class="field sm" id="wrapDeal"><label>成交单价（元/吨）</label><input class="input" type="number" id="dealPrice" value="3500"></div>
+            <div class="field sm" id="wrapList"><label>理算重量挂牌价（元/吨）</label><input class="input" type="number" id="listPrice" value="3450"></div>
+            <div class="field sm" id="wrapProfit"><label>销售利润2（元）</label><input class="input" type="number" id="profit2" value="6000"></div>
+          </div>
+
+          <div class="grp-title">③ 加工 / 新户 / 团队</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>加工费支出（元）</label><input class="input" type="number" id="procFee" value="8000"></div>
+            <div class="field sm"><label>新户开发奖励（元）</label><input class="input" type="number" id="newCust" value="50"></div>
+            <div class="field sm"><label>团队完成率（%）→系数</label><input class="input" type="number" id="teamRate" value="90"></div>
+            <div class="field sm"><label>团队系数</label><input class="input" id="teamCoef" value="—" readonly style="background:var(--c-surface-2)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-h"><h3>试算结果 · 绩效构成</h3><span class="tag blue" id="storeTag">—</span></div>
+          <div class="card-b">
+            <div class="res-line"><span class="k">① 销量绩效 <b id="fSales"></b></span><span class="v" id="rSales">—</span></div>
+            <div class="res-line"><span class="k">② 差价绩效 <b id="fDiff"></b></span><span class="v" id="rDiff">—</span></div>
+            <div class="res-line sub"><span class="k"><b>(①+②) × 团队系数</b> <b id="fTeam"></b></span><span class="v" id="rTeam">—</span></div>
+            <div class="res-line"><span class="k">③ 院内加工绩效 <b id="fProc"></b></span><span class="v" id="rProc">—</span></div>
+            <div class="res-line"><span class="k">④ 开发新户 </span><span class="v" id="rNew">—</span></div>
+            <div class="total-box"><div class="l">个人绩效合计（试算）</div><div class="v" id="rTotal">¥0</div></div>
+          </div>
+        </div>
+        <div class="card mt16">
+          <div class="card-h"><h3>构成占比</h3></div>
+          <div class="card-b" id="bars" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+        <div class="callout amber mt16"><span>💡</span><div>库别决定单价与差价公式：现货用(成交单价−挂牌−20)/10；非现货用(销售利润2/重量−10)/10（差价≥10 才有）；新品种库=销售利润2×10%。低价备案不算差价；内部销售量算一半。</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const num = id => parseFloat($(id).value)||0;
+  const chk = id => $(id).checked;
+  const fmt = n => (n<0?"−":"")+"¥"+Math.abs(Math.round(n)).toLocaleString("zh-CN");
+  const salesUnit = { yn:1, zf:0.5, ph:1, jg:2, xp:1 };
+  const diffCoef = { zf:0.5, ph:1, jg:1 };
+  const label = { yn:"院内/调拨库（现货）", zf:"直发库", ph:"配货库", jg:"加工库", xp:"新品种库" };
+
+  function toggleInputs(st){
+    const isYn = st==="yn";
+    $("wrapDeal").style.display = isYn?"":"none";
+    $("wrapList").style.display = isYn?"":"none";
+    $("wrapProfit").style.display = isYn?"none":"";
+  }
+
+  function calc(){
+    const st = $("store").value; toggleInputs(st);
+    $("storeTag").textContent = label[st];
+    const innerF = chk("inner")?0.5:1;
+    const wt = num("wt")*innerF;
+
+    // 销量绩效
+    const sales = wt * (salesUnit[st]||0);
+
+    // 差价绩效
+    let diff = 0, diffF = "";
+    if(chk("lowprice")){ diff=0; diffF="= 低价备案，不算差价"; }
+    else if(st==="yn"){ const u=num("dealPrice")-num("listPrice")-20; diff=(u/10)*num("wt")*1; diffF="= ("+num("dealPrice")+"−"+num("listPrice")+"−20)/10 × "+num("wt")+" × 1"; }
+    else if(st==="xp"){ diff=num("profit2")*0.10; diffF="= 销售利润2 × 10%"; }
+    else { const du=num("wt")? num("profit2")/num("wt"):0; if(du<10){ diff=0; diffF="= 差价单位 "+du.toFixed(1)+" < 10，无差价绩效"; } else { diff=((du-10)/10)*num("wt")*diffCoef[st]; diffF="= ("+du.toFixed(1)+"−10)/10 × "+num("wt")+" × "+diffCoef[st]; } }
+
+    const teamCoef = num("teamRate")/100; $("teamCoef").value = teamCoef.toFixed(2);
+    const afterTeam = (sales+diff)*teamCoef;
+    const proc = num("procFee")*0.03;
+    const newc = num("newCust");
+    const total = afterTeam + proc + newc;
+
+    $("fSales").textContent = "= "+num("wt")+(chk("inner")?"×0.5":"")+" × "+(salesUnit[st]||0)+" 元/吨";
+    $("rSales").textContent = fmt(sales);
+    $("fDiff").textContent = diffF; $("rDiff").textContent = fmt(diff);
+    $("fTeam").textContent = "×"+teamCoef.toFixed(2); $("rTeam").textContent = fmt(afterTeam);
+    $("fProc").textContent = "= "+num("procFee")+" × 3%"; $("rProc").textContent = fmt(proc);
+    $("rNew").textContent = fmt(newc);
+    $("rTotal").textContent = fmt(total);
+
+    const parts=[["销量绩效",Math.max(sales,0),"var(--c-primary)"],["差价绩效",Math.max(diff,0),"var(--c-accent)"],["加工绩效",proc,"var(--c-green)"],["开发新户",newc,"var(--c-amber)"]];
+    const denom=parts.reduce((s,p)=>s+p[1],0)||1;
+    $("bars").innerHTML=parts.map(p=>{const pct=Math.round(p[1]/denom*100);
+      return `<div><div class="flex between small"><span>${p[0]}</span><b>${fmt(p[1])} · ${pct}%</b></div><div class="bar mt8"><span style="width:${pct}%;background:${p[2]}"></span></div></div>`;}).join("");
+  }
+  document.querySelectorAll(".card-b input, .card-b select").forEach(el=>{ el.addEventListener("input",calc); el.addEventListener("change",calc); });
+  $("btnReset").addEventListener("click",()=>location.reload());
+  calc();
+})();
+</script>
+</body>
+</html>
