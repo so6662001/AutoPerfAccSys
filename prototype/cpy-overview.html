@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>超扑越落地总览 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="cpy-overview" data-crumb="超扑越落地案例 / <b>落地总览·三期</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>超扑越绩效方案 · 落地总览</h1>
+        <p>客户真实考核模型：薪酬总额 = 基本工资 + 自营利润提成 + 外配利润提成 + 吨量提成 + 加磅利润提成</p>
+      </div>
+      <div class="actions">
+        <a class="btn" href="cpy-config.html">🧩 查看配置</a>
+        <a class="btn primary" href="cpy-simulator.html">🧮 打开试算器</a>
+      </div>
+    </div>
+
+    <!-- 模型总览 -->
+    <div class="card">
+      <div class="card-h"><h3>薪酬构成模型</h3><span class="sub">自营=现货库存销售 · 外配=直发/临调销售</span></div>
+      <div class="card-b">
+        <div class="grid" style="grid-template-columns:repeat(5,1fr);gap:12px">
+          <div class="kpi" style="box-shadow:none"><div class="lbl">基本工资</div><div class="val" style="font-size:18px">宽带4档</div><div class="delta">综合达成率评定</div></div>
+          <div class="kpi" style="box-shadow:none"><div class="lbl">自营利润提成</div><div class="val" style="font-size:18px">淡旺季阶梯</div><div class="delta">5/10/15/20%</div></div>
+          <div class="kpi" style="box-shadow:none"><div class="lbl">外配利润提成</div><div class="val" style="font-size:18px">淡旺季阶梯</div><div class="delta">含过渡期保底</div></div>
+          <div class="kpi" style="box-shadow:none"><div class="lbl">吨量提成</div><div class="val" style="font-size:18px">3.8元/吨</div><div class="delta">组别×客户类型</div></div>
+          <div class="kpi" style="box-shadow:none"><div class="lbl">加磅利润提成</div><div class="val" style="font-size:18px">过磅专项</div><div class="delta">加磅千分比</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 三期路线图 -->
+    <h3 style="margin:22px 0 12px">分期落地路线图</h3>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:16px">
+      <!-- 一期 -->
+      <div class="card" style="border-top:3px solid var(--c-green)">
+        <div class="card-h"><h3>一期 · 纯配置验证 <span class="tag green">可直接配置</span></h3></div>
+        <div class="card-b">
+          <p class="muted small">用现有引擎配置跑通，与客户历史 Excel 比对。约占 55–60%。</p>
+          <div class="divider"></div>
+          <ul style="margin:0;padding-left:18px;font-size:13px;line-height:2">
+            <li>薪酬总额 = 5 项核算项相加</li>
+            <li>综合达成率评分卡（吨量70% + 利润30%）</li>
+            <li>自营 / 外配 利润阶梯提成</li>
+            <li>吨量提成（3.8 元/吨）</li>
+            <li>绩效明细追溯基础</li>
+          </ul>
+          <div class="mt16"><span class="tag green">✅ 引擎已具备</span></div>
+        </div>
+      </div>
+      <!-- 二期 -->
+      <div class="card" style="border-top:3px solid var(--c-amber)">
+        <div class="card-h"><h3>二期 · 行业化通用扩展 <span class="tag amber">需扩展</span></h3></div>
+        <div class="card-b">
+          <p class="muted small">补齐可复用平台能力，做完可推广至其他钢贸客户。约占 25%。</p>
+          <div class="divider"></div>
+          <ul style="margin:0;padding-left:18px;font-size:13px;line-height:2">
+            <li><b>淡旺季 / 按月</b>的参数时间维度</li>
+            <li>达成率 → <b>固定档位金额</b>（非基数×系数）</li>
+            <li><b>上月业绩定下月底薪</b>（跨期引用）</li>
+            <li>人员级 / 时间窗规则例外（过渡期保底）</li>
+            <li>按<b>客户数</b>计提（地推纯新客户）</li>
+            <li>绩效明细表 + 按日期筛选（不跨月）</li>
+          </ul>
+          <div class="mt16"><span class="tag amber">🟡 平台通用增强</span></div>
+        </div>
+      </div>
+      <!-- 三期 -->
+      <div class="card" style="border-top:3px solid var(--c-red)">
+        <div class="card-h"><h3>三期 · 过磅深度定制 <span class="tag red">需新增</span></h3></div>
+        <div class="card-b">
+          <p class="muted small">钢材过磅业务专有，依赖 ERP 过磅/挂价数据打通。约占 15–20%。</p>
+          <div class="divider"></div>
+          <ul style="margin:0;padding-left:18px;font-size:13px;line-height:2">
+            <li><b>加磅利润提成</b>（加磅千分比 / 标准千分比）</li>
+            <li>自营利润<b>点数口径</b>：出货时点"同规格最高挂价"实时快照</li>
+            <li>0.5 进位取整 + 品类 / 门前库排除</li>
+            <li>单据级自营+外配混合归集</li>
+          </ul>
+          <div class="mt16"><span class="tag red">🔴 过磅专项定制</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数据前提 -->
+    <div class="callout blue mt24"><span>🔗</span><div><b>数据前提（ERP 需提供）：</b>出库明细（吨量/单重/成交价/定价/核定底价）、库存同规格挂价（含库位/品类标识）、过磅记录（实际/标准加磅千分比）、采购成本、客户档案（组别/客户类型/新老/地推标记）。字段映射在<a href="data-integration.html" style="color:var(--c-primary)">数据集成中心</a>扩展维护。</div></div>
+
+    <div class="flex gap12 mt16">
+      <a class="btn" href="cpy-config.html">下一步：查看三期方案配置 →</a>
+      <a class="btn" href="cpy-detail.html">查看绩效明细表 →</a>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

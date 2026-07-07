@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>超扑越绩效明细表 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="cpy-detail" data-crumb="超扑越落地案例 / <b>绩效明细表</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>绩效明细表 · 王海涛</h1>
+        <p>逐单列出 自营 / 外配 / 吨量 / 加磅 四类提成，支持按日期筛选（不跨月）</p>
+      </div>
+      <div class="actions"><button class="btn" id="btnExport">⬇ 导出明细</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <h3>提成明细</h3>
+        <div class="flex gap8 center wrap">
+          <select class="select" id="fMonth" style="width:auto;padding:7px 10px"><option value="2026-06">2026年6月</option><option value="2026-05">2026年5月</option></select>
+          <span class="muted small">日期</span>
+          <input class="input" type="number" id="fFrom" min="1" max="31" value="1" style="width:64px;padding:7px 8px">
+          <span class="muted">–</span>
+          <input class="input" type="number" id="fTo" min="1" max="31" value="30" style="width:64px;padding:7px 8px">
+          <button class="btn sm primary" id="btnFilter">筛选</button>
+          <span class="tag gray">不跨月</span>
+        </div>
+      </div>
+      <div class="card-b" style="padding:0">
+        <table class="table">
+          <thead><tr><th>日期</th><th>客户</th><th>品名/规格</th><th>类型</th><th class="right">吨量</th><th class="right">自营提成</th><th class="right">外配提成</th><th class="right">吨量提成</th><th class="right">加磅提成</th><th class="right">小计</th></tr></thead>
+          <tbody id="rows"></tbody>
+          <tfoot><tr style="font-weight:700;background:var(--c-surface-2)"><td colspan="5">合计</td><td class="right money" id="tSelf">—</td><td class="right money" id="tExt">—</td><td class="right money" id="tTon">—</td><td class="right money" id="tWeigh">—</td><td class="right money pos" id="tSum">—</td></tr></tfoot>
+        </table>
+        <div id="empty" class="muted small" style="padding:24px;text-align:center;display:none">该日期区间无明细。</div>
+      </div>
+    </div>
+    <div class="callout blue mt16"><span>📋</span><div>本表满足客户"其他要求"：逐条明细呈现四类提成、可按日期筛选且<b>不跨月</b>（月份单选，日期区间仅限当月）。每行可对应到 ERP 出库/过磅单据。</div></div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const fmt = n => n?("¥"+Math.round(n).toLocaleString("zh-CN")):"—";
+  // mock 明细：type 自营/外配；四类提成
+  const data = {
+    "2026-06":[
+      { d:3, cust:"华东建材", prod:"HRB400E Φ12", type:"自营", tons:28, self:1400, ext:0, ton:106, weigh:180 },
+      { d:5, cust:"通宇钢构", prod:"Q355B 20mm", type:"外配", tons:0, self:0, ext:900, ton:0, weigh:0 },
+      { d:8, cust:"新客·瑞丰", prod:"SPHC 3.0", type:"自营", tons:16, self:640, ton:61, ext:0, weigh:95 },
+      { d:8, cust:"地推纯新×2", prod:"—", type:"自营", tons:0, self:0, ext:0, ton:20, weigh:0 },
+      { d:12, cust:"华东建材", prod:"HRB400E Φ14", type:"外配", tons:0, self:0, ext:1500, ton:0, weigh:0 },
+      { d:15, cust:"明远贸易", prod:"Q235B 6.0", type:"自营", tons:34, self:2040, ext:0, ton:129, weigh:220 },
+      { d:20, cust:"通宇钢构", prod:"HRB400E Φ12", type:"自营(低价)", tons:22, self:0, ext:0, ton:67, weigh:0 },
+      { d:25, cust:"瑞丰实业", prod:"Q355B 16mm", type:"外配", tons:0, self:0, ext:2200, ton:0, weigh:0 },
+      { d:28, cust:"明远贸易", prod:"SPHC 2.5", type:"自营", tons:19, self:760, ext:0, ton:72, weigh:110 },
+    ],
+    "2026-05":[
+      { d:6, cust:"华东建材", prod:"HRB400E Φ12", type:"自营", tons:24, self:1200, ext:0, ton:91, weigh:150 },
+      { d:14, cust:"通宇钢构", prod:"Q355B 20mm", type:"外配", tons:0, self:0, ext:1100, ton:0, weigh:0 },
+      { d:22, cust:"明远贸易", prod:"Q235B 6.0", type:"自营", tons:30, self:1800, ext:0, ton:114, weigh:190 },
+    ],
+  };
+  function render(){
+    const mon = $("fMonth").value; const from=parseInt($("fFrom").value)||1; const to=parseInt($("fTo").value)||31;
+    const list = (data[mon]||[]).filter(r=> r.d>=from && r.d<=to);
+    $("empty").style.display = list.length?"none":"block";
+    let s={self:0,ext:0,ton:0,weigh:0,sum:0};
+    $("rows").innerHTML = list.map(r=>{
+      const sub=(r.self||0)+(r.ext||0)+(r.ton||0)+(r.weigh||0);
+      s.self+=r.self||0; s.ext+=r.ext||0; s.ton+=r.ton||0; s.weigh+=r.weigh||0; s.sum+=sub;
+      const tt = r.type.indexOf("自营")===0?'<span class="tag blue">'+r.type+'</span>':'<span class="tag orange">'+r.type+'</span>';
+      return `<tr><td>${mon}-${String(r.d).padStart(2,"0")}</td><td>${r.cust}</td><td class="small">${r.prod}</td><td>${tt}</td>
+        <td class="right num">${r.tons||"—"}</td><td class="right">${fmt(r.self)}</td><td class="right">${fmt(r.ext)}</td>
+        <td class="right">${fmt(r.ton)}</td><td class="right">${fmt(r.weigh)}</td><td class="right money">${fmt(sub)}</td></tr>`;
+    }).join("");
+    $("tSelf").textContent=fmt(s.self); $("tExt").textContent=fmt(s.ext); $("tTon").textContent=fmt(s.ton); $("tWeigh").textContent=fmt(s.weigh); $("tSum").textContent=fmt(s.sum);
+  }
+  function clampDays(){ const from=parseInt($("fFrom").value)||1, to=parseInt($("fTo").value)||31;
+    if(from<1)$("fFrom").value=1; if(to>31)$("fTo").value=31; }
+  $("btnFilter").addEventListener("click",()=>{ clampDays(); render(); showToast&&showToast("已按日期筛选","仅显示当月区间明细，未跨月","blue"); });
+  $("fMonth").addEventListener("change",render);
+  $("btnExport").addEventListener("click",()=>{ showToast&&showToast("明细已导出 ✓","含四类提成分列，按当前日期区间","green"); });
+  render();
+})();
+</script>
+</body>
+</html>

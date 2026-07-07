@@ -27,6 +27,12 @@
     { title: "员工端", items: [
       { id: "mobile", label: "移动端绩效", icon: "📱", href: "mobile.html" },
     ]},
+    { title: "超扑越落地案例", items: [
+      { id: "cpy-overview", label: "落地总览·三期", icon: "🗺", href: "cpy-overview.html" },
+      { id: "cpy-config", label: "方案配置·三期", icon: "🧩", href: "cpy-config.html" },
+      { id: "cpy-sim", label: "专属试算器", icon: "🧮", href: "cpy-simulator.html" },
+      { id: "cpy-detail", label: "绩效明细表", icon: "📋", href: "cpy-detail.html" },
+    ]},
   ];
 
   function renderShell() {
