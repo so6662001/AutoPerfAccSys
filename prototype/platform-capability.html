@@ -52,6 +52,10 @@
 <script src="assets/app.js"></script>
 <script>
 (function(){
+  // 内嵌于规则中心时，保持内部跳转仍为内嵌态
+  if(new URLSearchParams(location.search).get("embed")==="1"){
+    document.querySelectorAll('a[href$=".html"]').forEach(a=>{ a.setAttribute("href", a.getAttribute("href")+"?embed=1"); });
+  }
   const caps = [
     [1,"核算项引擎","✔","✔","✔","✔","🟡","P0"],
     [2,"多维参数作用域引擎","✔时段/组别","✔库别/分支/类别","✔业务×账期×材质×品类×供应商","✔业务类型","🟡","P0"],

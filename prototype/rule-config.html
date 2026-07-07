@@ -63,6 +63,7 @@
         <button data-tab="change">变更审批 <span class="tag amber" id="crBadge" style="display:none;margin-left:4px">0</span></button>
         <button data-tab="pilot">灰度看板</button>
         <button data-tab="timeline">版本时间轴</button>
+        <button data-tab="cap">平台能力配置 <span class="tag blue" style="margin-left:4px">新</span></button>
       </div>
     </div>
 
@@ -373,9 +374,40 @@
         </div>
       </div>
     </div>
+
+    <!-- 平台能力配置（统一入口，内嵌能力配置页）-->
+    <div data-tabgroup="rule" data-tab="cap" class="tab-pane">
+      <div class="callout blue" style="margin-bottom:14px"><span>🧱</span><div><b>平台基础能力统一配置入口：</b>把多维参数作用域、账期×业务单价矩阵、绩效项取数DSL、成本口径与封顶等平台级能力，统一收敛到规则中心内配置。切换下方能力页签即可就地配置（内嵌）。</div></div>
+      <div class="flex gap8 wrap" id="capNav" style="margin-bottom:14px">
+        <button class="btn sm primary" data-src="platform-capability.html">🧱 能力总览</button>
+        <button class="btn sm" data-src="cap-scope.html">🎯 多维参数作用域</button>
+        <button class="btn sm" data-src="cap-tier-matrix.html">🔢 账期×业务单价矩阵</button>
+        <button class="btn sm" data-src="cap-metric-dsl.html">🧬 绩效项·取数DSL</button>
+        <button class="btn sm" data-src="cap-cost-cap.html">🧾 成本口径·封顶</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <iframe id="capFrame" title="平台能力配置" style="width:100%;height:860px;border:none;display:block;background:#fff"></iframe>
+      </div>
+    </div>
   </div>
 </div>
 <script src="assets/app.js"></script>
+<script>
+(function(){
+  const nav=document.getElementById("capNav"), frame=document.getElementById("capFrame");
+  if(nav&&frame){
+    let loaded=false;
+    const load=src=>{ frame.src = src + "?embed=1"; };
+    nav.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+      nav.querySelectorAll("button").forEach(x=>x.classList.remove("primary"));
+      b.classList.add("primary"); load(b.dataset.src);
+    }));
+    document.querySelectorAll('[data-tabs="rule"] .tabs button').forEach(btn=>{
+      if(btn.dataset.tab==="cap") btn.addEventListener("click",()=>{ if(!loaded){ load("platform-capability.html"); loaded=true; } });
+    });
+  }
+})();
+</script>
 <script>
 (function(){
   const $ = id => document.getElementById(id);

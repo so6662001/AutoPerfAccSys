@@ -50,6 +50,15 @@
   ];
 
   function renderShell() {
+    // 内嵌模式（被规则中心 iframe 引用时）：不渲染侧栏/顶栏，仅显示内容
+    if (new URLSearchParams(location.search).get("embed") === "1") {
+      const main = document.querySelector(".main");
+      if (main) { main.style.marginLeft = "0"; }
+      const content = document.querySelector(".content");
+      if (content) { content.style.padding = "18px 20px 40px"; }
+      document.body.style.background = "#fff";
+      return;
+    }
     const page = document.body.getAttribute("data-page");
     const crumb = document.body.getAttribute("data-crumb") || "";
     const period = document.body.getAttribute("data-period") || "2026年6月（核算中）";
