@@ -15,6 +15,7 @@
         <h1>账期 × 业务类型 单价矩阵 <span class="tag red" style="vertical-align:middle">P0</span></h1>
         <p>信桥吨位绩效：单价随业务类型与账期变化（账期越长越低，可为负）。矩阵可编辑，右侧即时试算</p>
       </div>
+      <div class="actions"><button class="btn primary" id="btnCR">🚀 提交变更（走审批）</button></div>
     </div>
 
     <div class="grid" style="grid-template-columns:1.5fr 1fr;gap:16px">
@@ -75,6 +76,13 @@
   }
   document.querySelectorAll("#biz,#term,#wt,#terminal").forEach(e=>{ e.addEventListener("input",calc); e.addEventListener("change",calc); });
   renderMx(); calc();
+
+  $("btnCR").addEventListener("click",()=>{
+    const details = ["信桥·吨位绩效单价矩阵调整（业务类型 × 账期档）"].concat(
+      matrix.slice(0,3).map(r=>r[0]+"："+r[1].join("/")));
+    const params = {}; matrix.forEach(r=>{ params[r[0]] = r[1].join("/"); });
+    window.submitCR && window.submitCR("吨位单价矩阵变更", details, params);
+  });
 })();
 </script>
 </body>

@@ -715,6 +715,17 @@
   renderCR();
   $("nextVer").textContent = "v"+(seqVer+1);
   renderPilot();
+
+  // 接收内嵌"平台能力配置"页提交的变更单 → 合并并进入审批
+  window.addEventListener("message", (e)=>{
+    if(!e.data || e.data.type!=="steel_new_cr") return;
+    try{ const ext=JSON.parse(localStorage.getItem("steel_change_reqs")||"[]");
+      ext.forEach(r=>{ if(r&&r.id&&!changeReqs.some(x=>x.id===r.id)) changeReqs.push(r); });
+      seqVer=Math.max(seqVer, ...changeReqs.map(r=>parseInt(r.ver)||0)); }catch(err){}
+    renderCR(); $("nextVer").textContent = "v"+(seqVer+1);
+    document.querySelectorAll('[data-tabs="rule"] .tabs button').forEach(b=>{ if(b.dataset.tab==="change") b.click(); });
+    showToast("收到能力配置变更 ✓","已生成变更单 "+(e.data.id||"")+"，进入变更审批","blue");
+  });
   if($("tlFilter")) $("tlFilter").addEventListener("change", renderTimeline);
   if($("btnCmp")) $("btnCmp").addEventListener("click", renderDiff);
   if($("pilotSel")) $("pilotSel").addEventListener("change", ()=>drawPilot($("pilotSel").value));

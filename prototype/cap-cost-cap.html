@@ -14,6 +14,7 @@
         <h1>成本口径引擎 · 单位封顶 <span class="tag red" style="vertical-align:middle">P0</span></h1>
         <p>名亿：成本随结算方式变化（现款/欠款/垫资）；信桥：吨利润封顶 50 元 + 一票制成本 + 账期系数</p>
       </div>
+      <div class="actions"><button class="btn primary" id="btnCR">🚀 提交变更（走审批）</button></div>
     </div>
 
     <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
@@ -85,6 +86,15 @@
   document.querySelectorAll("#cCash,#cAdv,#settle,#qtyA").forEach(e=>{e.addEventListener("input",calcA);e.addEventListener("change",calcA);});
   document.querySelectorAll("#biz,#cap,#qtyB,#deal,#list,#onebill,#term").forEach(e=>{e.addEventListener("input",calcB);e.addEventListener("change",calcB);});
   calcA(); calcB();
+
+  $("btnCR").addEventListener("click",()=>{
+    const params = {
+      "现款成本(元/吨)": num("cCash"), "欠款成本": 0, "垫资成本(元)": num("cAdv"),
+      "吨利润封顶(元/吨)": num("cap"), "封顶豁免业务": exempt.join("/"),
+    };
+    const details = ["成本口径与封顶调整：现款成本 "+num("cCash")+" 元/吨、垫资 "+num("cAdv")+" 元、吨利润封顶 "+num("cap")+" 元/吨"];
+    window.submitCR && window.submitCR("成本口径与封顶变更", details, params);
+  });
 })();
 </script>
 </body>

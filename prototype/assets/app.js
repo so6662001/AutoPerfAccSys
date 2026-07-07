@@ -142,6 +142,30 @@
     setTimeout(() => { t.style.animation = "fadeOut .3s forwards"; setTimeout(() => t.remove(), 320); }, 3000);
   };
 
+  // 生成规则变更单（能力配置页 → 走审批）；写本地并通知父页(规则中心)
+  window.submitCR = function (title, details, params) {
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem("steel_change_reqs") || "[]"); } catch (e) {}
+    const maxVer = Math.max(3, ...list.map(r => parseInt(r.ver) || 0));
+    const ver = maxVer + 1;
+    const id = "CR-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + String(ver).padStart(2, "0");
+    const cr = {
+      id, ver, submitter: "李静·绩效专员", time: new Date().toLocaleString("zh-CN"),
+      effMode: "now", effLabel: "立即生效", scopeLabel: "全公司", status: "待审批", cur: 0,
+      chain: [
+        { role: "部门主管", name: "陈组长", status: "待处理", time: "" },
+        { role: "HR负责人", name: "王总监", mode: "或签", candidates: ["王总监", "张经理"], status: "待处理", time: "" },
+        { role: "分管领导", name: "周总", status: "待处理", time: "" },
+      ],
+      details: [title].concat(details || []), params: params || {},
+    };
+    list.push(cr);
+    try { localStorage.setItem("steel_change_reqs", JSON.stringify(list)); } catch (e) {}
+    try { if (window.parent && window.parent !== window) window.parent.postMessage({ type: "steel_new_cr", id }, "*"); } catch (e) {}
+    if (window.showToast) window.showToast("已提交变更审批 ✓", "变更单 " + id + " 已生成，走三级串签（如在规则中心内嵌将自动跳转）", "green");
+    return id;
+  };
+
   document.addEventListener("DOMContentLoaded", () => {
     renderShell();
     bindTabs();

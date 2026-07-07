@@ -14,6 +14,7 @@
         <h1>多维参数作用域引擎 <span class="tag red" style="vertical-align:middle">P0</span></h1>
         <p>同一参数（如吨位单价）按"默认 → 维度组合"逐级覆盖，运行时取最具体命中值。覆盖 信桥/岳洋通/超扑越/名亿 的分档差异</p>
       </div>
+      <div class="actions"><button class="btn primary" id="btnCR">🚀 提交变更（走审批）</button></div>
     </div>
 
     <div class="grid" style="grid-template-columns:1.3fr 1fr;gap:16px">
@@ -69,11 +70,12 @@
   ];
   const dimName={biz:"业务",term:"账期",store:"库别",cat:"类别",org:"分支",season:"时段",post:"岗位"};
   function renderRules(){
-    $("ruleRows").innerHTML = rules.map(r=>{
+    $("ruleRows").innerHTML = rules.map((r,i)=>{
       const conds=Object.entries(r.cond).map(([k,v])=>`${dimName[k]}=${v}`).join(" · ")||"（默认，无条件）";
       const spec=Object.keys(r.cond).length;
-      return `<tr data-src="${r.src}"><td class="small">${conds}</td><td class="muted small">${r.src}</td><td class="right money ${r.val<0?'neg':''}">${r.val}</td><td class="right num">${spec}</td></tr>`;
+      return `<tr data-src="${r.src}"><td class="small">${conds}</td><td class="muted small">${r.src}</td><td class="right"><input type="number" data-ri="${i}" value="${r.val}" style="width:64px;padding:4px 6px;border:1px solid var(--c-border-strong);border-radius:6px;text-align:right;font-size:12px"></td><td class="right num">${spec}</td></tr>`;
     }).join("");
+    $("ruleRows").querySelectorAll("input[data-ri]").forEach(inp=>inp.addEventListener("input",()=>{ rules[+inp.dataset.ri].val=parseFloat(inp.value)||0; resolve(); }));
   }
   function ctx(){ return { biz:$("biz").value, term:$("term").value, store:$("store").value, cat:$("cat").value, org:$("org").value, season:$("season").value, post:$("post").value }; }
   function resolve(){
@@ -94,6 +96,12 @@
   document.querySelectorAll(".field select").forEach(s=>s.addEventListener("change",resolve));
   renderRules();
   $("biz").value="现货"; $("term").value="40-50天"; resolve();
+
+  $("btnCR").addEventListener("click",()=>{
+    const params={}; rules.forEach(r=>{ const c=Object.entries(r.cond).map(([k,v])=>dimName[k]+"="+v).join("·")||"默认"; params[c]=r.val; });
+    const details=["多维参数作用域（吨位单价）规则调整，共 "+rules.length+" 条作用域规则"];
+    window.submitCR && window.submitCR("多维参数作用域变更", details, params);
+  });
 })();
 </script>
 </body>

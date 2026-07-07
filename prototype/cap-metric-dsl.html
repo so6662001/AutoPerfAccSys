@@ -14,6 +14,7 @@
         <h1>绩效项 · 取数 DSL → SQL <span class="tag amber" style="vertical-align:middle">P1</span></h1>
         <p>名亿驱动：绩效目标单(指标+起止+条件) + 金额/成本公式 → 按核算对象编译 SQL → 写提成核算单明细</p>
       </div>
+      <div class="actions"><button class="btn primary" id="btnCR">🚀 提交变更（走审批）</button></div>
     </div>
 
     <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
@@ -89,6 +90,14 @@
   }
   document.querySelectorAll(".card-b select, .card-b input").forEach(e=>{e.addEventListener("input",render);e.addEventListener("change",render);});
   render();
+
+  $("btnCR").addEventListener("click",()=>{
+    const itemName={ton:"吨位提成(阶梯·目标单)",self:"自营利润提成",ext:"外调利润提成"}[$("item").value];
+    const objName=$("obj").value==="emp"?"员工":"部门";
+    const params = { "绩效项":itemName, "核算对象":objName, "结算方式":$("settle").value, "吨位阶梯":"0-800@8/800-1000@10/1000-2000@12/2000+特殊", "利润提成系数":"0.5" };
+    const details = ["名亿·绩效项与取数DSL配置："+itemName+"，核算对象 "+objName+"，结算方式 "+$("settle").value];
+    window.submitCR && window.submitCR("绩效项/取数DSL变更", details, params);
+  });
 })();
 </script>
 </body>
