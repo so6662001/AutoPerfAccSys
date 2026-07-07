@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: steel-perf
+  # 平台库数据源（M1 接入；此处占位，多租户共享库 + tenant_id 判别）
+  # datasource:
+  #   url: jdbc:mysql://localhost:3306/steel_perf?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+  #   username: perf
+  #   password: ENC(***)   # Jasypt 加密
+  #   driver-class-name: com.mysql.cj.jdbc.Driver
+
+# ERP 源库（SQL Server 2008+，只读接入，按租户路由；M1 落地）
+# erp:
+#   sqlserver:
+#     read-only: true
+#     query-timeout-seconds: 30
+#     max-rows: 200000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.steel.perf: INFO

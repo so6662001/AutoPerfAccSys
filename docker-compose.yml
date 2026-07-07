@@ -1,0 +1,44 @@
+# 一键起本地环境：MySQL(平台库) + Redis + 后端 + 前端
+# 注意：ERP 源库为客户各自的 SQL Server 2008+（只读），不在本 compose 内，按租户在 t_tenant.erp_conn_enc 配置。
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: steel_perf
+      MYSQL_USER: perf
+      MYSQL_PASSWORD: perf
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db/platform:/docker-entrypoint-initdb.d:ro
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      TZ: Asia/Shanghai
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  mysql_data:
