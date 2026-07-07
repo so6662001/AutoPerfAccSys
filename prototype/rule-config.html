@@ -676,6 +676,10 @@
     showToast("合规审计已导出 ✓","含全量变更单与三级串签留痕","green");
   }
 
+  // 合并外部（如超扑越方案配置页）提交的变更单
+  try{ const ext=JSON.parse(localStorage.getItem("steel_change_reqs")||"[]");
+    ext.forEach(r=>{ if(r && r.id && !changeReqs.some(x=>x.id===r.id)) changeReqs.push(r); });
+    seqVer = Math.max(seqVer, ...changeReqs.map(r=>parseInt(r.ver)||0)); }catch(e){}
   renderCR();
   $("nextVer").textContent = "v"+(seqVer+1);
   renderPilot();

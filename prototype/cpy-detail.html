@@ -17,6 +17,8 @@
       <div class="actions"><button class="btn" id="btnExport">⬇ 导出明细</button></div>
     </div>
 
+    <div id="sumCard"></div>
+
     <div class="card">
       <div class="card-h">
         <h3>提成明细</h3>
@@ -86,6 +88,28 @@
   $("btnFilter").addEventListener("click",()=>{ clampDays(); render(); showToast&&showToast("已按日期筛选","仅显示当月区间明细，未跨月","blue"); });
   $("fMonth").addEventListener("change",render);
   $("btnExport").addEventListener("click",()=>{ showToast&&showToast("明细已导出 ✓","含四类提成分列，按当前日期区间","green"); });
+
+  // 读取试算器记入的本月绩效
+  function renderSummary(){
+    let rec=null; try{ rec=JSON.parse(localStorage.getItem("cpy_payslip")||"null"); }catch(e){}
+    if(!rec){ $("sumCard").innerHTML=""; return; }
+    const f=n=>"¥"+Math.round(n).toLocaleString("zh-CN");
+    $("sumCard").innerHTML = `<div class="card" style="border-left:4px solid var(--c-primary);margin-bottom:16px"><div class="card-b">
+      <div class="flex between center wrap gap12">
+        <div><div class="muted small">来自专属试算器 · ${rec.emp} · ${rec.monthLabel}（${rec.season}·${rec.lvl}档）</div>
+          <div class="b700" style="font-size:22px;color:var(--c-primary)">当月薪酬总额 ${f(rec.total)}</div></div>
+        <div class="flex gap16 wrap small">
+          <div><div class="muted">基本工资</div><b>${f(rec.base)}</b></div>
+          <div><div class="muted">自营提成</div><b>${f(rec.self)}</b></div>
+          <div><div class="muted">外配提成</div><b>${f(rec.ext)}</b></div>
+          <div><div class="muted">吨量提成</div><b>${f(rec.ton)}</b></div>
+          <div><div class="muted">加磅提成</div><b>${f(rec.weigh)}</b></div>
+        </div>
+      </div>
+      <div class="muted small mt8">记入时间：${rec.time} · 下方为逐单提成明细（按日期筛选不跨月）</div>
+    </div></div>`;
+  }
+  renderSummary();
   render();
 })();
 </script>

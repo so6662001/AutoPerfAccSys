@@ -14,7 +14,10 @@
         <h1>超扑越绩效方案配置 · 按三期呈现</h1>
         <p>按落地阶段展示各核算项的配置形态：一期可直接配置、二期扩展、三期过磅定制</p>
       </div>
-      <div class="actions"><a class="btn primary" href="cpy-simulator.html">🧮 试算验证</a></div>
+      <div class="actions">
+        <a class="btn" href="cpy-simulator.html">🧮 试算验证</a>
+        <button class="btn primary" id="btnSubmit">🚀 提交方案上线（走审批）</button>
+      </div>
     </div>
 
     <div data-tabs="cpy">
@@ -165,5 +168,27 @@
   </div>
 </div>
 <script src="assets/app.js"></script>
+<script>
+(function(){
+  document.getElementById("btnSubmit").addEventListener("click",()=>{
+    let list=[]; try{ list=JSON.parse(localStorage.getItem("steel_change_reqs")||"[]"); }catch(e){}
+    const maxVer = Math.max(3, ...list.map(r=>parseInt(r.ver)||0));
+    const ver = maxVer+1;
+    const id = "CR-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+String(ver).padStart(2,"0");
+    const cr = {
+      id, ver, submitter:"李静·绩效专员", time:new Date().toLocaleString("zh-CN"),
+      effMode:"now", effLabel:"立即生效", scopeLabel:"灰度·超扑越销售部", status:"待审批", cur:0,
+      chain:[ {role:"部门主管",name:"陈组长",status:"待处理",time:""},
+              {role:"HR负责人",name:"王总监",mode:"或签",candidates:["王总监","张经理"],status:"待处理",time:""},
+              {role:"分管领导",name:"周总",status:"待处理",time:""} ],
+      details:["超扑越销售绩效方案：基本工资(4档)+自营/外配阶梯(淡旺季)+吨量提成(组别×客户类型)+加磅利润提成","外配过渡期保底10%(至2026-06-30)","基本工资达成率定档+上月定下月底薪"],
+      params:{ "基本工资档":"2000/2500/3000/3500","综合达成率":"吨量70%+利润30%","自营阶梯(旺/淡)":"5/10/15/20%","吨量提成":"3.8元/吨","地推纯新客户":"10元/个","加磅提成":"加磅千分比差额" }
+    };
+    list.push(cr);
+    try{ localStorage.setItem("steel_change_reqs", JSON.stringify(list)); }catch(e){}
+    showToast&&showToast("已提交方案审批 ✓","变更单 "+id+" 已提交，前往『绩效规则配置→变更审批』三级串签，或在『合规审计查询』查看","green");
+  });
+})();
+</script>
 </body>
 </html>
