@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>岳洋通绩效明细表 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="yyt-detail" data-crumb="岳洋通落地案例 / <b>绩效明细表</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>绩效明细表 · 周文</h1>
+        <p>逐单列出 销量绩效 / 差价绩效 / 加工绩效，按库别与日期筛选（不跨月）</p>
+      </div>
+      <div class="actions"><button class="btn" id="btnExport">⬇ 导出明细</button></div>
+    </div>
+
+    <div id="sumCard"></div>
+
+    <div class="card">
+      <div class="card-h">
+        <h3>提成明细</h3>
+        <div class="flex gap8 center wrap">
+          <select class="select" id="fMonth" style="width:auto;padding:7px 10px"><option value="2026-06">2026年6月</option><option value="2026-05">2026年5月</option></select>
+          <select class="select" id="fStore" style="width:auto;padding:7px 10px"><option value="">全部库别</option><option>院内/调拨</option><option>直发</option><option>配货</option><option>加工</option><option>新品种</option></select>
+          <span class="muted small">日期</span>
+          <input class="input" type="number" id="fFrom" min="1" max="31" value="1" style="width:60px;padding:7px 8px">
+          <span class="muted">–</span>
+          <input class="input" type="number" id="fTo" min="1" max="31" value="30" style="width:60px;padding:7px 8px">
+          <button class="btn sm primary" id="btnFilter">筛选</button>
+          <span class="tag gray">不跨月</span>
+        </div>
+      </div>
+      <div class="card-b" style="padding:0">
+        <table class="table">
+          <thead><tr><th>日期</th><th>客户</th><th>库别</th><th class="right">理算重量</th><th class="right">销量绩效</th><th class="right">差价绩效</th><th class="right">加工绩效</th><th class="right">小计</th></tr></thead>
+          <tbody id="rows"></tbody>
+          <tfoot><tr style="font-weight:700;background:var(--c-surface-2)"><td colspan="4">合计</td><td class="right money" id="tSales">—</td><td class="right money" id="tDiff">—</td><td class="right money" id="tProc">—</td><td class="right money pos" id="tSum">—</td></tr></tfoot>
+        </table>
+        <div id="empty" class="muted small" style="padding:24px;text-align:center;display:none">无匹配明细。</div>
+      </div>
+    </div>
+    <div class="callout blue mt16"><span>📋</span><div>明细可按库别与日期筛选，且<b>不跨月</b>。低价备案单差价绩效记 0；内部销售量按一半计。每行可对应 ERP 出库单据。</div></div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const fmt = n => n?("¥"+Math.round(n).toLocaleString("zh-CN")):"—";
+  const data = {
+    "2026-06":[
+      { d:2, cust:"华东建材", store:"院内/调拨", wt:120, sales:120, diff:360, proc:0 },
+      { d:4, cust:"通宇钢构", store:"配货", wt:100, sales:100, diff:500, proc:0 },
+      { d:6, cust:"瑞丰实业", store:"加工", wt:60, sales:120, diff:300, proc:240 },
+      { d:9, cust:"明远贸易", store:"直发", wt:80, sales:40, diff:120, proc:0 },
+      { d:12, cust:"新品·恒信", store:"新品种", wt:50, sales:50, diff:600, proc:0 },
+      { d:16, cust:"华东建材", store:"配货(低价备案)", wt:90, sales:90, diff:0, proc:0 },
+      { d:20, cust:"通宇钢构", store:"院内/调拨", wt:110, sales:110, diff:330, proc:0 },
+      { d:26, cust:"瑞丰实业", store:"加工", wt:45, sales:90, diff:225, proc:180 },
+    ],
+    "2026-05":[
+      { d:8, cust:"华东建材", store:"配货", wt:100, sales:100, diff:450, proc:0 },
+      { d:18, cust:"瑞丰实业", store:"加工", wt:55, sales:110, diff:280, proc:210 },
+    ],
+  };
+  function render(){
+    const mon=$("fMonth").value, st=$("fStore").value, from=parseInt($("fFrom").value)||1, to=parseInt($("fTo").value)||31;
+    const list=(data[mon]||[]).filter(r=> r.d>=from && r.d<=to && (!st || r.store.indexOf(st)===0));
+    $("empty").style.display=list.length?"none":"block";
+    let s={sales:0,diff:0,proc:0,sum:0};
+    $("rows").innerHTML=list.map(r=>{ const sub=r.sales+r.diff+r.proc; s.sales+=r.sales;s.diff+=r.diff;s.proc+=r.proc;s.sum+=sub;
+      const low=r.store.indexOf("低价")>=0;
+      return `<tr><td>${mon}-${String(r.d).padStart(2,"0")}</td><td>${r.cust}</td><td><span class="tag ${low?'red':'blue'}">${r.store}</span></td>
+        <td class="right num">${r.wt}</td><td class="right">${fmt(r.sales)}</td><td class="right">${fmt(r.diff)}</td><td class="right">${fmt(r.proc)}</td><td class="right money">${fmt(sub)}</td></tr>`;
+    }).join("");
+    $("tSales").textContent=fmt(s.sales);$("tDiff").textContent=fmt(s.diff);$("tProc").textContent=fmt(s.proc);$("tSum").textContent=fmt(s.sum);
+  }
+  function renderSummary(){
+    let rec=null; try{ rec=JSON.parse(localStorage.getItem("yyt_payslip")||"null"); }catch(e){}
+    if(!rec){ $("sumCard").innerHTML=""; return; }
+    const f=n=>"¥"+Math.round(n).toLocaleString("zh-CN");
+    $("sumCard").innerHTML=`<div class="card" style="border-left:4px solid var(--c-primary);margin-bottom:16px"><div class="card-b">
+      <div class="flex between center wrap gap12">
+        <div><div class="muted small">来自试算器 · ${rec.emp} · ${rec.monthLabel} · ${rec.store}</div>
+          <div class="b700" style="font-size:22px;color:var(--c-primary)">个人绩效合计 ${f(rec.total)}</div></div>
+        <div class="flex gap16 wrap small">
+          <div><div class="muted">销量绩效</div><b>${f(rec.sales)}</b></div>
+          <div><div class="muted">差价绩效</div><b>${f(rec.diff)}</b></div>
+          <div><div class="muted">×团队系数后</div><b>${f(rec.afterTeam)}</b></div>
+          <div><div class="muted">加工绩效</div><b>${f(rec.proc)}</b></div>
+          <div><div class="muted">开发新户</div><b>${f(rec.newc)}</b></div>
+        </div>
+      </div>
+      <div class="muted small mt8">记入时间：${rec.time} · 下方为逐单明细（按库别/日期筛选不跨月）</div>
+    </div></div>`;
+  }
+  $("btnFilter").addEventListener("click",()=>{ render(); showToast&&showToast("已按条件筛选","仅当月区间明细，未跨月","blue"); });
+  $("fMonth").addEventListener("change",render); $("fStore").addEventListener("change",render);
+  $("btnExport").addEventListener("click",()=>showToast&&showToast("明细已导出 ✓","含销量/差价/加工分列","green"));
+  renderSummary(); render();
+})();
+</script>
+</body>
+</html>

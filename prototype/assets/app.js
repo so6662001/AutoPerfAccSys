@@ -37,6 +37,7 @@
       { id: "yyt-overview", label: "落地总览", icon: "🗺", href: "yyt-overview.html" },
       { id: "yyt-config", label: "方案配置", icon: "🧩", href: "yyt-config.html" },
       { id: "yyt-sim", label: "销售绩效试算器", icon: "🧮", href: "yyt-simulator.html" },
+      { id: "yyt-detail", label: "绩效明细表", icon: "📋", href: "yyt-detail.html" },
       { id: "yyt-interest", label: "期货合同计息", icon: "💱", href: "yyt-interest.html" },
     ]},
   ];

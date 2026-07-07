@@ -14,7 +14,10 @@
         <h1>岳洋通绩效方案配置</h1>
         <p>按核算项展示配置形态，标注一期可配置 / 二期扩展 / 三期专项</p>
       </div>
-      <div class="actions"><a class="btn primary" href="yyt-simulator.html">🧮 试算验证</a></div>
+      <div class="actions">
+        <a class="btn" href="yyt-simulator.html">🧮 试算验证</a>
+        <button class="btn primary" id="btnSubmit">🚀 提交方案上线（走审批）</button>
+      </div>
     </div>
 
     <div data-tabs="yyt">
@@ -119,5 +122,27 @@
   </div>
 </div>
 <script src="assets/app.js"></script>
+<script>
+(function(){
+  document.getElementById("btnSubmit").addEventListener("click",()=>{
+    let list=[]; try{ list=JSON.parse(localStorage.getItem("steel_change_reqs")||"[]"); }catch(e){}
+    const maxVer = Math.max(3, ...list.map(r=>parseInt(r.ver)||0));
+    const ver = maxVer+1;
+    const id = "CR-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+String(ver).padStart(2,"0");
+    const cr = {
+      id, ver, submitter:"李静·绩效专员", time:new Date().toLocaleString("zh-CN"),
+      effMode:"now", effLabel:"立即生效", scopeLabel:"灰度·岳洋通销售部", status:"待审批", cur:0,
+      chain:[ {role:"部门主管",name:"陈组长",status:"待处理",time:""},
+              {role:"HR负责人",name:"王总监",mode:"或签",candidates:["王总监","张经理"],status:"待处理",time:""},
+              {role:"分管领导",name:"周总",status:"待处理",time:""} ],
+      details:["岳洋通销售绩效方案：销量绩效(库别单价)+差价绩效(库别公式)+院内加工绩效3%+团队任务系数","新品种库=销售利润2×10%；差价≥10才有；低价备案不算差价；内部销售算一半","开发新户/外地新户激励、期货合同滚动计息（三期）"],
+      params:{ "销量单价(院内/直发/配货/加工)":"1/0.5/1/2元/吨","差价门槛":"现货−20 / 非现货−10","加工绩效":"加工费×3%","团队系数":"分支完成量/设定量","新品种库":"销售利润2×10%" }
+    };
+    list.push(cr);
+    try{ localStorage.setItem("steel_change_reqs", JSON.stringify(list)); }catch(e){}
+    showToast&&showToast("已提交方案审批 ✓","变更单 "+id+" 已提交，前往『绩效规则配置→变更审批』三级串签，或在『合规审计查询』查看","green");
+  });
+})();
+</script>
 </body>
 </html>

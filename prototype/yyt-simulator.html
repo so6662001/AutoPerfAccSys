@@ -29,7 +29,7 @@
         <h1>岳洋通销售绩效试算器 <span class="tag green" style="vertical-align:middle">可交互 · 实时</span></h1>
         <p>按库别演算：销量绩效 + 差价绩效，×团队系数，再加 加工绩效 + 新户开发</p>
       </div>
-      <div class="actions"><button class="btn" id="btnReset">↺ 重置示例</button></div>
+      <div class="actions"><button class="btn" id="btnReset">↺ 重置示例</button><button class="btn primary" id="btnSave">📋 记入本月绩效</button></div>
     </div>
 
     <div class="sim-grid">
@@ -99,6 +99,7 @@
   const salesUnit = { yn:1, zf:0.5, ph:1, jg:2, xp:1 };
   const diffCoef = { zf:0.5, ph:1, jg:1 };
   const label = { yn:"院内/调拨库（现货）", zf:"直发库", ph:"配货库", jg:"加工库", xp:"新品种库" };
+  let last = null;
 
   function toggleInputs(st){
     const isYn = st==="yn";
@@ -128,6 +129,7 @@
     const proc = num("procFee")*0.03;
     const newc = num("newCust");
     const total = afterTeam + proc + newc;
+    last = { store:label[st], sales, diff, afterTeam, proc, newc, total };
 
     $("fSales").textContent = "= "+num("wt")+(chk("inner")?"×0.5":"")+" × "+(salesUnit[st]||0)+" 元/吨";
     $("rSales").textContent = fmt(sales);
@@ -144,6 +146,12 @@
   }
   document.querySelectorAll(".card-b input, .card-b select").forEach(el=>{ el.addEventListener("input",calc); el.addEventListener("change",calc); });
   $("btnReset").addEventListener("click",()=>location.reload());
+  $("btnSave").addEventListener("click",()=>{
+    if(!last) return;
+    const rec = Object.assign({ emp:"周文", monthLabel:"2026-06", time:new Date().toLocaleString("zh-CN") }, last);
+    try{ localStorage.setItem("yyt_payslip", JSON.stringify(rec)); }catch(e){}
+    showToast&&showToast("已记入本月绩效 ✓","周文 2026-06 个人绩效合计 ¥"+Math.round(last.total).toLocaleString("zh-CN")+"，前往『绩效明细表』查看","green");
+  });
   calc();
 })();
 </script>
