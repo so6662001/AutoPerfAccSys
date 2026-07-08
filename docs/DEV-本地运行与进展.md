@@ -80,9 +80,20 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
   - 名亿 = 吨位提成9000（整体档位）+ 自营收益10000 + 结算成本50000 + 达成率96%→系数0.8
 - **测试**：累计 57 个全绿（引擎24 + 指标5 + 集成9 + 核算8 + 治理8 + API3）。
 
-## 下一步（M4 剩余 + M6）
-- M4：取数 DSL→SQL 执行链路（接 ErpReader/JdbcTemplate 只读数据源）、绩效明细报表、评分卡/系数分布、审批/申诉、员工端 —— REST + 持久层(MyBatis+DB) 落地与前端页面。
-- M6：安全测试(注入/越权/脱敏)、性能压测、可观测、部署加固。
-- P2：过磅(加磅/点数挂价)、加工费提成、新户累计激励、合同滚动计息接入取数。
+## 已完成（M4 · REST 服务层）
+
+- **perf-api 接口层**（服务→仓储→REST 全链路，租户隔离）：
+  - `RuleController`：变更单 提交(发布权重硬校验)/列表/审批(三级串签)/退回/委托/加签/到期生效/灰度推广/版本diff。
+  - `CalcController`：`/api/calc/run` 按方案+上下文执行核算，返回带下钻与幂等键的绩效单。
+  - `ChangeRequestRepository`：内存租户隔离仓储（生产将替换为 MyBatis + 平台库，接口不变）。
+  - `EngineBeans`：注册 metric/calc/rule/校验/diff 组件为 Bean。
+- **集成测试**（MockMvc）：核算合计、发布权重不足被拦截、变更单三级串签走到 EFFECTIVE、**租户隔离(t3提交/t4列表为空)**。
+- 修复：父 POM 编译加 `-parameters`（非 spring-boot-starter-parent 时 @PathVariable 名称解析所需）。
+- **测试**：累计 61 个全绿（引擎24 + 指标5 + 集成9 + 核算8 + 治理8 + API7）。
+
+## 下一步
+- 持久层：MyBatis + 平台库(MySQL) 落地仓储、只读 ERP(SQL Server) 数据源接 DSL→SQL 执行、日快照 @Scheduled。
+- 前端：规则中心/核算工作台/绩效单/审批申诉/员工端 页面对接以上 REST（对应 prototype）。
+- M6：安全测试(脱敏/越权集成)、性能压测、可观测、部署；P2 过磅/加工费/新户/合同计息接入。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）

@@ -22,6 +22,18 @@
       <artifactId>perf-engine</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.steel.perf</groupId>
+      <artifactId>perf-metric</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.steel.perf</groupId>
+      <artifactId>perf-calc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.steel.perf</groupId>
+      <artifactId>perf-rule</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
