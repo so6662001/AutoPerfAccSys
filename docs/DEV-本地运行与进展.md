@@ -116,8 +116,17 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
 - **集成测试**（H2 模拟 ERP 表 `dwd_sales_detail`）：`SUM(qty) GROUP BY emp` + 条件 `biz_type=现货` → 验证 DSL→SQL→执行、**参数绑定、tenant_id 隔离、条件过滤**（他租户与非现货数据被正确过滤）。
 - **测试**：累计 63 个全绿（引擎24 + 指标5 + 集成9 + 核算8 + 治理8 + API9）。
 
+## 已完成（日快照 + M6 加固首批）
+
+- **审计日志**：`AuditLogEntity`/`AuditService`/`AuditController`，规则提交/审批写入审计（租户+操作人+类型+时间），`/api/audit` 查询；集成测试验证提交产生审计记录。
+- **字段级脱敏**：`MaskingService` 按角色（HR/绩效专员/分管领导等）控制薪酬金额可见/掩码；单元测试覆盖授权与非授权。
+- **日快照采集**：`JdbcSnapshotJob`（ERP 只读源 → 平台 `dwd_snapshot`，租户隔离）+ `SnapshotScheduler`（默认关闭，`perf.snapshot.enabled=true` 开启，每日 00:30）；集成测试验证采集条数/汇总/租户隔离。
+- `@EnableScheduling` 开启定时能力。
+- **测试**：累计 67 个全绿（引擎24 + 指标5 + 集成9 + 核算8 + 治理8 + API13）。
+
 ## 下一步
-- 日快照 `@Scheduled`（每日拉取库存/应收余额入 dwd_snapshot）；独立 ERP 只读数据源按租户路由。
-- M6：安全测试(脱敏/越权集成)、性能压测、可观测、部署；P2 过磅/加工费/新户/合同计息接入；更多前端页面(审批链/审计/员工端)。
+- 独立 ERP 只读数据源按租户路由；性能压测、可观测(traceId/指标)、部署。
+- P2：过磅(加磅/点数挂价)、加工费提成、新户累计激励、合同滚动计息接入取数。
+- 更多前端页面：审批链可视化、审计查询、员工端消息。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）

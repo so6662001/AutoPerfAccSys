@@ -29,13 +29,16 @@ public class RuleController {
     private final PublishValidator validator;
     private final ParamDiff paramDiff;
     private final ChangeRequestStore repo;
+    private final com.steel.perf.service.AuditService audit;
 
     public RuleController(ChangeRequestService svc, PublishValidator validator,
-                          ParamDiff paramDiff, ChangeRequestStore repo) {
+                          ParamDiff paramDiff, ChangeRequestStore repo,
+                          com.steel.perf.service.AuditService audit) {
         this.svc = svc;
         this.validator = validator;
         this.paramDiff = paramDiff;
         this.repo = repo;
+        this.audit = audit;
     }
 
     public record SubmitReq(String planName, String effMode, String effLabel, String scopeLabel,
@@ -62,6 +65,7 @@ public class RuleController {
         cr.setDetails(req.details());
         cr.setParams(req.params());
         repo.save(tenant, cr);
+        audit.record("RULE_SUBMIT", cr.getId(), "提交变更单 v" + cr.getVer() + " · " + cr.getScopeLabel());
         return ApiResponse.ok(cr);
     }
 
@@ -86,6 +90,7 @@ public class RuleController {
         ChangeRequest cr = require(id);
         svc.approve(cr, req.approver(), LocalDateTime.now().format(TF));
         repo.save(TenantContext.requireTenantId(), cr);
+        audit.record("RULE_APPROVE", cr.getId(), "审批人 " + req.approver() + " → " + cr.getStatus());
         return ApiResponse.ok(cr);
     }
 

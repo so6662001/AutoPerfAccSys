@@ -77,6 +77,19 @@ class RuleAndCalcApiTest {
     }
 
     @Test
+    void submitWritesAuditLog() throws Exception {
+        String submit = """
+            {"planName":"审计测试","scopeLabel":"全公司","scorecardWeightSums":{"a":100}}
+            """;
+        mvc.perform(post("/api/rule/change-requests").header("X-Tenant-Id", "audit-t").header("X-User-Id", "李静")
+                .contentType(MediaType.APPLICATION_JSON).content(submit)).andExpect(status().isOk());
+        mvc.perform(get("/api/audit").header("X-Tenant-Id", "audit-t"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].opType").value("RULE_SUBMIT"))
+                .andExpect(jsonPath("$.data[0].opUser").value("李静"));
+    }
+
+    @Test
     void calcPersistIsIdempotent() throws Exception {
         String body = """
             {"planCode":"IDEM","version":1,"period":"2026-07","snapshotHash":"fixed",
