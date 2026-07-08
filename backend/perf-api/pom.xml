@@ -27,6 +27,10 @@
     </dependency>
     <dependency>
       <groupId>com.steel.perf</groupId>
+      <artifactId>perf-integration</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.steel.perf</groupId>
       <artifactId>perf-calc</artifactId>
     </dependency>
     <dependency>

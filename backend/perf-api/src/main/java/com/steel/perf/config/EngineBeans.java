@@ -6,6 +6,7 @@ import com.steel.perf.engine.cost.CostEngine;
 import com.steel.perf.engine.formula.ExpressionEngine;
 import com.steel.perf.engine.scope.ScopeResolver;
 import com.steel.perf.engine.tier.TierEngine;
+import com.steel.perf.integration.dsl.SafeSqlCompiler;
 import com.steel.perf.metric.ContractInterestService;
 import com.steel.perf.metric.MetricService;
 import com.steel.perf.rule.ChangeRequestService;
@@ -46,6 +47,11 @@ public class EngineBeans {
     @Bean
     public ParamDiff paramDiff() {
         return new ParamDiff();
+    }
+
+    @Bean
+    public SafeSqlCompiler safeSqlCompiler() {
+        return new SafeSqlCompiler();
     }
 
     @Bean

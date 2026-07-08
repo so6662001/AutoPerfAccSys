@@ -109,8 +109,15 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
 - **应用可真实启动并持久化**（H2），Spring Boot 上下文含 JPA/事务。
 - **测试**：累计 62 个全绿（引擎24 + 指标5 + 集成9 + 核算8 + 治理8 + API8）。
 
+## 已完成（ERP 取数执行链）
+
+- `JdbcErpReader`：`NamedParameterJdbcTemplate` 执行只读参数化查询（设最大行数/超时）；生产注入独立 ERP 只读数据源(SQL Server)，dev 用平台数据源作演示。
+- `MetricQueryService`：编译取数 DSL(`SafeSqlCompiler`) → 强制注入当前租户 `tenantId` → 校验参数齐全 → 执行，返回按核算对象聚合结果。
+- **集成测试**（H2 模拟 ERP 表 `dwd_sales_detail`）：`SUM(qty) GROUP BY emp` + 条件 `biz_type=现货` → 验证 DSL→SQL→执行、**参数绑定、tenant_id 隔离、条件过滤**（他租户与非现货数据被正确过滤）。
+- **测试**：累计 63 个全绿（引擎24 + 指标5 + 集成9 + 核算8 + 治理8 + API9）。
+
 ## 下一步
-- 只读 ERP(SQL Server) 数据源接 `SafeSqlCompiler` 输出 SQL 执行（JdbcTemplate 只读）、日快照 `@Scheduled`。
-- M6：安全测试(脱敏/越权集成)、性能压测、可观测、部署；P2 过磅/加工费/新户/合同计息接入；更多前端页面。
+- 日快照 `@Scheduled`（每日拉取库存/应收余额入 dwd_snapshot）；独立 ERP 只读数据源按租户路由。
+- M6：安全测试(脱敏/越权集成)、性能压测、可观测、部署；P2 过磅/加工费/新户/合同计息接入；更多前端页面(审批链/审计/员工端)。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）
