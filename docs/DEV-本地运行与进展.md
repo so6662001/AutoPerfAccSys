@@ -136,8 +136,15 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
 - **前端审计查询页** `AuditView.vue`：对接 `/api/audit`，表格展示审计留痕；导航新增入口；`npm run build` 通过。
 - **测试**：累计 74 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API14）。
 
+## 已完成（每租户 ERP 只读数据源路由）
+
+- `ErpDataSourceRegistry`：按租户维护各自 ERP 只读数据源（生产从 t_tenant.erp_conn_enc 解密构建注册），未注册回退默认。
+- `ErpRoutingDataSource`：按当前租户上下文路由 ERP 连接；`JdbcErpReader` 内部持有（非 Spring DataSource Bean，避免与平台库自动装配歧义）。
+- **集成测试**：为租户 erpA 注册独立 H2「ERP」库，验证取数**路由到该租户自己的 ERP 库**（返回 erpA 专属数据 888），实现多租户"各自 SQL Server 只读"取数隔离。
+- **测试**：累计 75 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API15）。
+
 ## 下一步
-- 独立 ERP 只读数据源按租户路由；`/actuator` 指标、性能压测、部署脚本完善。
+- `/actuator` 指标暴露、性能压测、部署脚本完善（K8s/CI）。
 - 合同滚动计息接入取数；更多前端页面：审批链可视化、员工端消息。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）
