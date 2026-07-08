@@ -1,11 +1,16 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
+import AppLayout from "../layout/AppLayout.vue";
 
 const routes: RouteRecordRaw[] = [
-  { path: "/", redirect: "/engine" },
   {
-    path: "/engine",
-    name: "engine-demo",
-    component: () => import("../views/EngineDemo.vue"),
+    path: "/",
+    component: AppLayout,
+    redirect: "/calc",
+    children: [
+      { path: "calc", name: "calc", component: () => import("../views/CalcWorkbench.vue") },
+      { path: "rule", name: "rule", component: () => import("../views/RuleCenter.vue") },
+      { path: "engine", name: "engine-demo", component: () => import("../views/EngineDemo.vue") },
+    ],
   },
 ];
 
@@ -14,7 +19,7 @@ const router = createRouter({
   routes,
 });
 
-// 路由守卫：M1 接入 JWT 后在此校验登录与权限
+// 路由守卫：M-后续接入 JWT 后在此校验登录与权限
 router.beforeEach((_to, _from, next) => {
   next();
 });

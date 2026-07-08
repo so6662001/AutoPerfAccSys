@@ -91,9 +91,17 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
 - 修复：父 POM 编译加 `-parameters`（非 spring-boot-starter-parent 时 @PathVariable 名称解析所需）。
 - **测试**：累计 61 个全绿（引擎24 + 指标5 + 集成9 + 核算8 + 治理8 + API7）。
 
+## 已完成（M4 · 前端联调打通）
+
+- **前端页面**（Vue3 + TS + Element Plus，`vue-tsc` 类型检查通过 + Vite 构建成功）：
+  - `AppLayout`：侧边导航布局。
+  - `CalcWorkbench.vue`（核算工作台）：编辑核算项+上下文 → `/api/calc/run` → 展示绩效单合计、幂等键、**逐项下钻**（默认复现超扑越 ¥20,835）。
+  - `RuleCenter.vue`（规则变更审批）：提交变更单(权重校验) → 列表 → 三级串签通过/退回/到期生效/灰度推广，状态标签联动。
+  - `api/calc.ts`、`api/rule.ts`：类型化 REST 封装；`http.ts` 注入租户头。
+- **系统端到端打通**：Vue3 页面 → REST API → 核算/治理引擎。前端 `npm run build` 通过。
+
 ## 下一步
-- 持久层：MyBatis + 平台库(MySQL) 落地仓储、只读 ERP(SQL Server) 数据源接 DSL→SQL 执行、日快照 @Scheduled。
-- 前端：规则中心/核算工作台/绩效单/审批申诉/员工端 页面对接以上 REST（对应 prototype）。
+- 持久层：MyBatis/JPA + 平台库(MySQL) 落地仓储、只读 ERP(SQL Server) 数据源接 DSL→SQL 执行、日快照 @Scheduled。
 - M6：安全测试(脱敏/越权集成)、性能压测、可观测、部署；P2 过磅/加工费/新户/合同计息接入。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）
