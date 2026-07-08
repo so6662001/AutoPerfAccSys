@@ -26,6 +26,7 @@
     <module>perf-metric</module>
     <module>perf-integration</module>
     <module>perf-calc</module>
+    <module>perf-rule</module>
     <module>perf-api</module>
   </modules>
 
@@ -68,6 +69,11 @@
       <dependency>
         <groupId>com.steel.perf</groupId>
         <artifactId>perf-calc</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.steel.perf</groupId>
+        <artifactId>perf-rule</artifactId>
         <version>${project.version}</version>
       </dependency>
     </dependencies>
