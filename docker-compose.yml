@@ -28,8 +28,8 @@ services:
       - mysql
       - redis
     environment:
-      SPRING_PROFILES_ACTIVE: docker
       TZ: Asia/Shanghai
+      PERF_SEED_ENABLED: "true"   # 演示数据播种（生产请关闭）
     ports:
       - "8080:8080"
 
