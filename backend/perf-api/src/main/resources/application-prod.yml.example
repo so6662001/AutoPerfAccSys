@@ -1,0 +1,23 @@
+# 生产环境配置示例：spring.profiles.active=prod
+# 平台库用 MySQL；ERP 源库为各租户 SQL Server 2008+（只读，按租户在 t_tenant.erp_conn_enc 配置）。
+spring:
+  datasource:
+    url: jdbc:mysql://mysql:3306/steel_perf?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: perf
+    password: ENC(***)          # Jasypt 加密，勿明文
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+  jpa:
+    hibernate:
+      ddl-auto: validate          # 生产用 Flyway/Liquibase 迁移(db/platform)，非 auto-ddl
+    open-in-view: false
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MySQLDialect
+
+# ERP 只读数据源（示例；按租户路由，只读账号 + 查询超时 + 行数上限）
+erp:
+  sqlserver:
+    read-only: true
+    query-timeout-seconds: 30
+    max-rows: 200000

@@ -3,7 +3,7 @@ package com.steel.perf.web;
 import com.steel.perf.common.api.ApiResponse;
 import com.steel.perf.common.exception.BizException;
 import com.steel.perf.common.tenant.TenantContext;
-import com.steel.perf.repo.ChangeRequestRepository;
+import com.steel.perf.repo.ChangeRequestStore;
 import com.steel.perf.rule.ChangeRequestService;
 import com.steel.perf.rule.ParamDiff;
 import com.steel.perf.rule.PublishValidator;
@@ -28,10 +28,10 @@ public class RuleController {
     private final ChangeRequestService svc;
     private final PublishValidator validator;
     private final ParamDiff paramDiff;
-    private final ChangeRequestRepository repo;
+    private final ChangeRequestStore repo;
 
     public RuleController(ChangeRequestService svc, PublishValidator validator,
-                          ParamDiff paramDiff, ChangeRequestRepository repo) {
+                          ParamDiff paramDiff, ChangeRequestStore repo) {
         this.svc = svc;
         this.validator = validator;
         this.paramDiff = paramDiff;

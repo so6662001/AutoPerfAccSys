@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 变更单仓储（M4 内存实现，租户隔离）。
- * <p>生产实现将替换为 MyBatis + 平台库（表 t_change_request，强制 tenant_id 过滤），接口不变。
+ * 变更单内存实现（租户隔离，保留作为无 DB 场景/参考实现）。
+ * 生产默认使用 {@link JpaChangeRequestStore}（@Primary）。
  */
 @Repository
-public class ChangeRequestRepository {
+public class ChangeRequestRepository implements ChangeRequestStore {
 
     private final Map<String, Map<String, ChangeRequest>> store = new ConcurrentHashMap<>();
 
@@ -21,19 +21,22 @@ public class ChangeRequestRepository {
         return store.computeIfAbsent(tenantId, k -> new ConcurrentHashMap<>());
     }
 
+    @Override
     public void save(String tenantId, ChangeRequest cr) {
         tenantMap(tenantId).put(cr.getId(), cr);
     }
 
+    @Override
     public ChangeRequest findById(String tenantId, String id) {
         return tenantMap(tenantId).get(id);
     }
 
+    @Override
     public List<ChangeRequest> list(String tenantId) {
         return new ArrayList<>(tenantMap(tenantId).values());
     }
 
-    /** 下一个版本号（该租户当前最大版本 + 1，基线 3）。 */
+    @Override
     public int nextVersion(String tenantId) {
         int max = 3;
         for (ChangeRequest cr : tenantMap(tenantId).values()) {

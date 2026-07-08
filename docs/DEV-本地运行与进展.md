@@ -100,8 +100,17 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
   - `api/calc.ts`、`api/rule.ts`：类型化 REST 封装；`http.ts` 注入租户头。
 - **系统端到端打通**：Vue3 页面 → REST API → 核算/治理引擎。前端 `npm run build` 通过。
 
+## 已完成（持久层 · JPA + H2/MySQL）
+
+- **JPA 持久化**（Spring Data JPA；默认 H2 内存库，生产 profile=prod 用 MySQL）：
+  - `ChangeRequestEntity` + `JpaChangeRequestStore`(@Primary)：变更单持久化（复杂字段 JSON 列），租户隔离，`ChangeRequestStore` 接口保留内存实现作降级。
+  - `PayslipEntity` + 幂等入库：`idempotencyKey` 唯一约束，**同参数重跑不重复入库**（集成测试验证：跑两次列表仅 1 条）。
+  - `application.yml` H2 默认；`application-prod.yml.example` 提供 MySQL + ERP 只读配置样例。
+- **应用可真实启动并持久化**（H2），Spring Boot 上下文含 JPA/事务。
+- **测试**：累计 62 个全绿（引擎24 + 指标5 + 集成9 + 核算8 + 治理8 + API8）。
+
 ## 下一步
-- 持久层：MyBatis/JPA + 平台库(MySQL) 落地仓储、只读 ERP(SQL Server) 数据源接 DSL→SQL 执行、日快照 @Scheduled。
-- M6：安全测试(脱敏/越权集成)、性能压测、可观测、部署；P2 过磅/加工费/新户/合同计息接入。
+- 只读 ERP(SQL Server) 数据源接 `SafeSqlCompiler` 输出 SQL 执行（JdbcTemplate 只读）、日快照 `@Scheduled`。
+- M6：安全测试(脱敏/越权集成)、性能压测、可观测、部署；P2 过磅/加工费/新户/合同计息接入；更多前端页面。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）

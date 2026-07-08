@@ -77,6 +77,23 @@ class RuleAndCalcApiTest {
     }
 
     @Test
+    void calcPersistIsIdempotent() throws Exception {
+        String body = """
+            {"planCode":"IDEM","version":1,"period":"2026-07","snapshotHash":"fixed",
+             "components":[{"code":"a","expression":"10","includeInTotal":true}],
+             "context":{}}
+            """;
+        // 同参数跑两次
+        for (int i = 0; i < 2; i++) {
+            mvc.perform(post("/api/calc/run").header("X-Tenant-Id", "idem")
+                    .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
+        }
+        mvc.perform(get("/api/calc/payslips").param("period", "2026-07").header("X-Tenant-Id", "idem"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1)); // 幂等：仅一条
+    }
+
+    @Test
     void tenantIsolationListSeparate() throws Exception {
         // t3 提交一单，t4 列表应看不到
         String submit = """
