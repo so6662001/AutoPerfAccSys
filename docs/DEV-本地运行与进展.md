@@ -201,7 +201,13 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
 
 - **k6 压测脚本** `perf/k6-load.js` + `perf/README.md`：登录→核算 run(校验合计)→变更单查询；50 并发爬坡场景，阈值 错误率<1%、p95<500ms；附调优与可观测建议。
 
+## 已完成（Redis 分布式锁 + 员工端 H5）
+
+- **分布式锁**：`LockService` 抽象 + `InMemoryLockService`（默认/测试）+ `RedisLockService`（`perf.lock.redis=true` 启用，SET NX PX + Lua 安全释放）；`CalcController.run` 用 `calc:tenant:period` 锁**串行同租户同周期核算**，防并发覆盖/重复计。锁串行性单测（20线程×500次自增无竞态）。默认关闭 redis 健康检查以免影响健康端点。
+- **员工端移动 H5** `MobileView`（路由 `/m`）：顶部薪酬合计 + 消息中心 + 我的绩效单（逐项下钻），移动卡片式样式；导航新增入口。
+- **测试**：累计 96 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API36）。前端 12 页面构建通过。
+
 ## 下一步
-- 员工端移动 H5 页面；接入 Redis 分布式锁做同租户同周期核算串行。
+- k6 压测实测报告；生产 Redis/MySQL 联调。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）

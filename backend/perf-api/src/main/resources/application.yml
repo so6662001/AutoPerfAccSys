@@ -33,6 +33,13 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  health:
+    redis:
+      enabled: false   # 默认内存锁；启用 Redis 锁(perf.lock.redis=true)时可开启
+
+perf:
+  lock:
+    redis: false        # true 切换为 Redis 分布式锁（多实例）
 
 logging:
   level:

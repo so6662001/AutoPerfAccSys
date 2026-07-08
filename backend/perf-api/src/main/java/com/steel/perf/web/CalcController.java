@@ -25,11 +25,14 @@ public class CalcController {
     private final CalcEngine calcEngine;
     private final PayslipJpaRepo payslipRepo;
     private final ObjectMapper om;
+    private final com.steel.perf.lock.LockService lock;
 
-    public CalcController(CalcEngine calcEngine, PayslipJpaRepo payslipRepo, ObjectMapper om) {
+    public CalcController(CalcEngine calcEngine, PayslipJpaRepo payslipRepo, ObjectMapper om,
+                          com.steel.perf.lock.LockService lock) {
         this.calcEngine = calcEngine;
         this.payslipRepo = payslipRepo;
         this.om = om;
+        this.lock = lock;
     }
 
     public record ComponentReq(String code, String expression, boolean includeInTotal) {
@@ -48,8 +51,12 @@ public class CalcController {
                 .toList();
         PlanDef plan = new PlanDef(req.planCode(), req.version(), comps, req.summaryExpr());
         String snap = req.snapshotHash() == null ? "adhoc" : req.snapshotHash();
-        PayslipResult result = calcEngine.calc(plan, req.context(), tenant, req.period(), snap);
-        persistIdempotent(tenant, req.period(), result);
+        // 同租户同周期核算串行，防并发覆盖/重复计
+        PayslipResult result = lock.runExclusive("calc:" + tenant + ":" + req.period(), () -> {
+            PayslipResult r = calcEngine.calc(plan, req.context(), tenant, req.period(), snap);
+            persistIdempotent(tenant, req.period(), r);
+            return r;
+        });
         return ApiResponse.ok(result);
     }
 

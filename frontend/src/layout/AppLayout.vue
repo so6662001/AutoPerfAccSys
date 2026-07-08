@@ -13,6 +13,7 @@
         <el-menu-item index="/notice"><span>🔔 消息中心</span></el-menu-item>
         <el-menu-item index="/audit"><span>🔎 合规审计查询</span></el-menu-item>
         <el-menu-item index="/engine"><span>🧮 公式试算</span></el-menu-item>
+        <el-menu-item index="/m"><span>📱 员工端(H5)</span></el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
