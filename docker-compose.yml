@@ -14,7 +14,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./db/platform:/docker-entrypoint-initdb.d:ro
+      # schema 由后端 Flyway 迁移管理（db/migration）；此处仅持久化数据
       - mysql_data:/var/lib/mysql
 
   redis:
@@ -29,7 +29,12 @@ services:
       - redis
     environment:
       TZ: Asia/Shanghai
-      PERF_SEED_ENABLED: "true"   # 演示数据播种（生产请关闭）
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/steel_perf?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: perf
+      SPRING_DATASOURCE_PASSWORD: perf
+      SPRING_DATA_REDIS_HOST: redis
+      PERF_JWT_SECRET: change-me-in-prod-please-32bytes-minimum!!
     ports:
       - "8080:8080"
 
