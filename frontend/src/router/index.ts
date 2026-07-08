@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router"
 import AppLayout from "../layout/AppLayout.vue";
 
 const routes: RouteRecordRaw[] = [
+  { path: "/login", name: "login", component: () => import("../views/LoginView.vue") },
   {
     path: "/",
     component: AppLayout,
@@ -23,9 +24,14 @@ const router = createRouter({
   routes,
 });
 
-// 路由守卫：M-后续接入 JWT 后在此校验登录与权限
-router.beforeEach((_to, _from, next) => {
-  next();
+// 路由守卫：未登录跳转登录页
+router.beforeEach((to, _from, next) => {
+  const token = localStorage.getItem("token");
+  if (to.path !== "/login" && !token) {
+    next("/login");
+  } else {
+    next();
+  }
 });
 
 export default router;

@@ -167,7 +167,13 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
 - **政策沙盘** `/api/calc/sandbox` + 前端 `SandboxView`；规则中心审批链 `el-steps` 可视化。
 - **测试**：累计 88 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API28）。
 
+## 已完成（实库登录 + 前端登录闭环）
+
+- **实库登录**：`UserEntity`/`UserJpaRepo`，`/api/auth/login` 优先按 `t_user` + **BCrypt** 校验并取用户角色；无此用户时回退演示密码（dev）。测试 2 项（DB 用户登录成功/密码错误 401）。
+- **前端登录闭环**：`LoginView` 登录页 + `api/auth`（存/清 token）+ **路由守卫**（未登录跳登录）+ 顶栏用户信息与退出；`http.ts` 携带 Bearer。`npm run build` 通过。
+- **测试**：累计 90 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API30）。
+
 ## 下一步
-- 前端登录页对接 JWT；员工端消息/绩效单下钻页；性能压测报告；t_user + BCrypt 实库登录。
+- 员工端消息/绩效单下钻前端页；绩效明细报表页；性能压测报告；方法级 RBAC 注解。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）

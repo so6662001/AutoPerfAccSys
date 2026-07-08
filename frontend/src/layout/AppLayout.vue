@@ -12,17 +12,31 @@
         <el-menu-item index="/engine"><span>🧮 公式试算</span></el-menu-item>
       </el-menu>
     </el-aside>
-    <el-main class="main">
-      <router-view />
-    </el-main>
+    <el-container>
+      <el-header class="topbar">
+        <span class="sp"></span>
+        <span class="user">{{ user.username }} @ {{ user.tenant }}</span>
+        <el-button size="small" text @click="onLogout">退出</el-button>
+      </el-header>
+      <el-main class="main">
+        <router-view />
+      </el-main>
+    </el-container>
   </el-container>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { currentUser, logout } from "../api/auth";
 const route = useRoute();
+const router = useRouter();
 const active = computed(() => route.path);
+const user = currentUser();
+function onLogout() {
+  logout();
+  router.push("/login");
+}
 </script>
 
 <style scoped>
@@ -30,5 +44,7 @@ const active = computed(() => route.path);
 .aside { background: linear-gradient(180deg, #0f1b30, #17233c); }
 .brand { color: #fff; font-weight: 700; padding: 18px 16px; font-size: 15px; }
 .main { background: #eef1f6; padding: 22px; }
+.topbar { background: #fff; border-bottom: 1px solid #e3e8f0; display: flex; align-items: center; height: 52px; }
+.topbar .sp { flex: 1; } .topbar .user { color: #5a6577; font-size: 13px; margin-right: 12px; }
 :deep(.el-menu) { border-right: none; }
 </style>
