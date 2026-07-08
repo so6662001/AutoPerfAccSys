@@ -161,7 +161,13 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
 - **前端页面**：指标计息试算 `MetricView`、绩效申诉复核 `AppealView`（+ 之前的核算/规则/审计/公式）；`npm run build` 通过。
 - **测试**：累计 80 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API20）。
 
+## 已完成（JWT 认证 + 政策沙盘）
+
+- **JWT 认证**：`JwtService`（HS256 无第三方依赖，签发/校验含租户/用户/角色/过期）；`/api/auth/login` 登录发令牌；`TenantFilter` 优先解析 `Authorization: Bearer`（无 token 回退请求头，兼容既有测试与联调）。测试 7 项（签发校验/篡改/过期/换密钥拒绝；登录→Bearer 访问租户来自令牌；错密码/无效令牌 401）。前端 `http.ts` 已支持携带 Bearer。
+- **政策沙盘** `/api/calc/sandbox` + 前端 `SandboxView`；规则中心审批链 `el-steps` 可视化。
+- **测试**：累计 88 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API28）。
+
 ## 下一步
-- 性能压测报告；前端审批链可视化、员工端消息页、沙盘/明细报表页。
+- 前端登录页对接 JWT；员工端消息/绩效单下钻页；性能压测报告；t_user + BCrypt 实库登录。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）
