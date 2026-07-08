@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>超扑越方案配置·三期 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="cpy-config" data-crumb="超扑越落地案例 / <b>方案配置·三期</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>超扑越绩效方案配置 · 按三期呈现</h1>
+        <p>按落地阶段展示各核算项的配置形态：一期可直接配置、二期扩展、三期过磅定制</p>
+      </div>
+      <div class="actions">
+        <a class="btn" href="cpy-simulator.html">🧮 试算验证</a>
+        <button class="btn primary" id="btnSubmit">🚀 提交方案上线（走审批）</button>
+      </div>
+    </div>
+
+    <div data-tabs="cpy">
+      <div class="tabs">
+        <button class="active" data-tab="p1">一期 · 可直接配置 <span class="tag green" style="margin-left:4px">✅</span></button>
+        <button data-tab="p2">二期 · 行业化扩展 <span class="tag amber" style="margin-left:4px">🟡</span></button>
+        <button data-tab="p3">三期 · 过磅定制 <span class="tag red" style="margin-left:4px">🔴</span></button>
+      </div>
+    </div>
+
+    <!-- 一期 -->
+    <div data-tabgroup="cpy" data-tab="p1" class="tab-pane active">
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card">
+          <div class="card-h"><h3>核算项组合（绩效方案）</h3><span class="tag green">引擎已具备</span></div>
+          <div class="card-b" style="padding:0"><table class="table">
+            <thead><tr><th>核算项</th><th>类型</th><th>公式摘要</th></tr></thead>
+            <tbody>
+              <tr><td>基本工资</td><td><span class="tag gray">档位</span></td><td class="small">综合达成率 → 档位金额</td></tr>
+              <tr><td>自营利润提成</td><td><span class="tag blue">阶梯</span></td><td class="small">自营利润 × 档位比例</td></tr>
+              <tr><td>外配利润提成</td><td><span class="tag blue">阶梯</span></td><td class="small">外配利润 × 档位比例</td></tr>
+              <tr><td>吨量提成</td><td><span class="tag gray">单价</span></td><td class="small">吨量 × 3.8 元/吨</td></tr>
+              <tr><td>加磅利润提成</td><td><span class="tag orange">过磅专项</span></td><td class="small">实际加磅额 − 标准加磅额</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>综合达成率评分卡</h3><span class="tag green">评分卡·两维加权</span></div>
+          <div class="card-b" style="padding:0"><table class="table">
+            <thead><tr><th>维度</th><th>取数</th><th>权重</th></tr></thead>
+            <tbody>
+              <tr><td>吨量完成率</td><td class="small">实际出库 ÷ 目标</td><td class="num">70%</td></tr>
+              <tr><td>利润完成率</td><td class="small">(自营+外配利润) ÷ 目标</td><td class="num">30%</td></tr>
+            </tbody>
+          </table>
+          <div class="card-b"><div class="formula">综合达成率 = 吨量完成率 × 0.7 + 利润完成率 × 0.3</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card mt16">
+        <div class="card-h"><h3>基本工资宽带 4 档</h3><span class="sub">达成率 → 固定档位金额</span></div>
+        <div class="card-b" style="padding:0"><table class="table">
+          <thead><tr><th>档位</th><th>基本工资</th><th>评定标准（综合达成率）</th></tr></thead>
+          <tbody>
+            <tr><td>初级销售员</td><td class="money">¥2,000</td><td>≤ 80%</td></tr>
+            <tr><td>中级销售员</td><td class="money">¥2,500</td><td>80% ~ 90%</td></tr>
+            <tr><td>高级销售员</td><td class="money">¥3,000</td><td>90% ~ 100%</td></tr>
+            <tr><td>资深销售员</td><td class="money">¥3,500</td><td>&gt; 100%</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="callout green mt16"><span>✅</span><div>以上均可用现有「核算项组合 + 评分卡 + 阶梯表」直接配置。基本工资的"档位金额输出"为二期小改（见二期）。</div></div>
+    </div>
+
+    <!-- 二期 -->
+    <div data-tabgroup="cpy" data-tab="p2" class="tab-pane">
+      <div class="card">
+        <div class="card-h"><h3>① 淡旺季参数时间维度 · 自营/外配阶梯</h3><span class="tag amber">扩展：阶梯表增加时间段</span></div>
+        <div class="card-b">
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <div class="b700 small" style="margin-bottom:8px">🌞 旺季（3 月初 ~ 10 月末）</div>
+              <table class="table"><thead><tr><th>自营/外配利润区间</th><th>比例</th></tr></thead><tbody>
+                <tr><td>0 ~ 5000</td><td class="num">5%</td></tr><tr><td>5000 ~ 15000</td><td class="num">10%</td></tr>
+                <tr><td>15000 ~ 25000</td><td class="num">15%</td></tr><tr><td>&gt; 25000</td><td class="num">20%</td></tr>
+              </tbody></table>
+            </div>
+            <div>
+              <div class="b700 small" style="margin-bottom:8px">❄ 淡季（11 月初 ~ 次年 2 月末）</div>
+              <table class="table"><thead><tr><th>自营/外配利润区间</th><th>比例</th></tr></thead><tbody>
+                <tr><td>0 ~ 1500</td><td class="num">5%</td></tr><tr><td>1500 ~ 5000</td><td class="num">10%</td></tr>
+                <tr><td>5000 ~ 8000</td><td class="num">15%</td></tr><tr><td>&gt; 8000</td><td class="num">20%</td></tr>
+              </tbody></table>
+            </div>
+          </div>
+          <div class="callout amber mt12"><span>🗓</span><div>阶梯表增加"生效时段"维度，按出货月份自动套用旺季/淡季阈值；同源支持"部分阈值按月设置"。</div></div>
+        </div>
+      </div>
+
+      <div class="grid mt16" style="grid-template-columns:1fr 1fr;gap:16px">
+        <div class="card">
+          <div class="card-h"><h3>② 吨量提成 · 组别×客户类型</h3><span class="tag amber">扩展：分档维度</span></div>
+          <div class="card-b" style="padding:0"><table class="table">
+            <thead><tr><th>组别</th><th>客户类型</th><th>标准</th></tr></thead>
+            <tbody>
+              <tr><td>渠道组</td><td class="small">存量/新开发客户</td><td class="num">3.8 元/吨</td></tr>
+              <tr><td>拓展组</td><td class="small">存量/门前散客/地推纯新</td><td class="num">3.8 元/吨</td></tr>
+              <tr><td>拓展组</td><td class="small">地推纯新客户(按个)</td><td class="num">10 元/个</td></tr>
+            </tbody>
+          </table>
+          <div class="card-b"><div class="callout amber"><span>⚖</span><div>低价销售扣 20%；豁免：点数低价、过磅加磅达标。<b>按"个"计提</b>为新增计提类型。</div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>③ 达成率→档位金额 & 跨期底薪</h3><span class="tag amber">扩展：输出模式+跨期引用</span></div>
+          <div class="card-b">
+            <div class="formula" style="line-height:1.9">本月基本工资 = LOOKUP(<span class="var">上月综合达成率</span>, 档位金额表)<br><span class="cm"># 输出固定金额而非 基数×系数</span><br><span class="cm"># 引用「上月」指标 → 决定「本月」底薪</span></div>
+            <div class="callout amber mt12"><span>🕰</span><div>需支持"取上期指标决定本期基本工资"的跨期引用，及"达成率→固定金额"输出模式。</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt16">
+        <div class="card-h"><h3>④ 外配过渡期保护政策</h3><span class="tag amber">扩展：人员级+时间窗规则例外</span></div>
+        <div class="card-b" style="padding:0"><table class="table">
+          <thead><tr><th>适用人员</th><th>过渡期</th><th>规则</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td>2025-09 入职 3 名销售</td><td>至 2026-06-30</td><td class="small">外配提成保底 10%（低于10%按10%，高于按实际）</td><td><span class="tag green">生效中</span></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- 三期 -->
+    <div data-tabgroup="cpy" data-tab="p3" class="tab-pane">
+      <div class="card">
+        <div class="card-h"><h3>① 加磅利润提成（过磅专项）</h3><span class="tag red">新增核算项</span></div>
+        <div class="card-b">
+          <div class="formula">加磅利润提成 = <span class="var">实际加磅销售金额</span> − 按公司<span class="op">加磅千分比</span>计算的销售金额</div>
+          <table class="table mt12"><thead><tr><th>参数</th><th>说明</th><th>示例</th></tr></thead><tbody>
+            <tr><td>标准加磅千分比</td><td class="small">公司制定基准</td><td class="num">3‰</td></tr>
+            <tr><td>实际加磅千分比</td><td class="small">过磅系统采集</td><td class="num">5‰</td></tr>
+            <tr><td>触发条件</td><td class="small">仅过磅销售计算</td><td><span class="tag orange">过磅</span></td></tr>
+          </tbody></table>
+          <div class="callout amber mt12"><span>🔴</span><div>需接入 ERP 过磅记录，新增"加磅千分比/标准千分比"参数与核算项。</div></div>
+        </div>
+      </div>
+
+      <div class="card mt16">
+        <div class="card-h"><h3>② 自营利润 · 点数口径（实时挂价快照）</h3><span class="tag red">新增取数逻辑</span></div>
+        <div class="card-b">
+          <div class="formula" style="line-height:1.9">
+<span class="cm"># 过磅口径</span><br>
+自营利润 = 实际成交价 − <span class="var">公司核定底价</span><br>
+<span class="cm"># 点数口径</span><br>
+自营利润 = 实际成交价 − (<span class="var">出货时库存同规格最高挂价</span> − 30) × 单重/1000<br>
+<span class="cm"># 定价 0.5 进位取整；排除 黑方/热镀锌 门前库</span>
+          </div>
+          <div class="callout" style="background:var(--c-red-soft);color:var(--c-red);margin-top:12px"><span>⛔</span><div>难点：需<b>出货时点</b>"同规格最高挂价"实时快照 + 品类/库位排除 + 0.5 特殊进位自定义函数。低价销售：过磅按负值扣减、点数记 0。</div></div>
+        </div>
+      </div>
+
+      <div class="card mt16">
+        <div class="card-h"><h3>③ 单据级混合损益归集</h3><span class="tag red">归集规则细化</span></div>
+        <div class="card-b"><div class="callout amber"><span>🧾</span><div>一张单据既有自营又有外配时，单据中的其他收支<b>统一计入自营利润</b>核算。需在取数层做单据级归集规则。</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  document.getElementById("btnSubmit").addEventListener("click",()=>{
+    let list=[]; try{ list=JSON.parse(localStorage.getItem("steel_change_reqs")||"[]"); }catch(e){}
+    const maxVer = Math.max(3, ...list.map(r=>parseInt(r.ver)||0));
+    const ver = maxVer+1;
+    const id = "CR-"+new Date().toISOString().slice(0,10).replace(/-/g,"")+"-"+String(ver).padStart(2,"0");
+    const cr = {
+      id, ver, submitter:"李静·绩效专员", time:new Date().toLocaleString("zh-CN"),
+      effMode:"now", effLabel:"立即生效", scopeLabel:"灰度·超扑越销售部", status:"待审批", cur:0,
+      chain:[ {role:"部门主管",name:"陈组长",status:"待处理",time:""},
+              {role:"HR负责人",name:"王总监",mode:"或签",candidates:["王总监","张经理"],status:"待处理",time:""},
+              {role:"分管领导",name:"周总",status:"待处理",time:""} ],
+      details:["超扑越销售绩效方案：基本工资(4档)+自营/外配阶梯(淡旺季)+吨量提成(组别×客户类型)+加磅利润提成","外配过渡期保底10%(至2026-06-30)","基本工资达成率定档+上月定下月底薪"],
+      params:{ "基本工资档":"2000/2500/3000/3500","综合达成率":"吨量70%+利润30%","自营阶梯(旺/淡)":"5/10/15/20%","吨量提成":"3.8元/吨","地推纯新客户":"10元/个","加磅提成":"加磅千分比差额" }
+    };
+    list.push(cr);
+    try{ localStorage.setItem("steel_change_reqs", JSON.stringify(list)); }catch(e){}
+    showToast&&showToast("已提交方案审批 ✓","变更单 "+id+" 已提交，前往『绩效规则配置→变更审批』三级串签，或在『合规审计查询』查看","green");
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>绩效项·取数DSL → SQL · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="cap-dsl" data-crumb="平台基础能力 / <b>绩效项·取数DSL</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>绩效项 · 取数 DSL → SQL <span class="tag amber" style="vertical-align:middle">P1</span></h1>
+        <p>名亿驱动：绩效目标单(指标+起止+条件) + 金额/成本公式 → 按核算对象编译 SQL → 写提成核算单明细</p>
+      </div>
+      <div class="actions"><button class="btn primary" id="btnCR">🚀 提交变更（走审批）</button></div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-h"><h3>绩效项配置</h3></div>
+        <div class="card-b">
+          <div class="field"><label>绩效项</label><select class="select" id="item">
+            <option value="ton">吨位提成（阶梯·目标单驱动）</option>
+            <option value="self">自营利润提成</option>
+            <option value="ext">外调利润提成</option></select></div>
+          <div class="field"><label>核算对象</label><select class="select" id="obj"><option value="emp">员工</option><option value="dept">部门</option></select></div>
+          <div class="field"><label>结算方式（决定成本）</label><select class="select" id="settle"><option>现款</option><option>欠款</option><option>垫资</option></select></div>
+          <div class="frm" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field"><label>销售量（吨）</label><input class="input" type="number" id="qty" value="900"></div>
+            <div class="field"><label>实际成交价</label><input class="input" type="number" id="deal" value="5100"></div>
+            <div class="field"><label>挂牌价</label><input class="input" type="number" id="list" value="5090"></div>
+            <div class="field"><label>成本价（外调用）</label><input class="input" type="number" id="cost" value="5000"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>编译结果</h3><span class="tag green">实时</span></div>
+        <div class="card-b">
+          <div class="muted small">编译 SQL（配置 → 语句）</div>
+          <div class="formula" id="sql" style="margin-top:6px;font-size:11.5px"></div>
+          <div class="card mt12" style="background:var(--c-surface-2);border:none"><div class="card-b">
+            <div class="flex between"><span class="muted small" id="lbl1">阶段/收益</span><b id="v1">—</b></div>
+            <div class="flex between mt8"><span class="muted small">成本金额</span><b id="v2">—</b></div>
+            <div class="divider"></div>
+            <div class="flex between"><span class="b700">提成（写入核算单明细）</span><b id="v3" style="font-size:20px;color:var(--c-primary)">—</b></div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+    <div class="callout blue mt16"><span>🧬</span><div>算法：目标单定位完成值所在阶段 → 金额/成本公式按"员工/部门 + 使用条件"编译为 SQL 执行 → 结果写入提成核算单明细。利润类按核算对象 GROUP BY 部门或员工。</div></div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const num=id=>parseFloat($(id).value)||0;
+  const money=n=>(n<0?"−":"")+"¥"+Math.abs(Math.round(n)).toLocaleString("zh-CN");
+  function tonAmount(q){ let band,amt;
+    if(q<=800){band="0–800（8元）";amt=q*8;}
+    else if(q<=1000){band="800–1000（10元）";amt=q*10;}
+    else if(q<=2000){band="1000–2000（12元）";amt=q*12;}
+    else {band="2000+（特殊行）";amt=9000+(q-2000)*12;}
+    return {band,amt}; }
+  function settleCost(q,s){ return s==="现款"? q*50 : s==="欠款"? 0 : -200; }
+  function render(){
+    const item=$("item").value, obj=$("obj").value, gb=obj==="emp"?"emp_id":"dept_id", settle=$("settle").value;
+    const q=num("qty"), deal=num("deal"), list=num("list"), cost=num("cost");
+    let sql="", v1="", v2, v3, lbl1="收益";
+    if(item==="ton"){
+      const t=tonAmount(q); lbl1="阶段命中";
+      sql = `<span class="cm">-- 吨位提成：目标单阶梯 · GROUP BY ${gb}</span><br>SELECT ${gb}, SUM(qty) AS 完成量,<br>&nbsp;&nbsp;STEP(SUM(qty), 吨位阶梯表) AS 提成<br>FROM sales_detail<br>WHERE [使用条件] AND ${gb}=:id<br>GROUP BY ${gb};`;
+      $("lbl1").textContent="阶段命中"; $("v1").textContent=t.band;
+      $("v2").textContent="—"; v3=t.amt;
+    } else {
+      const isSelf=item==="self";
+      const income=(deal-(isSelf?list:cost))*q;
+      const c=isSelf? settleCost(q,settle) : 0;
+      const net=(income-c)*0.5; v3=net;
+      sql = `<span class="cm">-- ${isSelf?'自营':'外调'}利润提成 · GROUP BY ${gb}</span><br>SELECT ${gb},<br>&nbsp;&nbsp;SUM((deal_price - ${isSelf?'list_price':'cost_price'}) * qty) AS 收益,<br>${isSelf?`&nbsp;&nbsp;SUM(CASE settle_type WHEN '现款' THEN qty*50 WHEN '欠款' THEN 0 WHEN '垫资' THEN -200 END) AS 成本,<br>`:''}&nbsp;&nbsp;(收益 - 成本) * 0.5 AS 提成<br>FROM sales_detail<br>WHERE biz_type='${isSelf?'自营':'外调'}' AND ${gb}=:id<br>GROUP BY ${gb};`;
+      $("lbl1").textContent="收益金额"; $("v1").textContent=money(income);
+      $("v2").textContent=money(c); 
+    }
+    $("sql").innerHTML=sql;
+    $("v3").textContent=money(v3);
+    if(item==="ton") $("v2").textContent="—";
+  }
+  document.querySelectorAll(".card-b select, .card-b input").forEach(e=>{e.addEventListener("input",render);e.addEventListener("change",render);});
+  render();
+
+  $("btnCR").addEventListener("click",()=>{
+    const itemName={ton:"吨位提成(阶梯·目标单)",self:"自营利润提成",ext:"外调利润提成"}[$("item").value];
+    const objName=$("obj").value==="emp"?"员工":"部门";
+    const params = { "绩效项":itemName, "核算对象":objName, "结算方式":$("settle").value, "吨位阶梯":"0-800@8/800-1000@10/1000-2000@12/2000+特殊", "利润提成系数":"0.5" };
+    const details = ["名亿·绩效项与取数DSL配置："+itemName+"，核算对象 "+objName+"，结算方式 "+$("settle").value];
+    window.submitCR && window.submitCR("绩效项/取数DSL变更", details, params);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>政策沙盘对比 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .sk-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .sk-in { width:100%; padding:6px 9px; border:1px solid var(--c-border-strong); border-radius:7px; font-size:12.5px; font-family:inherit; }
+  .sk-in:focus{ outline:none; border-color:var(--c-primary); box-shadow:0 0 0 3px var(--c-primary-soft); }
+  .sk-row { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
+  .sk-row label{ font-size:12px; color:var(--c-text-2); flex:1; } .sk-row .sk-in{ width:96px; text-align:right; }
+  .brk { display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-bottom:1px dashed var(--c-border); }
+  .brk:last-child{ border-bottom:none; }
+  .facts-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px 18px; }
+  @media(max-width:1000px){ .sk-grid{grid-template-columns:1fr} .facts-grid{grid-template-columns:repeat(2,1fr)} }
+</style>
+</head>
+<body data-page="sandbox" data-crumb="绩效核算 / <b>政策沙盘对比</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>政策沙盘对比 <span class="tag green" style="vertical-align:middle">可交互</span></h1>
+        <p>固定同一笔业务事实，并排试算多套绩效政策，评估对员工激励与公司成本的影响，辅助政策决策</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btnReset">↺ 重置</button>
+        <button class="btn primary" id="btnApply">采用胜出方案</button>
+      </div>
+    </div>
+
+    <!-- 共享业务事实 -->
+    <div class="card">
+      <div class="card-h"><h3>共享业务事实（同一销售员·同一月）</h3><span class="sub">来自 ERP，各方案共用</span></div>
+      <div class="card-b">
+        <div class="facts-grid">
+          <div><div class="muted small" style="margin-bottom:4px">现款/预收销量(吨)</div><input class="sk-in" type="number" id="f_cashQty" value="300"></div>
+          <div><div class="muted small" style="margin-bottom:4px">≤30天账期销量(吨)</div><input class="sk-in" type="number" id="f_termQty" value="500"></div>
+          <div><div class="muted small" style="margin-bottom:4px">挂牌价(元/吨)</div><input class="sk-in" type="number" id="f_listPrice" value="4000"></div>
+          <div><div class="muted small" style="margin-bottom:4px">成交均价(元/吨)</div><input class="sk-in" type="number" id="f_dealPrice" value="4010"></div>
+          <div><div class="muted small" style="margin-bottom:4px">预收金额(元)</div><input class="sk-in" type="number" id="f_advance" value="500000"></div>
+          <div><div class="muted small" style="margin-bottom:4px">预收占用天数</div><input class="sk-in" type="number" id="f_advDays" value="25"></div>
+          <div><div class="muted small" style="margin-bottom:4px">绩效基数(元)</div><input class="sk-in" type="number" id="f_base" value="6000"></div>
+          <div><div class="muted small" style="margin-bottom:4px">应收逾期(天)</div><input class="sk-in" type="number" id="f_odDays" value="20"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout blue mt16"><span>ℹ</span><div>下方三套方案共用上方业务事实，仅<b>政策参数不同</b>。修改任意参数即时重算，系统自动标出相对「方案A（现行）」的差异，并高亮员工到手最高的方案。</div></div>
+
+    <!-- 方案对比 -->
+    <div class="sk-grid mt16" id="schemes"></div>
+
+    <!-- 结论 -->
+    <div class="card mt16">
+      <div class="card-h"><h3>对比结论</h3></div>
+      <div class="card-b" id="summary"></div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const fmt = n => "¥" + Math.round(n).toLocaleString("zh-CN");
+  const factDefs = ["f_cashQty","f_termQty","f_listPrice","f_dealPrice","f_advance","f_advDays","f_base","f_odDays"];
+  const factDefaults = {f_cashQty:300,f_termQty:500,f_listPrice:4000,f_dealPrice:4010,f_advance:500000,f_advDays:25,f_base:6000,f_odDays:20};
+
+  // 三套政策方案
+  const schemes = [
+    { key:"A", name:"方案A · 现行", tag:"base", desc:"当前生效政策",
+      p:{ coef:1.0, cashRate:8, termRate:6, alloc:0.7, bp:5, arPct:10 } },
+    { key:"B", name:"方案B · 激进激励", tag:"", desc:"提高账期单价与分配系数",
+      p:{ coef:1.0, cashRate:10, termRate:8, alloc:0.85, bp:6, arPct:8 } },
+    { key:"C", name:"方案C · 稳健控风险", tag:"", desc:"强化账期/应收约束",
+      p:{ coef:1.0, cashRate:7, termRate:4, alloc:0.6, bp:5, arPct:15 } },
+  ];
+  const pFields = [
+    ["coef","基础绩效系数",0.1],["cashRate","现款单价(元/吨)",1],["termRate","30天档单价(元/吨)",1],
+    ["alloc","挂价分配系数",0.05],["bp","预收日利率(万分)",1],["arPct","应收逾期扣款(%)",1],
+  ];
+
+  function facts(){ const o={}; factDefs.forEach(k=>o[k]=parseFloat($(k).value)||0); return o; }
+  function calc(p, f){
+    const baseSalary = f.f_base*p.coef;
+    const tonnage = f.f_cashQty*p.cashRate + f.f_termQty*p.termRate;
+    const listPersonal = (f.f_dealPrice-f.f_listPrice)*(f.f_cashQty+f.f_termQty)*p.alloc;
+    const advInterest = f.f_advance*(p.bp/10000)*f.f_advDays*p.alloc;
+    // 应收逾期扣减：逾期>0 才扣，基数为吨位提成
+    const arDeduct = f.f_odDays>0 ? tonnage*(p.arPct/100) : 0;
+    const total = baseSalary + tonnage + listPersonal + advInterest - arDeduct;
+    return { baseSalary, tonnage, listPersonal, advInterest, arDeduct, total };
+  }
+
+  function render(){
+    const f = facts();
+    const results = schemes.map(s=>({ s, r: calc(s.p, f) }));
+    const baseTotal = results[0].r.total;
+    const maxTotal = Math.max(...results.map(x=>x.r.total));
+
+    $("schemes").innerHTML = results.map(({s,r})=>{
+      const isWin = r.total===maxTotal;
+      const delta = r.total - baseTotal;
+      const dpill = s.key==="A" ? '<span class="delta-pill zero">基准</span>'
+        : `<span class="delta-pill ${delta>=0?'up':'down'}">${delta>=0?'▲ +':'▼ −'}${fmt(Math.abs(delta)).replace('¥','¥')}</span>`;
+      return `<div class="scheme ${s.tag} ${isWin?'win':''}">
+        <div class="sc-h"><div class="nm">${s.name} ${isWin?'<span class="tag green">员工最优</span>':''}</div><div class="ds">${s.desc}</div></div>
+        <div class="sc-b">
+          ${pFields.map(pf=>`<div class="sk-row"><label>${pf[1]}</label><input class="sk-in" type="number" step="${pf[2]}" data-k="${s.key}" data-p="${pf[0]}" value="${s.p[pf[0]]}"></div>`).join("")}
+          <div class="divider"></div>
+          <div class="brk"><span>基础绩效</span><b>${fmt(r.baseSalary)}</b></div>
+          <div class="brk"><span>吨位提成</span><b>${fmt(r.tonnage)}</b></div>
+          <div class="brk"><span>挂价所得</span><b>${fmt(r.listPersonal)}</b></div>
+          <div class="brk"><span>预收计息</span><b class="pos">+${fmt(r.advInterest)}</b></div>
+          <div class="brk"><span>应收扣减</span><b class="neg">−${fmt(r.arDeduct)}</b></div>
+        </div>
+        <div class="sc-total">
+          <div class="flex between center"><span class="muted small">员工应发</span>${dpill}</div>
+          <div class="b700" style="font-size:26px;color:${isWin?'var(--c-green)':'var(--c-primary)'}">${fmt(r.total)}</div>
+        </div>
+      </div>`;
+    }).join("");
+
+    // 绑定方案参数输入
+    $("schemes").querySelectorAll("input[data-k]").forEach(inp=>{
+      inp.addEventListener("input",()=>{
+        const s = schemes.find(x=>x.key===inp.dataset.k);
+        s.p[inp.dataset.p] = parseFloat(inp.value)||0;
+        render();
+      });
+    });
+
+    // 结论
+    const winner = results.find(x=>x.r.total===maxTotal).s;
+    const lowest = results.reduce((a,b)=>a.r.total<b.r.total?a:b).s;
+    $("summary").innerHTML = `
+      <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:14px">
+        <div class="callout green"><span>🏆</span><div><b>员工到手最高：${winner.name}</b><br><span>${fmt(maxTotal)}，激励力度最强</span></div></div>
+        <div class="callout amber"><span>💰</span><div><b>公司成本最低：${lowest.name}</b><br><span>${fmt(lowest===winner? results.reduce((a,b)=>a.r.total<b.r.total?a:b).r.total : Math.min(...results.map(x=>x.r.total)))}，控本更优</span></div></div>
+        <div class="callout blue"><span>⚖</span><div><b>方案B vs 现行 差额</b><br><span>${fmt(results[1].r.total-baseTotal)} / 人·月，需评估规模化成本</span></div></div>
+      </div>`;
+  }
+
+  factDefs.forEach(k=>$(k).addEventListener("input",render));
+  $("btnReset").addEventListener("click",()=>{
+    factDefs.forEach(k=>$(k).value=factDefaults[k]);
+    schemes[0].p={coef:1.0,cashRate:8,termRate:6,alloc:0.7,bp:5,arPct:10};
+    schemes[1].p={coef:1.0,cashRate:10,termRate:8,alloc:0.85,bp:6,arPct:8};
+    schemes[2].p={coef:1.0,cashRate:7,termRate:4,alloc:0.6,bp:5,arPct:15};
+    render(); showToast("已重置","恢复默认业务事实与三套方案参数","blue");
+  });
+  $("btnApply").addEventListener("click",()=>{
+    const f=facts(); const results=schemes.map(s=>({s,r:calc(s.p,f)}));
+    const max=Math.max(...results.map(x=>x.r.total));
+    const w=results.find(x=>x.r.total===max).s;
+    const draft = {
+      source:"政策沙盘", plan:"销售现货方案", scheme:w.name, time:new Date().toLocaleString("zh-CN"),
+      apply:[
+        {id:"rc_cash_rate", label:"账期分档·现款吨位单价", value:w.p.cashRate},
+        {id:"rc_term30_rate", label:"账期分档·≤30天吨位单价", value:w.p.termRate},
+        {id:"rc_int_advance_bp", label:"预收账款日利率(万分)", value:w.p.bp},
+      ],
+      info:[
+        {label:"挂价分配系数", value:w.p.alloc},
+        {label:"应收逾期扣款(%)", value:w.p.arPct},
+        {label:"基础绩效系数", value:w.p.coef},
+      ]
+    };
+    localStorage.setItem("steel_rule_draft", JSON.stringify(draft));
+    showToast("已采用 "+w.name+" ✓","已生成草稿，正在跳转规则配置中心…","green");
+    setTimeout(()=>location.href="rule-config.html?draft=1", 950);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>钢绩云 · 高保真原型总览</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body { background: radial-gradient(1200px 600px at 70% -10%, #1c2c50 0, #0f1b30 55%); color:#e7ecf6; min-height:100vh; }
+  .hero { max-width: 1160px; margin: 0 auto; padding: 60px 24px 30px; }
+  .hero .logo { width:56px;height:56px;border-radius:15px;background:linear-gradient(135deg,var(--c-accent),#f5a623);display:grid;place-items:center;color:#fff;font-weight:800;font-size:26px;box-shadow:0 10px 30px rgba(245,121,59,.45); }
+  .hero h1 { font-size:34px; font-weight:800; margin-top:20px; letter-spacing:.5px; }
+  .hero h1 small { display:block; font-size:15px; font-weight:500; color:#8fa0c4; letter-spacing:3px; margin-top:6px; }
+  .hero p { color:#aeb9d4; max-width:720px; margin-top:16px; font-size:15px; line-height:1.75; }
+  .chips { display:flex; gap:10px; flex-wrap:wrap; margin-top:22px; }
+  .chip { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); padding:7px 14px; border-radius:20px; font-size:12.5px; color:#c7d2ea; }
+  .grid-p { max-width:1160px; margin:10px auto 70px; padding:0 24px; display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .p-card { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:16px; overflow:hidden; transition:.2s; text-decoration:none; color:inherit; display:flex; flex-direction:column; }
+  .p-card:hover { transform:translateY(-4px); border-color:var(--c-primary); box-shadow:0 20px 50px rgba(0,0,0,.35); }
+  .p-thumb { height:120px; position:relative; overflow:hidden; display:grid; place-items:center; font-size:40px; }
+  .p-thumb.t1{background:linear-gradient(135deg,#2f5bea,#5478f0)} .p-thumb.t2{background:linear-gradient(135deg,#f5793b,#f5a623)}
+  .p-thumb.t3{background:linear-gradient(135deg,#1f9d6b,#37c98d)} .p-thumb.t4{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+  .p-thumb.t5{background:linear-gradient(135deg,#0ea5b7,#22c3d6)} .p-thumb.t6{background:linear-gradient(135deg,#e0483d,#f0736a)}
+  .p-thumb.t7{background:linear-gradient(135deg,#334166,#4a5b86)} .p-thumb.t8{background:linear-gradient(135deg,#c2410c,#ea7a3c)}
+  .p-thumb.t9{background:linear-gradient(135deg,#1e293b,#3b4d70)}
+  .p-body { padding:16px 18px 18px; }
+  .p-body .idx { font-size:11px; color:#8fa0c4; letter-spacing:1px; font-weight:600; }
+  .p-body h3 { font-size:16px; margin-top:5px; }
+  .p-body p { font-size:12.5px; color:#9fabc9; margin-top:7px; line-height:1.6; }
+  .foot { text-align:center; color:#7c88a8; font-size:12.5px; padding-bottom:40px; }
+  @media(max-width:900px){ .grid-p{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="logo">钢</div>
+    <h1>钢绩云 · 钢铁企业自动化绩效核算系统<small>STEEL PERFORMANCE ACCOUNTING · 高保真交互原型</small></h1>
+    <p>面向钢铁贸易/加工企业的绩效核算平台。以「ERP + 行情数据」为输入，以「可配置取数逻辑 + 核算规则引擎」为核心，自动完成采购、销售岗位的绩效工资、提成、计息与奖惩核算，全程可追溯、可复算。</p>
+    <div class="chips">
+      <span class="chip">采购 · 价格竞争力/行情掌控/超额奖</span>
+      <span class="chip">销售 · 现货/零调/直发</span>
+      <span class="chip">回款账期差异化提成</span>
+      <span class="chip">预收/预付账款计息</span>
+      <span class="chip">规则可视化配置</span>
+      <span class="chip">逐笔下钻追溯</span>
+    </div>
+  </div>
+
+  <div class="grid-p">
+    <a class="p-card" href="dashboard.html"><div class="p-thumb t1">▦</div><div class="p-body"><div class="idx">01 · 概览</div><h3>管理驾驶舱</h3><p>绩效总额、构成趋势、核算进度、异常待办的全局视图。</p></div></a>
+    <a class="p-card" href="calc-workbench.html"><div class="p-thumb t7">⚙</div><div class="p-body"><div class="idx">02 · 核算</div><h3>核算工作台</h3><p>数据就绪校验、跑批进度、结果明细、异常清单与跑批日志。</p></div></a>
+    <a class="p-card" href="payslip.html"><div class="p-thumb t3">🧾</div><div class="p-body"><div class="idx">03 · 核算</div><h3>个人绩效单（下钻追溯）</h3><p>核心页：每个数字可下钻到公式、指标与 ERP 原始单据。</p></div></a>
+    <a class="p-card" href="approval.html"><div class="p-thumb t1">✅</div><div class="p-body"><div class="idx">04 · 核算</div><h3>审批流</h3><p>主管审核 → 员工确认 → 核定归档，待办列表、审核操作与流转记录。</p></div></a>
+    <a class="p-card" href="appeal.html"><div class="p-thumb t6">⚖</div><div class="p-body"><div class="idx">05 · 核算</div><h3>申诉复核流程</h3><p>员工申诉、复核下钻比对、裁定重算，全程留痕的争议闭环。</p></div></a>
+    <a class="p-card" href="simulator.html"><div class="p-thumb t3">🧮</div><div class="p-body"><div class="idx">06 · 核算 <span style="color:#37c98d">· 可交互</span></div><h3>绩效试算器 · 销售（动态）</h3><p>填入销售业务参数实时演算绩效构成，用于员工答疑。</p></div></a>
+    <a class="p-card" href="simulator-purchase.html"><div class="p-thumb t2">🧮</div><div class="p-body"><div class="idx">07 · 核算 <span style="color:#37c98d">· 可交互</span></div><h3>绩效试算器 · 采购（动态）</h3><p>基础绩效 + 超额奖 × 综合系数 − 预付计息，实时演算。</p></div></a>
+    <a class="p-card" href="sandbox.html"><div class="p-thumb t4">⚖</div><div class="p-body"><div class="idx">08 · 核算 <span style="color:#37c98d">· 可交互</span></div><h3>政策沙盘 · 销售（动态）</h3><p>多套销售政策并排试算，采用胜出方案→规则中心生成草稿。</p></div></a>
+    <a class="p-card" href="sandbox-purchase.html"><div class="p-thumb t8">⚖</div><div class="p-body"><div class="idx">09 · 核算 <span style="color:#37c98d">· 可交互</span></div><h3>政策沙盘 · 采购（动态）</h3><p>多套采购激励政策对比，采用胜出方案→规则中心生成草稿。</p></div></a>
+    <a class="p-card" href="purchase-board.html"><div class="p-thumb t2">🛒</div><div class="p-body"><div class="idx">10 · 看板</div><h3>采购绩效看板</h3><p>价格竞争力、存货周转、结构健康度、超额奖与预付计息。</p></div></a>
+    <a class="p-card" href="sales-board.html"><div class="p-thumb t5">📈</div><div class="p-body"><div class="idx">11 · 看板</div><h3>销售绩效看板</h3><p>三类业务利润、账期结构、挂价溢价、应收周转与预收计息。</p></div></a>
+    <a class="p-card" href="rule-config.html"><div class="p-thumb t4">🧩</div><div class="p-body"><div class="idx">12 · 规则 <span style="color:#37c98d">· 可交互</span></div><h3>绩效规则配置中心</h3><p>方案/账期/系数/阶梯/计息可编辑，接收沙盘草稿并发布版本。</p></div></a>
+    <a class="p-card" href="data-integration.html"><div class="p-thumb t8">🔗</div><div class="p-body"><div class="idx">13 · 数据</div><h3>数据集成中心</h3><p>ERP/行情/考勤接入、每日快照调度、取数逻辑（Data DSL）。</p></div></a>
+    <a class="p-card" href="market-price.html"><div class="p-thumb t6">💹</div><div class="p-body"><div class="idx">14 · 数据</div><h3>行情价与价格竞争力</h3><p>行情基准价管理、进价对比、择时评分与品规映射。</p></div></a>
+    <a class="p-card" href="audit.html"><div class="p-thumb t7">🔎</div><div class="p-body"><div class="idx">15 · 数据 <span style="color:#37c98d">· 可交互</span></div><h3>合规审计查询</h3><p>规则变更全量留痕在线查询，筛选/下钻串签/参数快照/导出。</p></div></a>
+    <a class="p-card" href="mobile.html"><div class="p-thumb t9">📱</div><div class="p-body"><div class="idx">16 · 员工端</div><h3>移动端绩效查询</h3><p>员工查看绩效构成、消息中心，支持下钻、申诉与规则追溯。</p></div></a>
+    <a class="p-card" href="cpy-overview.html"><div class="p-thumb t2">🗺</div><div class="p-body"><div class="idx">17 · 落地案例</div><h3>超扑越 · 落地总览(三期)</h3><p>真实客户方案：薪酬=基本工资+自营/外配/吨量/加磅提成，三期路线图。</p></div></a>
+    <a class="p-card" href="cpy-config.html"><div class="p-thumb t4">🧩</div><div class="p-body"><div class="idx">18 · 落地案例</div><h3>超扑越 · 方案配置(三期)</h3><p>按一期/二期/三期分档展示各核算项配置形态与适配标注。</p></div></a>
+    <a class="p-card" href="cpy-simulator.html"><div class="p-thumb t3">🧮</div><div class="p-body"><div class="idx">19 · 落地案例 <span style="color:#37c98d">· 可交互</span></div><h3>超扑越 · 专属试算器</h3><p>按真实公式实时演算五项提成，淡旺季随月份自动切换。</p></div></a>
+    <a class="p-card" href="cpy-detail.html"><div class="p-thumb t5">📋</div><div class="p-body"><div class="idx">20 · 落地案例 <span style="color:#37c98d">· 可交互</span></div><h3>超扑越 · 绩效明细表</h3><p>逐单四类提成分列，按日期筛选（不跨月），含合计。</p></div></a>
+    <a class="p-card" href="yyt-overview.html"><div class="p-thumb t7">🗺</div><div class="p-body"><div class="idx">21 · 落地案例</div><h3>岳洋通 · 落地总览</h3><p>销量/差价/加工/新户/团队系数，按库别差异，三期路线图。</p></div></a>
+    <a class="p-card" href="yyt-config.html"><div class="p-thumb t4">🧩</div><div class="p-body"><div class="idx">22 · 落地案例</div><h3>岳洋通 · 方案配置</h3><p>库别单价/差价公式、加工/新户/团队、参数多级作用域。</p></div></a>
+    <a class="p-card" href="yyt-simulator.html"><div class="p-thumb t3">🧮</div><div class="p-body"><div class="idx">23 · 落地案例 <span style="color:#37c98d">· 可交互</span></div><h3>岳洋通 · 销售绩效试算器</h3><p>按库别演算销量+差价×团队系数，加工+新户实时计算。</p></div></a>
+    <a class="p-card" href="yyt-detail.html"><div class="p-thumb t5">📋</div><div class="p-body"><div class="idx">24 · 落地案例 <span style="color:#37c98d">· 可交互</span></div><h3>岳洋通 · 绩效明细表</h3><p>逐单销量/差价/加工分列，按库别与日期筛选（不跨月）。</p></div></a>
+    <a class="p-card" href="yyt-interest.html"><div class="p-thumb t6">💱</div><div class="p-body"><div class="idx">25 · 落地案例 <span style="color:#37c98d">· 可交互</span></div><h3>岳洋通 · 期货合同计息</h3><p>复现定金/货物滚动计息示例，事件时间轴与合计。</p></div></a>
+    <a class="p-card" href="platform-capability.html"><div class="p-thumb t1">🧱</div><div class="p-body"><div class="idx">26 · 平台基础能力</div><h3>能力总览 · 四客户覆盖矩阵</h3><p>12项基础能力 × 超扑越/岳洋通/信桥/名亿 覆盖与优先级。</p></div></a>
+    <a class="p-card" href="cap-scope.html"><div class="p-thumb t7">🎯</div><div class="p-body"><div class="idx">27 · 平台基础能力 <span style="color:#37c98d">· 可交互</span></div><h3>多维参数作用域引擎</h3><p>吨位单价按维度组合逐级覆盖，实时解析最具体命中值。</p></div></a>
+    <a class="p-card" href="cap-tier-matrix.html"><div class="p-thumb t2">🔢</div><div class="p-body"><div class="idx">28 · 平台基础能力 <span style="color:#37c98d">· 可交互</span></div><h3>账期×业务单价矩阵</h3><p>信桥吨位绩效矩阵（含负值），可编辑+即时试算。</p></div></a>
+    <a class="p-card" href="cap-metric-dsl.html"><div class="p-thumb t4">🧬</div><div class="p-body"><div class="idx">29 · 平台基础能力 <span style="color:#37c98d">· 可交互</span></div><h3>绩效项 · 取数DSL→SQL</h3><p>名亿目标单+公式编译SQL，阶梯/结算成本实时演算。</p></div></a>
+    <a class="p-card" href="cap-cost-cap.html"><div class="p-thumb t8">🧾</div><div class="p-body"><div class="idx">30 · 平台基础能力 <span style="color:#37c98d">· 可交互</span></div><h3>成本口径 · 单位封顶</h3><p>结算方式驱动成本 + 吨利润封顶+一票制成本+账期系数。</p></div></a>
+  </div>
+
+  <div class="foot">钢绩云 高保真原型 · 演示数据仅供交互展示 · 静态 HTML，可离线打开</div>
+</body>
+</html>

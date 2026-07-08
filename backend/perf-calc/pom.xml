@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.steel.perf</groupId>
+    <artifactId>steel-perf-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>perf-calc</artifactId>
+  <name>perf-calc</name>
+  <description>核算编排：核算项拓扑排序、跑批(幂等+快照)、个人绩效单与逐项下钻</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.steel.perf</groupId>
+      <artifactId>perf-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.steel.perf</groupId>
+      <artifactId>perf-engine</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

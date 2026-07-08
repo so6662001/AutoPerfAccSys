@@ -1,0 +1,151 @@
+# 钢铁绩效核算系统 · Kubernetes 部署清单（示例）
+# 平台库 MySQL + Redis + 后端 + 前端 + Ingress。ERP(SQL Server) 为外部各租户只读库，不在集群内。
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: steel-perf
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: perf-secrets
+  namespace: steel-perf
+type: Opaque
+stringData:
+  MYSQL_ROOT_PASSWORD: "change-me"
+  MYSQL_PASSWORD: "change-me"
+  # ERP 连接串/密钥等经 Jasypt/KMS 管理，勿明文
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: perf-config
+  namespace: steel-perf
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  TZ: "Asia/Shanghai"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: steel-perf
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: mysql } }
+  template:
+    metadata: { labels: { app: mysql } }
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          env:
+            - { name: MYSQL_DATABASE, value: steel_perf }
+            - { name: MYSQL_USER, value: perf }
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom: { secretKeyRef: { name: perf-secrets, key: MYSQL_ROOT_PASSWORD } }
+            - name: MYSQL_PASSWORD
+              valueFrom: { secretKeyRef: { name: perf-secrets, key: MYSQL_PASSWORD } }
+          ports: [ { containerPort: 3306 } ]
+          volumeMounts: [ { name: data, mountPath: /var/lib/mysql } ]
+      volumes: [ { name: data, emptyDir: {} } ]  # 生产用 PVC
+---
+apiVersion: v1
+kind: Service
+metadata: { name: mysql, namespace: steel-perf }
+spec:
+  selector: { app: mysql }
+  ports: [ { port: 3306, targetPort: 3306 } ]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: redis, namespace: steel-perf }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: redis } }
+  template:
+    metadata: { labels: { app: redis } }
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports: [ { containerPort: 6379 } ]
+---
+apiVersion: v1
+kind: Service
+metadata: { name: redis, namespace: steel-perf }
+spec:
+  selector: { app: redis }
+  ports: [ { port: 6379, targetPort: 6379 } ]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: backend, namespace: steel-perf }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: backend } }
+  template:
+    metadata: { labels: { app: backend } }
+    spec:
+      containers:
+        - name: backend
+          image: steel-perf/backend:latest
+          envFrom:
+            - configMapRef: { name: perf-config }
+          ports: [ { containerPort: 8080 } ]
+          readinessProbe:
+            httpGet: { path: /actuator/health, port: 8080 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /actuator/health, port: 8080 }
+            initialDelaySeconds: 40
+            periodSeconds: 15
+          resources:
+            requests: { cpu: "250m", memory: "512Mi" }
+            limits: { cpu: "1", memory: "1Gi" }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: backend, namespace: steel-perf }
+spec:
+  selector: { app: backend }
+  ports: [ { port: 8080, targetPort: 8080 } ]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: frontend, namespace: steel-perf }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: frontend } }
+  template:
+    metadata: { labels: { app: frontend } }
+    spec:
+      containers:
+        - name: frontend
+          image: steel-perf/frontend:latest
+          ports: [ { containerPort: 80 } ]
+---
+apiVersion: v1
+kind: Service
+metadata: { name: frontend, namespace: steel-perf }
+spec:
+  selector: { app: frontend }
+  ports: [ { port: 80, targetPort: 80 } ]
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: perf-ingress
+  namespace: steel-perf
+spec:
+  rules:
+    - host: perf.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend: { service: { name: backend, port: { number: 8080 } } }
+          - path: /
+            pathType: Prefix
+            backend: { service: { name: frontend, port: { number: 80 } } }

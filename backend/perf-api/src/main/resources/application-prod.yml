@@ -1,0 +1,39 @@
+# 生产环境：spring.profiles.active=prod
+# 平台库 MySQL（Flyway 迁移）+ Redis 分布式锁；ERP 为各租户外部 SQL Server 只读（按租户路由）。
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://mysql:3306/steel_perf?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+    username: ${SPRING_DATASOURCE_USERNAME:perf}
+    password: ${SPRING_DATASOURCE_PASSWORD:perf}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate          # 由 Flyway 管理 schema，JPA 仅校验
+    open-in-view: false
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:redis}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 3s
+
+management:
+  health:
+    redis:
+      enabled: true
+
+perf:
+  jwt:
+    secret: ${PERF_JWT_SECRET:please-change-me-in-prod-32bytes-min!!}
+  lock:
+    redis: true                   # 多实例：启用 Redis 分布式锁
+  seed:
+    enabled: false                # 生产关闭演示数据

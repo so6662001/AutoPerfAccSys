@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>采购绩效看板 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="purchase" data-crumb="绩效看板 / <b>采购绩效看板</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>采购绩效看板</h1>
+        <p>价格竞争力 · 行情掌控 · 存货与资金效率 · 超额奖 · 预付计息</p>
+      </div>
+      <div class="actions">
+        <select class="select" style="width:auto"><option>采购部 · 全部</option><option>板材组</option><option>建材组</option></select>
+        <button class="btn">⬇ 导出</button>
+      </div>
+    </div>
+
+    <div class="grid kpi-grid">
+      <div class="kpi"><div class="icn bg-blue">🎯</div><div class="lbl">采购价格竞争力（加权）</div><div class="val">+1.8<small>%</small></div><div class="delta up">▲ 低于市场均价 1.8%</div></div>
+      <div class="kpi"><div class="icn bg-orange">⏱</div><div class="lbl">存货周转天数</div><div class="val">21.4<small>天</small></div><div class="delta up">▲ 环比缩短 2.1 天</div></div>
+      <div class="kpi"><div class="icn bg-green">💰</div><div class="lbl">超额奖计提（能力性收益）</div><div class="val">¥18.6<small>万</small></div><div class="delta up">已剔除市场普涨部分</div></div>
+      <div class="kpi"><div class="icn bg-amber">🏦</div><div class="lbl">预付计息资金成本</div><div class="val">−¥2.4<small>万</small></div><div class="delta down">预付占用偏高需关注</div></div>
+    </div>
+
+    <div class="grid mt16" style="grid-template-columns: 1.5fr 1fr;">
+      <div class="card">
+        <div class="card-h"><h3>价格竞争力 vs 行情基准（近 6 周）</h3><div class="legend"><span><i style="background:var(--c-primary)"></i>采购均价</span><span><i style="background:var(--c-accent)"></i>市场行情价</span></div></div>
+        <div class="card-b">
+          <div class="barchart">
+            <div class="col"><div class="bwrap"><div class="b" style="height:56%"></div></div><div class="cap">W1</div></div>
+            <div class="col"><div class="bwrap"><div class="b" style="height:52%"></div></div><div class="cap">W2</div></div>
+            <div class="col"><div class="bwrap"><div class="b" style="height:60%"></div></div><div class="cap">W3</div></div>
+            <div class="col"><div class="bwrap"><div class="b" style="height:50%"></div></div><div class="cap">W4</div></div>
+            <div class="col"><div class="bwrap"><div class="b" style="height:64%"></div></div><div class="cap">W5</div></div>
+            <div class="col"><div class="bwrap"><div class="b" style="height:58%"></div></div><div class="cap">W6</div></div>
+          </div>
+          <div class="callout green mt12"><span>✅</span><div>采购员整体<b>跑赢市场 1.8%</b>，其中 W4 择时最佳（低点囤货），行情掌控评分领先。数据源：钢银 + 钢之家。</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>应付/预付结构健康度</h3></div>
+        <div class="card-b flex center gap16" style="justify-content:center;flex-direction:column">
+          <div class="donut" style="--p:34;--c:var(--c-accent)"><div class="in"><b>34%</b><span>预付占比</span></div></div>
+          <div class="small" style="width:100%">
+            <div class="flex between mt8"><span class="muted">应付账款</span><b>¥1,280万</b></div>
+            <div class="flex between mt8"><span class="muted">预付账款</span><b>¥660万</b></div>
+            <div class="flex between mt8"><span class="muted">健康区间 [20%,40%]</span><span class="tag green">合格</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt16">
+      <div class="card-h"><h3>采购员绩效明细</h3><span class="sub">2026年6月</span></div>
+      <div class="card-b" style="padding:0">
+        <table class="table">
+          <thead><tr><th>采购员</th><th>价格竞争力</th><th>行情掌控评分</th><th>存货周转天数</th><th>能力性收益</th><th>超额奖</th><th>预付计息</th><th class="right">绩效合计</th></tr></thead>
+          <tbody>
+            <tr><td><span class="mini-av">张</span>张伟</td><td class="num pos">+2.4%</td><td><span class="tag green">A</span></td><td class="num">18.2</td><td class="num">¥60.0万</td><td class="num">¥26,400</td><td class="num neg">−1,500</td><td class="money right">¥25,820</td></tr>
+            <tr><td><span class="mini-av">赵</span>赵倩</td><td class="num pos">+1.1%</td><td><span class="tag blue">B</span></td><td class="num">22.6</td><td class="num neg">−2.1万</td><td class="num">¥0</td><td class="num">0</td><td class="money right">¥19,600</td></tr>
+            <tr><td><span class="mini-av">周</span>周强</td><td class="num neg">−0.6%</td><td><span class="tag amber">C</span></td><td class="num">28.9</td><td class="num">¥8.3万</td><td class="num">¥5,800</td><td class="num neg">−900</td><td class="money right">¥12,900</td></tr>
+            <tr><td><span class="mini-av">吴</span>吴敏</td><td class="num pos">+3.0%</td><td><span class="tag green">A</span></td><td class="num">16.8</td><td class="num">¥12.5万</td><td class="num">¥8,750</td><td class="num">0</td><td class="money right">¥16,750</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout amber mt16"><span>💡</span><div><b>成本重估口径提示：</b>超额奖基于"能力性收益 = 实际收益 − 市场自然波动收益"，剔除行情普涨的账面利润，仅奖励跑赢市场的择时能力（可在规则中心切换成本基准法）。</div></div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

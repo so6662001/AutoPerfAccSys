@@ -1,0 +1,22 @@
+# Java / Maven
+backend/**/target/
+*.class
+*.jar
+!**/.mvn/wrapper/*.jar
+
+# Node / Vue
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/*.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS / logs
+.DS_Store
+*.log
+/tmp/

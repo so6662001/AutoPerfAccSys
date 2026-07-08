@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: steel-perf
+  # 平台库数据源：默认 H2 内存库（开发/演示，多租户共享库 + tenant_id 判别）。
+  # 生产用 profile=prod 覆盖为 MySQL（见 application-prod.yml.example）。
+  datasource:
+    url: jdbc:h2:mem:steel_perf;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate.dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false   # 默认(H2)用 JPA 建表；生产(prod)启用 Flyway 迁移
+
+# ERP 源库（SQL Server 2008+，只读接入，按租户路由；M1 落地）
+# erp:
+#   sqlserver:
+#     read-only: true
+#     query-timeout-seconds: 30
+#     max-rows: 200000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    redis:
+      enabled: false   # 默认内存锁；启用 Redis 锁(perf.lock.redis=true)时可开启
+
+perf:
+  lock:
+    redis: false        # true 切换为 Redis 分布式锁（多实例）
+
+logging:
+  level:
+    com.steel.perf: INFO
+  pattern:
+    # 日志包含 traceId，便于链路串联
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{traceId}] %logger{36} - %msg%n"

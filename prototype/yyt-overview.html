@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>岳洋通落地总览 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="yyt-overview" data-crumb="岳洋通落地案例 / <b>落地总览</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>岳洋通绩效方案 · 落地总览</h1>
+        <p>销售绩效：销量绩效 + 差价绩效 + 加工绩效 + 新户开发 + 团队任务系数；另含期货合同定金/货物计息</p>
+      </div>
+      <div class="actions">
+        <a class="btn" href="yyt-config.html">🧩 查看配置</a>
+        <a class="btn primary" href="yyt-simulator.html">🧮 打开试算器</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>绩效构成模型</h3><span class="sub">按库别差异化 · 团队完成率系数 · 分支机构可单独设置</span></div>
+      <div class="card-b">
+        <div class="grid" style="grid-template-columns:repeat(5,1fr);gap:12px">
+          <div class="kpi" style="box-shadow:none"><div class="lbl">销量绩效</div><div class="val" style="font-size:17px">理算重量×单价</div><div class="delta">库别 0.5/1/2 元/吨</div></div>
+          <div class="kpi" style="box-shadow:none"><div class="lbl">差价绩效</div><div class="val" style="font-size:17px">按库别公式</div><div class="delta">(差价−门槛)/10×重量×系数</div></div>
+          <div class="kpi" style="box-shadow:none"><div class="lbl">院内加工绩效</div><div class="val" style="font-size:17px">加工费×3%</div><div class="delta">销售单加工费支出</div></div>
+          <div class="kpi" style="box-shadow:none"><div class="lbl">开发新户</div><div class="val" style="font-size:17px">前3月×50元</div><div class="delta">外地新户+累计吨量奖</div></div>
+          <div class="kpi" style="box-shadow:none"><div class="lbl">团队任务系数</div><div class="val" style="font-size:17px">完成量/设定量</div><div class="delta">乘销量+差价绩效</div></div>
+        </div>
+        <div class="callout blue mt16"><span>ℹ</span><div>库别：院内/调拨（现货）· 直发 · 配货 · 加工 · 新品种（非现货）。单价与系数可按<b>分支机构 / 分支机构+类别</b>单独设置；<b>内部销售算一半量</b>；<b>低价销售（备案）不算差价绩效</b>。</div></div>
+      </div>
+    </div>
+
+    <h3 style="margin:22px 0 12px">分期落地路线图</h3>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:16px">
+      <div class="card" style="border-top:3px solid var(--c-green)">
+        <div class="card-h"><h3>一期 · 配置为主 <span class="tag green">可直接配置</span></h3></div>
+        <div class="card-b"><ul style="margin:0;padding-left:18px;font-size:13px;line-height:2">
+          <li>库别销量绩效（0.5/1/2 元/吨）</li>
+          <li>差价绩效主体公式（各库别）</li>
+          <li>新品种库 = 销售利润2 × 10%</li>
+          <li>院内加工绩效 = 加工费 × 3%</li>
+          <li>团队完成率系数骨架</li>
+        </ul><div class="mt16"><span class="tag green">✅ 引擎可表达</span></div></div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--c-amber)">
+        <div class="card-h"><h3>二期 · 平台通用扩展 <span class="tag amber">需扩展</span></h3></div>
+        <div class="card-b"><ul style="margin:0;padding-left:18px;font-size:13px;line-height:2">
+          <li>多级参数作用域（分支机构 / 机构+类别）</li>
+          <li>理算重量、销售利润2、挂牌价取数口径</li>
+          <li>差价 −20/−10 门槛 + 每 10 元阶跃 + 库别系数</li>
+          <li>内部销售折半计量</li>
+          <li>低价备案 → 差价绩效豁免</li>
+          <li>团队系数作用于销量+差价</li>
+        </ul><div class="mt16"><span class="tag amber">🟡 可复用增强</span></div></div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--c-red)">
+        <div class="card-h"><h3>三期 · 专项 <span class="tag red">需新增</span></h3></div>
+        <div class="card-b"><ul style="margin:0;padding-left:18px;font-size:13px;line-height:2">
+          <li><b>新户开发/外地新户</b>激励（前3月固定 + 累计吨量阶段 + 地区区分 + 经理审核）</li>
+          <li><b>期货合同滚动计息</b>：定金分笔计息 + 货物入库到出货计息 + 合同总额封顶</li>
+        </ul><div class="mt16"><span class="tag red">🔴 专项定制</span></div></div>
+      </div>
+    </div>
+
+    <div class="callout blue mt24"><span>🔗</span><div><b>数据前提（ERP 需提供）：</b>出库明细（库别/理算重量/成交金额/挂牌价/销售利润2/加工费）、销售方式（现货/非现货/内部）、客户档案（新老/地区/录入日/月提货额/累计吨量）、期货合同与打款/入库/出库事件流。</div></div>
+
+    <div class="flex gap12 mt16">
+      <a class="btn" href="yyt-config.html">下一步：方案配置 →</a>
+      <a class="btn" href="yyt-interest.html">期货合同计息演示 →</a>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

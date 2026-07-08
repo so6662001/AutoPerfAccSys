@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>行情价与价格竞争力 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="market" data-crumb="数据与规则 / <b>行情价与价格竞争力</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>行情价与价格竞争力</h1>
+        <p>行情基准价管理（钢银 / 钢之家 / 人工导入）· 采购进价对比 · 择时评分</p>
+      </div>
+      <div class="actions">
+        <button class="btn">⬆ 人工导入行情</button>
+        <button class="btn primary">🔄 拉取最新行情</button>
+      </div>
+    </div>
+
+    <div class="grid kpi-grid">
+      <div class="kpi"><div class="icn bg-blue">💹</div><div class="lbl">行情价覆盖率</div><div class="val">97.4<small>%</small></div><div class="delta down">3 笔缺失待补录</div></div>
+      <div class="kpi"><div class="icn bg-green">🎯</div><div class="lbl">采购加权价差率</div><div class="val">+1.8<small>%</small></div><div class="delta up">▲ 跑赢市场</div></div>
+      <div class="kpi"><div class="icn bg-orange">⏱</div><div class="lbl">择时命中率</div><div class="val">72<small>%</small></div><div class="delta up">▲ 采购后 15 日上涨占比</div></div>
+      <div class="kpi"><div class="icn bg-amber">🔗</div><div class="lbl">品规映射匹配率</div><div class="val">99.1<small>%</small></div><div class="delta up">3 项待维护别名</div></div>
+    </div>
+
+    <div class="card mt16">
+      <div class="card-h">
+        <h3>采购进价 vs 行情基准价对比</h3>
+        <div class="flex gap8">
+          <select class="select sm" style="width:auto;padding:6px 10px"><option>全部品规</option><option>螺纹钢</option><option>热卷</option></select>
+          <span class="tag gray">匹配维度：品名×规格×材质×地区×日期</span>
+        </div>
+      </div>
+      <div class="card-b" style="padding:0">
+        <table class="table">
+          <thead><tr><th>采购单</th><th>品规</th><th>地区/日期</th><th>采购单价</th><th>行情基准价</th><th>价差率</th><th>来源</th><th>评判</th></tr></thead>
+          <tbody>
+            <tr><td class="muted small">PO-2606-018</td><td>HRB400E Φ12</td><td class="small">唐山 06-08</td><td class="num">3,420</td><td class="num">3,500</td><td class="num pos">+2.3%</td><td><span class="tag blue">钢银</span></td><td><span class="tag green">优</span></td></tr>
+            <tr><td class="muted small">PO-2606-025</td><td>SPHC 3.0</td><td class="small">天津 06-12</td><td class="num">3,880</td><td class="num">3,860</td><td class="num neg">−0.5%</td><td><span class="tag blue">钢之家</span></td><td><span class="tag amber">偏高</span></td></tr>
+            <tr><td class="muted small">PO-2606-031</td><td>Q355B 20mm</td><td class="small">上海 06-15</td><td class="num">4,050</td><td class="num">4,160</td><td class="num pos">+2.6%</td><td><span class="tag blue">钢银</span></td><td><span class="tag green">优</span></td></tr>
+            <tr><td class="muted small">PO-2606-040</td><td>HRB400E Φ12</td><td class="small">唐山 06-18</td><td class="num">3,510</td><td class="num muted">— 缺失</td><td class="num muted">—</td><td><span class="tag amber">无匹配</span></td><td><button class="btn sm">补录</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid mt16" style="grid-template-columns: 1.4fr 1fr">
+      <div class="card">
+        <div class="card-h"><h3>行情走势与采购择时点</h3><div class="legend"><span><i style="background:var(--c-accent)"></i>行情价</span><span><i style="background:var(--c-primary)"></i>采购点</span></div></div>
+        <div class="card-b">
+          <div class="barchart">
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:50%"></div></div><div class="cap">06-01</div></div>
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:44%"></div><div class="b" style="height:20%"></div></div><div class="cap">06-08 ★</div></div>
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:48%"></div></div><div class="cap">06-15</div></div>
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:40%"></div><div class="b" style="height:18%"></div></div><div class="cap">06-18 ★</div></div>
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:58%"></div></div><div class="cap">06-22</div></div>
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:66%"></div></div><div class="cap">06-30</div></div>
+          </div>
+          <div class="callout green mt12"><span>✅</span><div>06-08、06-18 两次<b>低点建仓</b>，采购后行情上行，择时收益为正，计入"行情掌控能力"评分。</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>价格竞争力评分构成</h3></div>
+        <div class="card-b flex center" style="justify-content:center;flex-direction:column;gap:14px">
+          <div class="donut" style="--p:82;--c:var(--c-green)"><div class="in"><b>A</b><span>综合 82 分</span></div></div>
+          <div class="small" style="width:100%">
+            <div class="flex between mt8"><span class="muted">价格竞争力（加权价差）</span><b>48/50</b></div>
+            <div class="flex between mt8"><span class="muted">行情掌控（择时收益）</span><b>34/50</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

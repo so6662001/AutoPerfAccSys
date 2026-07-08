@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>超扑越专属试算器 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .sim-grid { display:grid; grid-template-columns:1.05fr 1fr; gap:16px; align-items:start; }
+  .frm-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; }
+  .grp-title { font-size:12.5px; font-weight:700; color:var(--c-primary-d); background:var(--c-primary-soft); padding:6px 11px; border-radius:7px; margin:6px 0 12px; }
+  .field.sm { margin-bottom:8px; } .field.sm label { margin-bottom:4px; }
+  .field.sm .input, .field.sm .select { padding:7px 10px; }
+  .chk { display:flex; align-items:center; gap:8px; font-size:13px; padding:8px 0; }
+  .res-line { display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom:1px dashed var(--c-border); }
+  .res-line .k { font-size:13px; color:var(--c-text-2); } .res-line .k b{ color:var(--c-text); }
+  .res-line .v { font-weight:700; font-variant-numeric:tabular-nums; font-size:14px; }
+  .total-box { background:linear-gradient(135deg,#2f5bea,#2244c4); color:#fff; border-radius:14px; padding:18px 20px; margin-top:14px; }
+  .total-box .l { font-size:12.5px; opacity:.85; } .total-box .v { font-size:34px; font-weight:800; letter-spacing:-.5px; margin-top:3px; }
+  @media(max-width:900px){ .sim-grid{grid-template-columns:1fr} .frm-grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body data-page="cpy-sim" data-crumb="超扑越落地案例 / <b>专属试算器</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>超扑越绩效试算器 <span class="tag green" style="vertical-align:middle">可交互 · 实时</span></h1>
+        <p>按客户真实公式实时演算：基本工资 + 自营 + 外配 + 吨量 + 加磅，淡旺季随月份自动切换</p>
+      </div>
+      <div class="actions"><button class="btn" id="btnReset">↺ 重置示例</button><button class="btn primary" id="btnSave">📋 记入本月绩效</button></div>
+    </div>
+
+    <div class="sim-grid">
+      <!-- inputs -->
+      <div class="card">
+        <div class="card-h"><h3>业务参数</h3><span class="sub">修改即时重算</span></div>
+        <div class="card-b">
+          <div class="grp-title">① 基本工资（上月达成 → 本月底薪）</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>出货月份（定淡旺季）</label>
+              <select class="select" id="month"><option>1</option><option>2</option><option>3</option><option selected>6</option><option>7</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+            <div class="field sm"><label>上月吨量完成率(%)</label><input class="input" type="number" id="tonRate" value="105"></div>
+            <div class="field sm"><label>上月利润完成率(%)</label><input class="input" type="number" id="profRate" value="95"></div>
+            <div class="field sm"><label>综合达成率 / 档位</label><input class="input" id="compRate" value="—" readonly style="background:var(--c-surface-2)"></div>
+          </div>
+
+          <div class="grp-title">② 自营利润提成（现货库存·淡旺季阶梯）</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>自营利润(元，可负=过磅低价)</label><input class="input" type="number" id="selfProfit" value="12000"></div>
+            <div class="field sm"><label>&nbsp;</label><div class="chk"><input type="checkbox" id="selfLowPoint"><label for="selfLowPoint" style="margin:0">点数低价(负值记0)</label></div></div>
+          </div>
+
+          <div class="grp-title">③ 外配利润提成（直发/临调·淡旺季阶梯）</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>外配利润(元)</label><input class="input" type="number" id="extProfit" value="6000"></div>
+            <div class="field sm"><label>&nbsp;</label><div class="chk"><input type="checkbox" id="guard"><label for="guard" style="margin:0">过渡期保底10%</label></div></div>
+          </div>
+
+          <div class="grp-title">④ 吨量提成（仅自营库·3.8元/吨）</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>自营销售吨量(吨)</label><input class="input" type="number" id="tons" value="120"></div>
+            <div class="field sm"><label>吨量单价(元/吨)</label><input class="input" type="number" step="0.1" id="tonPrice" value="3.8"></div>
+            <div class="field sm"><label>地推纯新客户(个×10元)</label><input class="input" type="number" id="newCust" value="2"></div>
+            <div class="field sm"><label>&nbsp;</label><div class="chk"><input type="checkbox" id="lowPrice"><label for="lowPrice" style="margin:0">低价销售(扣20%)</label></div></div>
+          </div>
+
+          <div class="grp-title">⑤ 加磅利润提成（仅过磅）</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>实际加磅销售金额(元)</label><input class="input" type="number" id="weighActual" value="8500"></div>
+            <div class="field sm"><label>标准加磅销售金额(元)</label><input class="input" type="number" id="weighStd" value="7200"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- results -->
+      <div>
+        <div class="card">
+          <div class="card-h"><h3>试算结果 · 薪酬构成</h3><span class="tag blue" id="seasonTag">—</span></div>
+          <div class="card-b">
+            <div class="res-line"><span class="k">① 基本工资 <b id="fBase"></b></span><span class="v" id="rBase">—</span></div>
+            <div class="res-line"><span class="k">② 自营利润提成 <b id="fSelf"></b></span><span class="v" id="rSelf">—</span></div>
+            <div class="res-line"><span class="k">③ 外配利润提成 <b id="fExt"></b></span><span class="v" id="rExt">—</span></div>
+            <div class="res-line"><span class="k">④ 吨量提成 <b id="fTon"></b></span><span class="v" id="rTon">—</span></div>
+            <div class="res-line"><span class="k">⑤ 加磅利润提成 <b id="fWeigh"></b></span><span class="v" id="rWeigh">—</span></div>
+            <div class="total-box"><div class="l">当月薪酬总额（试算）</div><div class="v" id="rTotal">¥0</div></div>
+          </div>
+        </div>
+        <div class="card mt16">
+          <div class="card-h"><h3>构成占比</h3></div>
+          <div class="card-b" id="bars" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+        <div class="callout amber mt16"><span>💡</span><div>淡旺季按出货月份自动切换阈值（旺季 3–10 月 / 淡季 11–2 月）；外配保底、低价扣减、按客户数计提均按客户真实规则演算。加磅利润提成为过磅专项（三期）。</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const num = id => parseFloat($(id).value)||0;
+  const chk = id => $(id).checked;
+  let last = null;
+  const fmt = n => (n<0?"−":"")+"¥"+Math.abs(Math.round(n)).toLocaleString("zh-CN");
+
+  function isPeak(m){ return m>=3 && m<=10; }
+  function tierRate(profit, peak){
+    if(peak){ if(profit<=5000)return .05; if(profit<=15000)return .10; if(profit<=25000)return .15; return .20; }
+    else    { if(profit<=1500)return .05; if(profit<=5000)return .10; if(profit<=8000)return .15; return .20; }
+  }
+  function baseBy(rate){ if(rate<=80)return ["初级",2000]; if(rate<=90)return ["中级",2500]; if(rate<=100)return ["高级",3000]; return ["资深",3500]; }
+
+  function calc(){
+    const m = parseInt($("month").value)||6; const peak = isPeak(m);
+    $("seasonTag").textContent = peak ? "🌞 旺季（3–10月）" : "❄ 淡季（11–2月）";
+
+    const comp = num("tonRate")*0.7 + num("profRate")*0.3;
+    const [lvl, base] = baseBy(comp);
+    $("compRate").value = comp.toFixed(1)+"% · "+lvl+"("+base+"元)";
+
+    // 自营
+    let sp = num("selfProfit"), selfComm;
+    if(sp>=0){ const r=tierRate(sp,peak); selfComm=sp*r; $("fSelf").textContent="= "+fmt(sp)+" × "+(r*100)+"%"; }
+    else { if(chk("selfLowPoint")){ selfComm=0; $("fSelf").textContent="= 点数低价，记 0"; } else { selfComm=sp; $("fSelf").textContent="= 过磅低价，按负值扣减"; } }
+
+    // 外配
+    const ep=num("extProfit"); let er=tierRate(ep,peak); let guarded=false;
+    if(chk("guard") && er<0.10){ er=0.10; guarded=true; }
+    const extComm = ep*er;
+    $("fExt").textContent = "= "+fmt(ep)+" × "+(er*100)+"%"+(guarded?"（保底）":"");
+
+    // 吨量
+    const tonComm = num("tons")*num("tonPrice")*(chk("lowPrice")?0.8:1) + num("newCust")*10;
+    $("fTon").textContent = "= "+num("tons")+"×"+num("tonPrice")+(chk("lowPrice")?"×0.8":"")+" + "+num("newCust")+"×10";
+
+    // 加磅
+    const weigh = Math.max(num("weighActual")-num("weighStd"),0);
+    $("fWeigh").textContent = "= "+fmt(num("weighActual"))+" − "+fmt(num("weighStd"));
+
+    const total = base + selfComm + extComm + tonComm + weigh;
+    last = { month:m, season:(peak?"旺季":"淡季"), lvl, base, self:selfComm, ext:extComm, ton:tonComm, weigh, total, comp };
+    $("fBase").textContent = "= "+lvl+"档";
+    $("rBase").textContent=fmt(base); $("rSelf").textContent=fmt(selfComm); $("rExt").textContent=fmt(extComm);
+    $("rTon").textContent=fmt(tonComm); $("rWeigh").textContent=fmt(weigh); $("rTotal").textContent=fmt(total);
+    $("rSelf").className="v "+(selfComm<0?"neg":""); 
+
+    const parts=[["基本工资",base,"var(--c-primary)"],["自营提成",Math.max(selfComm,0),"var(--c-accent)"],["外配提成",extComm,"var(--c-green)"],["吨量提成",tonComm,"var(--c-amber)"],["加磅提成",weigh,"#8b5cf6"]];
+    const denom=parts.reduce((s,p)=>s+p[1],0)||1;
+    $("bars").innerHTML=parts.map(p=>{const pct=Math.round(p[1]/denom*100);
+      return `<div><div class="flex between small"><span>${p[0]}</span><b>${fmt(p[1])} · ${pct}%</b></div><div class="bar mt8"><span style="width:${pct}%;background:${p[2]}"></span></div></div>`;}).join("");
+  }
+  document.querySelectorAll(".card-b input, .card-b select").forEach(el=>{ el.addEventListener("input",calc); el.addEventListener("change",calc); });
+  $("btnReset").addEventListener("click",()=>{ location.reload(); });
+  $("btnSave").addEventListener("click",()=>{
+    if(!last) return;
+    const rec = Object.assign({ emp:"王海涛", monthLabel:"2026-"+String(last.month).padStart(2,"0"), time:new Date().toLocaleString("zh-CN") }, last);
+    try{ localStorage.setItem("cpy_payslip", JSON.stringify(rec)); }catch(e){}
+    showToast&&showToast("已记入本月绩效 ✓","王海涛 "+rec.monthLabel+" 薪酬总额 ¥"+Math.round(last.total).toLocaleString("zh-CN")+"，前往『绩效明细表』查看","green");
+  });
+  calc();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>个人绩效单 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="payslip" data-crumb="绩效核算 / 核算工作台 / <b>个人绩效单</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>个人绩效单 · 王海涛</h1>
+        <p>销售部 · 现货销售员 · 2026 年 6 月 · 适用方案 <b>销售现货方案 v3</b>（生效 2026-04）</p>
+      </div>
+      <div class="actions">
+        <button class="btn">🔁 重算</button>
+        <button class="btn">⬇ 导出绩效单</button>
+        <button class="btn primary">✓ 审核通过</button>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 320px 1fr;">
+      <!-- Left summary -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-b" style="text-align:center">
+            <div class="mini-av" style="width:56px;height:56px;font-size:20px;margin:0 auto 10px">王</div>
+            <div class="b700" style="font-size:16px">王海涛</div>
+            <div class="muted small">工号 S-0271 · 销售·现货</div>
+            <div class="divider"></div>
+            <div class="muted small">本期应发绩效</div>
+            <div class="b700" style="font-size:30px;color:var(--c-primary);letter-spacing:-.5px">¥20,835</div>
+            <div class="tag blue mt8">待主管审核</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>构成占比</h3></div>
+          <div class="card-b" style="display:flex;flex-direction:column;gap:11px">
+            <div><div class="flex between small"><span>基础绩效工资</span><b>¥6,000</b></div><div class="bar mt8"><span style="width:29%"></span></div></div>
+            <div><div class="flex between small"><span>吨位提成(阶梯×账期)</span><b>¥5,400</b></div><div class="bar o mt8"><span style="width:26%"></span></div></div>
+            <div><div class="flex between small"><span>挂价利润个人所得</span><b>¥5,600</b></div><div class="bar o mt8"><span style="width:27%"></span></div></div>
+            <div><div class="flex between small"><span>预收账款计息</span><b class="pos">+¥4,375</b></div><div class="bar g mt8"><span style="width:21%"></span></div></div>
+            <div><div class="flex between small"><span>应收逾期扣减</span><b class="neg">−¥540</b></div><div class="bar r mt8"><span style="width:3%"></span></div></div>
+          </div>
+        </div>
+        <div class="callout blue"><span>🔍</span><div>点击右侧任意核算项可<b>逐层下钻</b>至公式、指标与 ERP 原始单据，全程可追溯、可复算。</div></div>
+      </div>
+
+      <!-- Right drill-down -->
+      <div class="card">
+        <div class="card-h"><h3>核算明细 · 可追溯下钻</h3><span class="tag gray">规则版本：<a href="rule-config.html?cr=CR-20260502-03" style="color:var(--c-primary)" title="点击追溯该版本的规则变更单">方案v3 ↗</a> / 公式v2 / 账期表v1 / 计息参数v1</span></div>
+        <div class="card-b">
+          <div class="drill">
+
+            <!-- 1 基础绩效 -->
+            <div class="row" data-target="d1">
+              <span class="chev">▶</span>
+              <div style="flex:1"><b>① 基础绩效工资</b> <span class="muted small">绩效基数 × 基础绩效系数</span></div>
+              <b class="money">¥6,000</b>
+            </div>
+            <div class="lvl-2" id="d1">
+              <div class="sub-row"><span class="k">绩效基数</span><b>¥6,000</b></div>
+              <div class="sub-row"><span class="k">基础绩效系数（评分卡 → 档位）</span><b>1.0</b></div>
+              <div class="sub-row"><span class="k">评分：保底销量 100% · 新客 2 户 · 客情 A</span><span class="tag green">达标</span></div>
+              <div class="sub-row" style="display:block"><div class="formula"><span class="var">基础绩效</span> <span class="op">=</span> 6000 <span class="op">×</span> 1.0 <span class="op">=</span> <span class="var">6000</span></div></div>
+            </div>
+
+            <!-- 2 吨位提成 -->
+            <div class="row" data-target="d2">
+              <span class="chev">▶</span>
+              <div style="flex:1"><b>② 吨位提成（阶梯 × 回款账期）</b> <span class="muted small">逐单按约定账期计提</span></div>
+              <b class="money">¥5,400</b>
+            </div>
+            <div class="lvl-2" id="d2">
+              <div class="sub-row"><span class="k">现款销售 300 吨 × 8 元/吨（现款档）</span><b>¥2,400</b></div>
+              <div class="sub-row"><span class="k">30 天账期 500 吨 × 6 元/吨（≤30天档）</span><b>¥3,000</b></div>
+              <div class="sub-row"><span class="k">账期越长单价越低 · 匹配账期分档表 v1</span><a href="rule-config.html" class="tag blue">查看规则</a></div>
+              <div class="sub-row" style="display:block"><div class="formula"><span class="cm"># 逐单累加</span><br><span class="var">吨位提成</span> <span class="op">=</span> Σ(吨位 × 账期档单价) <span class="op">=</span> 2400 + 3000 <span class="op">=</span> <span class="var">5400</span></div></div>
+            </div>
+
+            <!-- 3 挂价利润 -->
+            <div class="row" data-target="d3">
+              <span class="chev">▶</span>
+              <div style="flex:1"><b>③ 挂价利润分配</b> <span class="muted small">(成交价−挂牌价)×吨位 × 分配系数</span></div>
+              <b class="money">¥5,600</b>
+            </div>
+            <div class="lvl-2" id="d3">
+              <div class="sub-row"><span class="k">挂价利润 = (成交均价 − 挂牌价) × 800 吨</span><b>¥8,000</b></div>
+              <div class="sub-row"><span class="k">个人分配系数</span><b>0.70</b></div>
+              <div class="sub-row"><span class="k">数据来源：ERP 销售单 8 张（SO-2606-xxx）</span><span class="tag gray">原始单据</span></div>
+              <div class="sub-row" style="display:block"><div class="formula"><span class="var">个人所得</span> <span class="op">=</span> 8000 <span class="op">×</span> 0.70 <span class="op">=</span> <span class="var">5600</span></div></div>
+            </div>
+
+            <!-- 4 预收计息 -->
+            <div class="row" data-target="d4">
+              <span class="chev">▶</span>
+              <div style="flex:1"><b>④ 预收账款计息</b> <span class="tag green" style="margin-left:6px">正向激励</span></div>
+              <b class="money pos">+¥4,375</b>
+            </div>
+            <div class="lvl-2" id="d4">
+              <div class="sub-row"><span class="k">预收账款金额（客户提前付款）</span><b>¥500,000</b></div>
+              <div class="sub-row"><span class="k">占用天数 / 日利率</span><b>25 天 / 万分之五</b></div>
+              <div class="sub-row"><span class="k">分配系数</span><b>0.70</b></div>
+              <div class="sub-row" style="display:block"><div class="formula"><span class="cm"># 逐日：Σ(每日预收余额 × 日利率)</span><br><span class="var">计息</span> <span class="op">=</span> 500000 × 0.0005 × 25 × 0.70 <span class="op">=</span> <span class="var">4375</span></div></div>
+            </div>
+
+            <!-- 5 应收扣减 -->
+            <div class="row" data-target="d5">
+              <span class="chev">▶</span>
+              <div style="flex:1"><b>⑤ 应收账款考核扣减</b> <span class="muted small">扣款模式</span></div>
+              <b class="money neg">−¥540</b>
+            </div>
+            <div class="lvl-2" id="d5">
+              <div class="sub-row"><span class="k">部分回款逾期 20 天（逾期 1~30 天档）</span><span class="tag amber">扣 10%</span></div>
+              <div class="sub-row"><span class="k">适用扣减基数（对应业务提成）</span><b>¥5,400</b></div>
+              <div class="sub-row" style="display:block"><div class="formula"><span class="var">扣减</span> <span class="op">=</span> 5400 <span class="op">×</span> 10% <span class="op">=</span> <span class="var">540</span></div></div>
+            </div>
+
+            <!-- 6 奖惩 -->
+            <div class="row" data-target="d6">
+              <span class="chev">▶</span>
+              <div style="flex:1"><b>⑥ 行政奖惩</b> <span class="muted small">考勤 / 纪律</span></div>
+              <b class="money">¥0</b>
+            </div>
+            <div class="lvl-2" id="d6">
+              <div class="sub-row"><span class="k">本月考勤：全勤</span><span class="tag green">无扣款</span></div>
+              <div class="sub-row"><span class="k">纪律违规</span><b>无</b></div>
+            </div>
+          </div>
+
+          <!-- total -->
+          <div class="card mt16" style="background:var(--c-surface-2);border:none">
+            <div class="card-b">
+              <div class="formula" style="font-size:13px">
+<span class="var">应发绩效</span> <span class="op">=</span> 基础绩效 + 吨位提成 + 挂价所得 + 预收计息 − 应收扣减 + 奖惩<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="op">=</span> 6000 + 5400 + 5600 + 4375 − 540 + 0 <span class="op">=</span> <span class="var" style="font-size:16px">¥20,835</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

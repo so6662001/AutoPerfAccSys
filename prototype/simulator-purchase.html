@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>采购绩效试算器 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .sim-grid { display:grid; grid-template-columns: 1.1fr 1fr; gap:16px; align-items:start; }
+  .frm-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; }
+  .grp-title { font-size:12.5px; font-weight:700; color:#c85a24; background:var(--c-accent-soft); padding:6px 11px; border-radius:7px; margin:6px 0 12px; }
+  .field.sm { margin-bottom:8px; } .field.sm label { margin-bottom:4px; }
+  .field.sm .input, .field.sm .select { padding:7px 10px; }
+  .res-line { display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom:1px dashed var(--c-border); }
+  .res-line .k { font-size:13px; color:var(--c-text-2); } .res-line .k b{ color:var(--c-text); }
+  .res-line .v { font-weight:700; font-variant-numeric:tabular-nums; font-size:14px; }
+  .res-line.sub { background:var(--c-surface-2); margin:0 -18px; padding:11px 18px; }
+  .total-box { background:linear-gradient(135deg,#f5793b,#e2691f); color:#fff; border-radius:14px; padding:18px 20px; margin-top:14px; }
+  .total-box .l { font-size:12.5px; opacity:.9; } .total-box .v { font-size:34px; font-weight:800; letter-spacing:-.5px; margin-top:3px; }
+  @media(max-width:900px){ .sim-grid{grid-template-columns:1fr} .frm-grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body data-page="simulator-pur" data-crumb="绩效核算 / <b>试算器 · 采购</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>采购绩效试算器 <span class="tag orange" style="vertical-align:middle">可交互 · 实时计算</span></h1>
+        <p>输入采购业务参数，实时演算「采购岗」绩效：基础绩效 + 超额奖（能力性收益）× 综合奖金系数 − 预付计息</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btnReset">↺ 重置为示例</button>
+        <button class="btn accent" id="btnCopy">⧉ 复制结果</button>
+      </div>
+    </div>
+
+    <div class="sim-grid">
+      <!-- inputs -->
+      <div class="card">
+        <div class="card-h"><h3>采购业务参数</h3><span class="sub">修改任意值即时重算</span></div>
+        <div class="card-b">
+          <div class="grp-title">① 基础绩效</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>绩效基数（元）</label><input class="input" type="number" id="base" value="8000"></div>
+            <div class="field sm"><label>基础绩效系数</label>
+              <select class="select" id="coef"><option value="0">0</option><option value="0.6">0.6</option><option value="0.8">0.8</option><option value="1" selected>1.0</option><option value="1.2">1.2</option></select>
+            </div>
+          </div>
+
+          <div class="grp-title">② 超额奖 · 能力性收益（成本重估后）</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>能力性收益（元，已剔除市场普涨）</label><input class="input" type="number" id="ability" value="600000"></div>
+            <div class="field sm"><label>个人分配系数</label><input class="input" type="number" step="0.05" id="alloc" value="0.8"></div>
+            <div class="field sm"><label>提成 ≤50万（%）</label><input class="input" type="number" id="t1" value="5"></div>
+            <div class="field sm"><label>提成 50~100万（%）</label><input class="input" type="number" id="t2" value="8"></div>
+            <div class="field sm"><label>提成 &gt;100万（%）</label><input class="input" type="number" id="t3" value="12"></div>
+          </div>
+
+          <div class="grp-title">③ 综合奖金系数（基础量约束）</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>基础采购量完成率（%）</label><input class="input" type="number" id="baseRate" value="85"></div>
+            <div class="field sm"><label>对应综合系数</label><input class="input" id="cbCoef" value="0.8" readonly style="background:var(--c-surface-2)"></div>
+          </div>
+
+          <div class="grp-title">④ 预付计息 & 奖惩</div>
+          <div class="frm-grid">
+            <div class="field sm"><label>预付账款金额（元）</label><input class="input" type="number" id="prepay" value="200000"></div>
+            <div class="field sm"><label>占用天数</label><input class="input" type="number" id="prepayDays" value="15"></div>
+            <div class="field sm"><label>预付日利率（万分之）</label><input class="input" type="number" id="bp" value="5"></div>
+            <div class="field sm"><label>行政奖惩（元，可负）</label><input class="input" type="number" id="adjust" value="-200"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- results -->
+      <div>
+        <div class="card">
+          <div class="card-h"><h3>试算结果 · 采购绩效构成</h3><span class="tag orange">采购绩效方案 v2</span></div>
+          <div class="card-b">
+            <div class="res-line"><span class="k">① 基础绩效工资 <b id="fBase"></b></span><span class="v" id="rBase">—</span></div>
+            <div class="res-line"><span class="k">② 超额奖（阶梯 × 分配） <b id="fBonus"></b></span><span class="v" id="rBonus">—</span></div>
+            <div class="res-line sub"><span class="k"><b>小计（①+②）</b></span><span class="v" id="rSub">—</span></div>
+            <div class="res-line"><span class="k">③ × 综合奖金系数 <b id="fCb"></b></span><span class="v" id="rCb">—</span></div>
+            <div class="res-line"><span class="k">④ 预付账款计息扣减 <b id="fPre"></b></span><span class="v neg" id="rPre">—</span></div>
+            <div class="res-line"><span class="k">⑤ 行政奖惩</span><span class="v" id="rAdj">—</span></div>
+            <div class="total-box">
+              <div class="l">本期应发绩效（试算）</div>
+              <div class="v" id="rTotal">¥0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt16">
+          <div class="card-h"><h3>构成占比</h3></div>
+          <div class="card-b" id="bars" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+
+        <div class="callout amber mt16"><span>💡</span><div>采购超额奖基于「能力性收益 = 实际收益 − 市场自然波动收益」，剔除行情普涨的账面利润；基础采购量不足时，综合奖金系数对整体打折（可低于 1.0 甚至为 0）。</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const ids = ["base","coef","ability","alloc","t1","t2","t3","baseRate","prepay","prepayDays","bp","adjust"];
+  const defaults = {base:8000,coef:"1",ability:600000,alloc:0.8,t1:5,t2:8,t3:12,baseRate:85,prepay:200000,prepayDays:15,bp:5,adjust:-200};
+  const $ = id => document.getElementById(id);
+  const num = id => parseFloat($(id).value) || 0;
+  const fmt = n => (n<0?"−":"") + "¥" + Math.abs(Math.round(n)).toLocaleString("zh-CN");
+
+  function tier(ability, t1, t2, t3){
+    let b=0;
+    b += Math.min(ability, 500000) * t1/100;
+    if(ability>500000) b += (Math.min(ability,1000000)-500000) * t2/100;
+    if(ability>1000000) b += (ability-1000000) * t3/100;
+    return b;
+  }
+  function cbCoef(rate){ if(rate<60)return 0; if(rate<80)return 0.6; if(rate<100)return 0.8; if(rate<120)return 1.0; return 1.2; }
+
+  function calc(){
+    const base=num("base"), coef=parseFloat($("coef").value);
+    const ability=num("ability"), alloc=num("alloc"), t1=num("t1"), t2=num("t2"), t3=num("t3");
+    const baseRate=num("baseRate"), prepay=num("prepay"), prepayDays=num("prepayDays"), rate=num("bp")/10000, adjust=num("adjust");
+
+    const baseSalary = base*coef;
+    const commission = tier(ability,t1,t2,t3);
+    const bonus = commission*alloc;
+    const subtotal = baseSalary + bonus;
+    const cb = cbCoef(baseRate);
+    const afterCb = subtotal*cb;
+    const prepayInt = prepay*rate*prepayDays;
+    const total = afterCb - prepayInt + adjust;
+
+    $("cbCoef").value = cb.toFixed(1);
+    $("rBase").textContent = fmt(baseSalary);
+    $("rBonus").textContent = fmt(bonus);
+    $("rSub").textContent = fmt(subtotal);
+    $("rCb").textContent = fmt(afterCb);
+    $("rPre").textContent = "−"+fmt(prepayInt);
+    $("rAdj").textContent = fmt(adjust); $("rAdj").className = "v " + (adjust>=0?"pos":"neg");
+    $("rTotal").textContent = fmt(total);
+
+    $("fBase").textContent = `= ${base} × ${coef}`;
+    $("fBonus").textContent = `= 阶梯(${fmt(commission)}) × ${alloc}`;
+    $("fCb").textContent = `= ${fmt(subtotal)} × ${cb.toFixed(1)}（完成率 ${baseRate}%）`;
+    $("fPre").textContent = `= ${prepay}×${rate.toFixed(4)}×${prepayDays}`;
+
+    const parts = [["基础绩效", baseSalary, "var(--c-primary)"],["超额奖", Math.max(bonus,0), "var(--c-accent)"]];
+    const denom = parts.reduce((s,p)=>s+p[1],0)||1;
+    $("bars").innerHTML = parts.map(p=>{ const pct=Math.round(p[1]/denom*100);
+      return `<div><div class="flex between small"><span>${p[0]}</span><b>${fmt(p[1])} · ${pct}%</b></div><div class="bar mt8"><span style="width:${pct}%;background:${p[2]}"></span></div></div>`;
+    }).join("");
+  }
+  ids.forEach(id => $(id).addEventListener("input", calc));
+  $("btnReset").addEventListener("click", ()=>{ ids.forEach(id=>$(id).value=defaults[id]); calc(); });
+  $("btnCopy").addEventListener("click", ()=>{ $("btnCopy").textContent="✓ 已复制"; setTimeout(()=>$("btnCopy").textContent="⧉ 复制结果",1500); });
+  calc();
+})();
+</script>
+</body>
+</html>

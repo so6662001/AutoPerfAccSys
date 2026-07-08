@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>管理驾驶舱 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="dashboard" data-crumb="概览 / <b>管理驾驶舱</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>管理驾驶舱</h1>
+        <p>2026 年 6 月绩效核算总览 · 数据来源 ERP / 钢银行情 / 考勤系统，末次同步 06-30 23:50</p>
+      </div>
+      <div class="actions">
+        <button class="btn">⬇ 导出报表</button>
+        <button class="btn primary">⚙ 发起本期核算</button>
+      </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="grid kpi-grid">
+      <div class="kpi">
+        <div class="icn bg-blue">¥</div>
+        <div class="lbl">本期应发绩效总额</div>
+        <div class="val">¥86.4<small>万</small></div>
+        <div class="delta up">▲ 6.8% 环比上月</div>
+      </div>
+      <div class="kpi">
+        <div class="icn bg-orange">🛒</div>
+        <div class="lbl">采购岗绩效</div>
+        <div class="val">¥31.2<small>万</small></div>
+        <div class="delta up">▲ 4.1% · 12 人</div>
+      </div>
+      <div class="kpi">
+        <div class="icn bg-green">📈</div>
+        <div class="lbl">销售岗绩效</div>
+        <div class="val">¥55.2<small>万</small></div>
+        <div class="delta up">▲ 8.5% · 23 人</div>
+      </div>
+      <div class="kpi">
+        <div class="icn bg-amber">⚠</div>
+        <div class="lbl">待处理异常项</div>
+        <div class="val">7<small>项</small></div>
+        <div class="delta down">缺行情价 3 · 负值 2 · 超阈值 2</div>
+      </div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="grid mt16" style="grid-template-columns: 1.7fr 1fr;">
+      <div class="card">
+        <div class="card-h">
+          <h3>绩效支出与业务利润趋势</h3>
+          <div class="legend"><span><i style="background:var(--c-primary)"></i>绩效支出</span><span><i style="background:var(--c-accent)"></i>业务毛利</span></div>
+        </div>
+        <div class="card-b">
+          <div class="barchart">
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:38%"></div><div class="b" style="height:22%"></div></div><div class="cap">1月</div></div>
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:44%"></div><div class="b" style="height:26%"></div></div><div class="cap">2月</div></div>
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:52%"></div><div class="b" style="height:30%"></div></div><div class="cap">3月</div></div>
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:60%"></div><div class="b" style="height:33%"></div></div><div class="cap">4月</div></div>
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:66%"></div><div class="b" style="height:36%"></div></div><div class="cap">5月</div></div>
+            <div class="col"><div class="bwrap"><div class="b b2" style="height:78%"></div><div class="b" style="height:41%"></div></div><div class="cap">6月</div></div>
+          </div>
+          <div class="divider"></div>
+          <div class="flex between small muted">
+            <span>绩效支出/毛利占比 <b class="b700" style="color:var(--c-text)">6.2%</b></span>
+            <span>投入产出比 <b class="b700" style="color:var(--c-green)">1 : 16.1</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>本期核算进度</h3><span class="tag blue">进行中</span></div>
+        <div class="card-b">
+          <div class="flex center gap16" style="justify-content:center">
+            <div class="donut" style="--p:68;--c:var(--c-primary)">
+              <div class="in"><b>68%</b><span>已核定 24/35 人</span></div>
+            </div>
+          </div>
+          <div class="mt16" style="display:flex;flex-direction:column;gap:10px">
+            <div class="flex between small"><span>✅ 数据就绪</span><span class="tag green">已完成</span></div>
+            <div class="flex between small"><span>✅ 指标计算</span><span class="tag green">已完成</span></div>
+            <div class="flex between small"><span>⚙ 核算跑批</span><span class="tag blue">进行中</span></div>
+            <div class="flex between small"><span>🕘 主管审核</span><span class="tag gray">待开始</span></div>
+            <div class="flex between small"><span>🕘 员工确认</span><span class="tag gray">待开始</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3 -->
+    <div class="grid mt16" style="grid-template-columns: 1.4fr 1fr;">
+      <div class="card">
+        <div class="card-h"><h3>绩效排行 · TOP 榜</h3><span class="sub">按本期应发绩效</span></div>
+        <div class="card-b" style="padding:0">
+          <table class="table">
+            <thead><tr><th>排名</th><th>姓名</th><th>岗位</th><th>基础绩效</th><th>提成/超额奖</th><th class="right">应发合计</th></tr></thead>
+            <tbody>
+              <tr><td><span class="tag amber">1</span></td><td><span class="mini-av">王</span>王海涛</td><td>销售·现货</td><td class="num">6,000</td><td class="num">28,600</td><td class="money right pos">¥34,600</td></tr>
+              <tr><td><span class="tag gray">2</span></td><td><span class="mini-av">张</span>张伟</td><td>采购</td><td class="num">8,000</td><td class="num">19,320</td><td class="money right">¥25,820</td></tr>
+              <tr><td><span class="tag gray">3</span></td><td><span class="mini-av">刘</span>刘敏</td><td>销售·零调</td><td class="num">6,000</td><td class="num">17,900</td><td class="money right">¥23,900</td></tr>
+              <tr><td>4</td><td><span class="mini-av">陈</span>陈磊</td><td>销售·直发</td><td class="num">6,000</td><td class="num">15,240</td><td class="money right">¥21,240</td></tr>
+              <tr><td>5</td><td><span class="mini-av">赵</span>赵倩</td><td>采购</td><td class="num">8,000</td><td class="num">11,600</td><td class="money right">¥19,600</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>待办与异常</h3><a href="calc-workbench.html" class="sub" style="color:var(--c-primary)">前往处理 →</a></div>
+        <div class="card-b" style="display:flex;flex-direction:column;gap:12px">
+          <div class="callout amber"><span>⚠</span><div><b>3 笔采购单缺行情价基准</b><br><span class="muted">HRB400E Φ12 唐山地区 06-18 无匹配价，影响价格竞争力评分</span></div></div>
+          <div class="callout blue"><span>🧾</span><div><b>11 张绩效单待审核</b><br><span class="muted">销售部 7 张 · 采购部 4 张，等待主管初审</span></div></div>
+          <div class="callout amber"><span>⚠</span><div><b>2 项超额奖为负值</b><br><span class="muted">成本重估后能力性收益 &lt; 0，按规则封底为 0，待复核</span></div></div>
+          <div class="callout green"><span>✅</span><div><b>预收/应收计息已生成</b><br><span class="muted">本期预收计息收益 ¥3.6 万，应收逾期扣息 ¥1.9 万</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

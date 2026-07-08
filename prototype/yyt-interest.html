@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>岳洋通期货合同计息 · 钢绩云</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="yyt-interest" data-crumb="岳洋通落地案例 / <b>期货合同计息</b>">
+<div class="main">
+  <div class="content">
+    <div class="page-head">
+      <div>
+        <h1>期货合同计息演示 <span class="tag green" style="vertical-align:middle">可交互</span></h1>
+        <p>复现客户示例：合同 100 万、定金 30%；定金分笔计息 + 货物入库到出货计息 + 合同总额封顶</p>
+      </div>
+      <div class="actions"><button class="btn" id="btnReset">↺ 重置</button></div>
+    </div>
+
+    <!-- 合同参数 -->
+    <div class="card">
+      <div class="card-h"><h3>合同与计息参数</h3></div>
+      <div class="card-b">
+        <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:14px">
+          <div><div class="muted small">合同总金额</div><div class="b700" style="font-size:18px">¥1,000,000</div></div>
+          <div><div class="muted small">定金比例 / 金额</div><div class="b700" style="font-size:18px">30% · ¥300,000</div></div>
+          <div><div class="field sm" style="margin:0"><label class="muted small">日利率（万分之）</label><input class="input" type="number" id="bp" value="5" style="padding:6px 9px"></div></div>
+          <div><div class="field sm" style="margin:0"><label class="muted small">货物入库→出货天数</label><input class="input" type="number" id="days" value="10" style="padding:6px 9px"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid mt16" style="grid-template-columns: 1.3fr 1fr;gap:16px">
+      <!-- 事件时间轴 -->
+      <div class="card">
+        <div class="card-h"><h3>合同事件与计息演进</h3><span class="sub">打款 / 出货分笔</span></div>
+        <div class="card-b"><div class="timeline" id="tl"></div></div>
+      </div>
+      <!-- 计息合计 -->
+      <div class="card">
+        <div class="card-h"><h3>计息合计（截至末次出货）</h3></div>
+        <div class="card-b">
+          <div class="b700 small" style="margin:2px 0 8px;color:var(--c-primary-d)">定金计息</div>
+          <table class="table"><tbody id="depRows"></tbody></table>
+          <div class="b700 small" style="margin:14px 0 8px;color:var(--c-primary-d)">货物计息</div>
+          <table class="table"><tbody id="goodRows"></tbody></table>
+          <div class="total-box" style="background:linear-gradient(135deg,#1f9d6b,#14724d);color:#fff;border-radius:14px;padding:16px 18px;margin-top:14px">
+            <div style="font-size:12.5px;opacity:.85">计息利息合计</div>
+            <div style="font-size:30px;font-weight:800" id="rTotal">¥0</div>
+            <div style="font-size:11.5px;opacity:.85" id="rBase"></div>
+          </div>
+          <div class="callout amber mt16"><span>⚖</span><div><b>合同总额封顶：</b>末次 40 万出库前已累计收款+出货 80 万，故仅对剩余 <b>20 万</b>计货物利息（示例）。</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="callout blue mt16"><span>💱</span><div>本模型需按"合同 + 分笔打款/入库/出库事件流"建模：定金按到账分笔计息、货物按入库到出货计息，并受合同总额封顶约束——属三期专项能力。</div></div>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const money = n => "¥"+Math.round(n).toLocaleString("zh-CN");
+  const wan = n => (n/10000)+"万";
+  // 事件（复现客户示例）：定金 dep[], 货物 good[]，元素 {amt, days, note}
+  const events = [
+    { day:4, act:"打款 20 万", dep:[{amt:200000,days:4}], good:[] },
+    { day:6, act:"打款 30 万（累计 50 万）", dep:[{amt:200000,days:4},{amt:100000,days:6}], good:[{amt:200000,days:6}] },
+    { day:8, act:"出货 30 万", dep:[{amt:200000,days:4},{amt:100000,days:6}], good:[{amt:200000,days:6},{amt:300000,days:"D",note:"入库→出货"}] },
+    { day:12, act:"出货 40 万", dep:[{amt:200000,days:4},{amt:100000,days:6}], good:[{amt:200000,days:6},{amt:300000,days:"D",note:"入库→出货"},{amt:200000,days:"D",note:"入库→出货·封顶仅20万"}] },
+  ];
+  function resolveDays(d){ return d==="D" ? (parseFloat($("days").value)||0) : d; }
+  function segRow(s){ const dd=resolveDays(s.days); const rate=(parseFloat($("bp").value)||0)/10000;
+    const it=s.amt*dd*rate;
+    return `<tr><td class="small">${wan(s.amt)} × ${s.days==="D"?(dd+"天(入库→出货)"):(s.days+"天")}${s.note?` <span class="muted">· ${s.note}</span>`:""}</td><td class="right money">${money(it)}</td></tr>`; }
+  function render(){
+    const rate=(parseFloat($("bp").value)||0)/10000; const D=parseFloat($("days").value)||0;
+    // 时间轴
+    $("tl").innerHTML = events.map((e,i)=>{
+      const cls = i===events.length-1?"active":"done";
+      const dep = e.dep.map(s=>`${wan(s.amt)}×${s.days}天`).join("、")||"无";
+      const good = e.good.length? e.good.map(s=>`${wan(s.amt)}×${s.days==="D"?D+"天":s.days+"天"}`).join("、"):"无";
+      return `<div class="tl-item ${cls}"><div class="node"></div>
+        <div class="tl-t">第 ${e.day} 天 · ${e.act}</div>
+        <div class="tl-body">定金计息：${dep}<br>货物计息：${good}</div></div>`;
+    }).join("");
+    // 合计（取末次事件状态）
+    const last = events[events.length-1];
+    $("depRows").innerHTML = last.dep.map(segRow).join("");
+    $("goodRows").innerHTML = last.good.map(segRow).join("");
+    const sumET = [...last.dep,...last.good].reduce((s,x)=>s + x.amt*resolveDays(x.days), 0);
+    $("rTotal").textContent = money(sumET*rate);
+    $("rBase").textContent = "计息基数合计 "+Math.round(sumET).toLocaleString("zh-CN")+" 元·天 × 日利率 "+(rate*10000)+"‱";
+  }
+  $("bp").addEventListener("input",render); $("days").addEventListener("input",render);
+  $("btnReset").addEventListener("click",()=>{ $("bp").value=5; $("days").value=10; render(); });
+  render();
+})();
+</script>
+</body>
+</html>
