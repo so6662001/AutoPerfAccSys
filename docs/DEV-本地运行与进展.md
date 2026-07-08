@@ -154,7 +154,14 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
 - **CI 质量门禁**（`.github/workflows/ci.yml`）：后端 `mvn -B test`（JDK17）+ 前端 `npm ci && npm run build`（Node22，vue-tsc 类型检查）；本地已验证 `npm ci`+build 通过。
 - **演示数据播种** `DevSeeder`（默认关闭，`perf.seed.enabled=true` 开启，docker-compose 已启用）：建 ERP 演示表+样例数据+一张待审批变更单，便于前端联调演示；测试环境不启用（78 测试不受影响）。
 
+## 已完成（申诉复核 perf-appeal + K8s + 前端页）
+
+- **申诉复核后端**：`AppealEntity`/`AppealJpaRepo`/`AppealService`/`AppealController`——员工发起申诉 → 复核裁定(ADJUST/KEEP/ESCALATE)，租户隔离 + 审计留痕；集成测试(提交→裁定ADJUSTED、租户隔离)。
+- **K8s 部署清单** `k8s/deploy.yaml`（Namespace/Secret/ConfigMap + MySQL/Redis/后端/前端 + Ingress + 探针/限额）。
+- **前端页面**：指标计息试算 `MetricView`、绩效申诉复核 `AppealView`（+ 之前的核算/规则/审计/公式）；`npm run build` 通过。
+- **测试**：累计 80 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API20）。
+
 ## 下一步
-- 性能压测；K8s 部署清单；前端指标/取数页、审批链可视化、员工端消息页。
+- 性能压测报告；前端审批链可视化、员工端消息页、沙盘/明细报表页。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）
