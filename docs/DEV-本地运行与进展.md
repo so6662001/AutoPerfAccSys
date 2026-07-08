@@ -43,9 +43,20 @@ npm run dev       # http://localhost:5173 （/api 代理到 :8080）
 docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:5173
 ```
 
-## 下一步（M1 起）
-- M1：ERP(SQL Server 2008+)只读适配 + DWD + 日快照调度 + 日均/周转率/挂价利润指标。
+## 已完成（M1 · 数据集成与指标）
+
+- **perf-metric（指标计算，纯逻辑可测）**：
+  - `MetricService`：日均库存/应收、存货/应收周转率与周转天数、挂价利润、业务净利润、成本重估(能力性收益)、逐日计息。
+  - `ContractInterestService`：**期货合同滚动计息**（定金/货物分笔，金额×天数×日利率）——复现岳洋通示例利息 ¥3,800。
+- **perf-integration（ERP 只读集成 + 安全取数）**：
+  - `SafeSqlCompiler`：**取数 DSL→SQL 安全编译器**——表/字段白名单 + 标识符正则 + 运算符白名单 + 值参数绑定 + 强制 tenant_id + 仅单条 SELECT。含 6 项注入/越权拒绝测试。
+  - `SqlServerDialect`：SQL Server **2008 兼容分页**（ROW_NUMBER）。
+  - `ErpReader` 只读取数接口、`SnapshotJob` 日快照采集骨架。
+- **测试**：累计 41 个全绿（引擎24 + 指标5 + 集成9 + API3）。
+
+## 下一步（M2 起）
 - M2：核算项/方案落库、跑批（幂等+快照）、个人绩效单下钻。
-- M3+：规则治理（发布/三级串签/灰度/审计/版本）、DSL→SQL、四客户配置验证、安全与性能加固。
+- M3：规则治理（发布/三级串签/灰度/审计/版本）。
+- M4+：DSL→SQL 执行链路、明细报表、评分卡、审批/申诉、员工端、四客户配置验证、安全与性能加固。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）
