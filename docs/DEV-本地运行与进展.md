@@ -207,7 +207,15 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
 - **员工端移动 H5** `MobileView`（路由 `/m`）：顶部薪酬合计 + 消息中心 + 我的绩效单（逐项下钻），移动卡片式样式；导航新增入口。
 - **测试**：累计 96 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API36）。前端 12 页面构建通过。
 
+## 已完成（生产 Redis/MySQL 联调 + 新增客户纯配置接入）
+
+- **生产库切换（Flyway）**：新增 `application-prod.yml`（profile=`prod`）——MySQL 平台库 + `ddl-auto=validate`，schema 交由 **Flyway** 管理（`backend/perf-api/src/main/resources/db/migration/V1__init.sql`，与 `db/platform` 同源）；默认 profile 仍用 H2 + `flyway.enabled=false`，不影响单测。
+- **生产 Redis 锁 + 健康检查**：prod 下 `perf.lock.redis=true`、开启 Redis 健康指标、关闭演示数据播种；`docker-compose.yml` 已将 backend 接线到 `mysql`+`redis` 并激活 `prod`（schema 由 Flyway 迁移生成，移除 initdb 挂载）。
+- **新增客户「纯配置」接入**：`NewClientExtensionTest`（鑫源钢贸·区域直销）用平台基础能力（`Band` 达成率映射 / `ScopeRule` 区域单价 / `TierEngine` 阶梯整段 / 计息表达式）+ `PlanDef` 编排跑通合计 **20300**，与四客户共用同一 `CalcEngine`，证明扩展新客户**无需改代码**。
+- **联调与接入指南**：`docs/13-生产环境联调与新增客户接入指南.md`（profile 分层、Flyway 迁移规范、环境变量、compose/K8s 联调自检、新增客户五步法与兜底边界）。
+- **测试**：累计 97 个全绿（新增 1 个新客户配置化用例）。
+
 ## 下一步
-- k6 压测实测报告；生产 Redis/MySQL 联调。
+- 生产环境 k6 压测实测报告（真实 MySQL/Redis + 多实例锁串行验证）。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）
