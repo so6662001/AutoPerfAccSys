@@ -191,7 +191,13 @@ docker-compose up --build   # mysql:3306 / redis:6379 / backend:8080 / frontend:
 - **前端** `NoticeView`：消息中心列表（含变更单号追溯），导航新增；前端 11 页面构建通过。
 - **测试**：93 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API33）。
 
+## 已完成（接口文档 + 后端 README）
+
+- **OpenAPI/Swagger**：springdoc 集成，`/swagger-ui.html` + `/v3/api-docs`；集成测试验证文档端点可用（title 校验）。
+- **后端 README** `backend/README.md`：模块职责、运行、认证与多租户、主要接口、安全达标、测试说明。
+- **测试**：94 个全绿（引擎30 + 指标5 + 集成9 + 核算8 + 治理8 + API34）。
+
 ## 下一步
-- 性能压测报告；后端 README/接口文档(OpenAPI)完善。
+- 性能压测报告；员工端移动 H5 联调。
 
 （里程碑与验收标准详见 `CURSOR开发提示词.md`。）
