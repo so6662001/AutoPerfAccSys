@@ -37,6 +37,14 @@ class EngineDemoControllerTest {
     }
 
     @Test
+    void responseCarriesTraceId() throws Exception {
+        mvc.perform(get("/api/engine/whoami").header("X-Tenant-Id", "t"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .header().exists("X-Trace-Id"));
+    }
+
+    @Test
     void tierProgressive() throws Exception {
         mvc.perform(post("/api/engine/tier/step")
                         .contentType(MediaType.APPLICATION_JSON)

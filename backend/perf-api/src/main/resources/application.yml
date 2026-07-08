@@ -34,3 +34,6 @@ management:
 logging:
   level:
     com.steel.perf: INFO
+  pattern:
+    # 日志包含 traceId，便于链路串联
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{traceId}] %logger{36} - %msg%n"
