@@ -77,6 +77,23 @@ class RuleAndCalcApiTest {
     }
 
     @Test
+    void sandboxComparesScenarios() throws Exception {
+        String body = """
+            {"planCode":"SB","version":1,"period":"2026-06",
+             "components":[{"code":"吨位提成","expression":"量*单价","includeInTotal":true}],
+             "scenarios":[
+               {"name":"方案A","context":{"量":100,"单价":8}},
+               {"name":"方案B","context":{"量":100,"单价":10}}]}
+            """;
+        mvc.perform(post("/api/calc/sandbox").header("X-Tenant-Id", "sb")
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].name").value("方案A"))
+                .andExpect(jsonPath("$.data[0].total").value(800.0))
+                .andExpect(jsonPath("$.data[1].total").value(1000.0));
+    }
+
+    @Test
     void submitWritesAuditLog() throws Exception {
         String submit = """
             {"planName":"审计测试","scopeLabel":"全公司","scorecardWeightSums":{"a":100}}

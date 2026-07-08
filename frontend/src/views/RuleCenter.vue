@@ -30,6 +30,17 @@
         变更单列表 <el-button size="small" text @click="load">刷新</el-button>
       </template>
       <el-table :data="list" size="small">
+        <el-table-column type="expand">
+          <template #default="{ row }">
+            <div class="chain">
+              <el-steps :active="row.curStep" align-center finish-status="success" style="margin:10px 20px">
+                <el-step v-for="(s, i) in row.chain" :key="i"
+                  :title="s.role + ' · ' + s.name"
+                  :description="stepDesc(s)" />
+              </el-steps>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column prop="id" label="单号" width="150" />
         <el-table-column label="版本" width="70"><template #default="{ row }">v{{ row.ver }}</template></el-table-column>
         <el-table-column prop="scopeLabel" label="范围" width="160" />
@@ -73,6 +84,16 @@ const form = ref({ planName: "销售现货方案", scopeLabel: "全公司" });
 const salesWeight = ref(100);
 const list = ref<ChangeRequest[]>([]);
 const error = ref("");
+
+function stepDesc(s: { mode: string; status: string; time: string | null; delegatedFrom: string | null; added: boolean }) {
+  const parts: string[] = [];
+  if (s.mode === "OR_SIGN") parts.push("或签");
+  if (s.delegatedFrom) parts.push("受" + s.delegatedFrom + "委托");
+  if (s.added) parts.push("加签");
+  const st = { WAITING: "待处理", PASSED: "通过", REJECTED: "退回" }[s.status] || s.status;
+  parts.push(st + (s.time ? " " + s.time : ""));
+  return parts.join(" · ");
+}
 
 function statusText(s: string) {
   return { PENDING: "审批中", SCHEDULED: "待生效", EFFECTIVE: "已生效", REJECTED: "已退回" }[s] || s;

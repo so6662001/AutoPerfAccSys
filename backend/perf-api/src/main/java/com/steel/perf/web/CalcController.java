@@ -77,4 +77,29 @@ public class CalcController {
     public ApiResponse<List<PayslipEntity>> payslips(@RequestParam String period) {
         return ApiResponse.ok(payslipRepo.findByTenantIdAndPeriod(TenantContext.requireTenantId(), period));
     }
+
+    public record ScenarioReq(String name, Map<String, Double> context) {
+    }
+
+    public record SandboxReq(String planCode, int version, List<ComponentReq> components,
+                             String summaryExpr, List<ScenarioReq> scenarios, String period) {
+    }
+
+    public record ScenarioResult(String name, double total, Map<String, Double> componentAmounts) {
+    }
+
+    /** 政策沙盘：同方案对多情景并排试算（不落库），用于方案对比。 */
+    @PostMapping("/sandbox")
+    public ApiResponse<List<ScenarioResult>> sandbox(@RequestBody SandboxReq req) {
+        String tenant = TenantContext.requireTenantId();
+        List<ComponentDef> comps = req.components().stream()
+                .map(c -> new ComponentDef(c.code(), c.expression(), c.includeInTotal())).toList();
+        PlanDef plan = new PlanDef(req.planCode(), req.version(), comps, req.summaryExpr());
+        List<ScenarioResult> out = new java.util.ArrayList<>();
+        for (ScenarioReq s : req.scenarios()) {
+            PayslipResult r = calcEngine.calc(plan, s.context(), tenant, req.period(), "sandbox-" + s.name());
+            out.add(new ScenarioResult(s.name(), r.total(), r.componentAmounts()));
+        }
+        return ApiResponse.ok(out);
+    }
 }
