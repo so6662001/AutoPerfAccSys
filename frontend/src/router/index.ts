@@ -9,6 +9,7 @@ const routes: RouteRecordRaw[] = [
     redirect: "/calc",
     children: [
       { path: "calc", name: "calc", component: () => import("../views/CalcWorkbench.vue") },
+      { path: "payslip", name: "payslip", component: () => import("../views/PayslipView.vue") },
       { path: "rule", name: "rule", component: () => import("../views/RuleCenter.vue") },
       { path: "appeal", name: "appeal", component: () => import("../views/AppealView.vue") },
       { path: "sandbox", name: "sandbox", component: () => import("../views/SandboxView.vue") },

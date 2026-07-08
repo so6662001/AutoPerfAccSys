@@ -87,6 +87,7 @@ public class RuleController {
 
     @PostMapping("/change-requests/{id}/approve")
     public ApiResponse<ChangeRequest> approve(@PathVariable String id, @RequestBody ApproveReq req) {
+        com.steel.perf.security.RoleGuard.requireAny(com.steel.perf.security.RoleGuard.APPROVER);
         ChangeRequest cr = require(id);
         svc.approve(cr, req.approver(), LocalDateTime.now().format(TF));
         repo.save(TenantContext.requireTenantId(), cr);
@@ -96,6 +97,7 @@ public class RuleController {
 
     @PostMapping("/change-requests/{id}/reject")
     public ApiResponse<ChangeRequest> reject(@PathVariable String id) {
+        com.steel.perf.security.RoleGuard.requireAny(com.steel.perf.security.RoleGuard.APPROVER);
         ChangeRequest cr = require(id);
         svc.reject(cr, LocalDateTime.now().format(TF));
         repo.save(TenantContext.requireTenantId(), cr);
@@ -134,6 +136,7 @@ public class RuleController {
 
     @PostMapping("/change-requests/{id}/promote")
     public ApiResponse<ChangeRequest> promote(@PathVariable String id) {
+        com.steel.perf.security.RoleGuard.requireAny(com.steel.perf.security.RoleGuard.APPROVER);
         String tenant = TenantContext.requireTenantId();
         ChangeRequest gray = require(id);
         int ver = repo.nextVersion(tenant);

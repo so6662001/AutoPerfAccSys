@@ -4,6 +4,7 @@
       <div class="brand">钢绩云 · 绩效核算</div>
       <el-menu :default-active="active" router background-color="transparent" text-color="#c3ccdd" active-text-color="#fff">
         <el-menu-item index="/calc"><span>⚙ 核算工作台</span></el-menu-item>
+        <el-menu-item index="/payslip"><span>🧾 绩效单查询</span></el-menu-item>
         <el-menu-item index="/rule"><span>🧩 规则变更审批</span></el-menu-item>
         <el-menu-item index="/appeal"><span>⚖ 绩效申诉复核</span></el-menu-item>
         <el-menu-item index="/sandbox"><span>⚗ 政策沙盘对比</span></el-menu-item>

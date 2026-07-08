@@ -137,10 +137,28 @@ class RuleAndCalcApiTest {
     }
 
     private MvcResult approve(String id, String approver) throws Exception {
-        return mvc.perform(post("/api/rule/change-requests/" + id + "/approve").header("X-Tenant-Id", "t2")
+        return mvc.perform(post("/api/rule/change-requests/" + id + "/approve")
+                        .header("X-Tenant-Id", "t2").header("X-Roles", "HR")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"approver\":\"" + approver + "\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
+    }
+
+    @Test
+    void approveDeniedForNonApproverRole() throws Exception {
+        String submit = """
+            {"planName":"P","scopeLabel":"全公司","scorecardWeightSums":{"a":100}}
+            """;
+        MvcResult res = mvc.perform(post("/api/rule/change-requests").header("X-Tenant-Id", "rbac")
+                        .contentType(MediaType.APPLICATION_JSON).content(submit))
+                .andExpect(status().isOk()).andReturn();
+        String id = om.readTree(res.getResponse().getContentAsString()).get("data").get("id").asText();
+        // 以 GUEST 角色审批 → 403 业务码
+        mvc.perform(post("/api/rule/change-requests/" + id + "/approve")
+                        .header("X-Tenant-Id", "rbac").header("X-Roles", "GUEST")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"approver\":\"陈组长\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(403));
     }
 }
