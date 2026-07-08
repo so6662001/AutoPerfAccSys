@@ -15,6 +15,7 @@ const routes: RouteRecordRaw[] = [
       { path: "appeal", name: "appeal", component: () => import("../views/AppealView.vue") },
       { path: "sandbox", name: "sandbox", component: () => import("../views/SandboxView.vue") },
       { path: "metric", name: "metric", component: () => import("../views/MetricView.vue") },
+      { path: "notice", name: "notice", component: () => import("../views/NoticeView.vue") },
       { path: "audit", name: "audit", component: () => import("../views/AuditView.vue") },
       { path: "engine", name: "engine-demo", component: () => import("../views/EngineDemo.vue") },
     ],

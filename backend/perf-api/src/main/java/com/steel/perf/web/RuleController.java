@@ -30,15 +30,25 @@ public class RuleController {
     private final ParamDiff paramDiff;
     private final ChangeRequestStore repo;
     private final com.steel.perf.service.AuditService audit;
+    private final com.steel.perf.service.NoticeService notice;
 
     public RuleController(ChangeRequestService svc, PublishValidator validator,
                           ParamDiff paramDiff, ChangeRequestStore repo,
-                          com.steel.perf.service.AuditService audit) {
+                          com.steel.perf.service.AuditService audit,
+                          com.steel.perf.service.NoticeService notice) {
         this.svc = svc;
         this.validator = validator;
         this.paramDiff = paramDiff;
         this.repo = repo;
         this.audit = audit;
+        this.notice = notice;
+    }
+
+    private void notifyIfEffective(ChangeRequest cr) {
+        if (cr.getStatus() == ChangeRequest.Status.EFFECTIVE) {
+            notice.push("绩效规则 v" + cr.getVer() + " 已生效",
+                    "生效范围：" + cr.getScopeLabel() + "；如有疑问可发起申诉。", cr.getId());
+        }
     }
 
     public record SubmitReq(String planName, String effMode, String effLabel, String scopeLabel,
@@ -92,6 +102,7 @@ public class RuleController {
         svc.approve(cr, req.approver(), LocalDateTime.now().format(TF));
         repo.save(TenantContext.requireTenantId(), cr);
         audit.record("RULE_APPROVE", cr.getId(), "审批人 " + req.approver() + " → " + cr.getStatus());
+        notifyIfEffective(cr);
         return ApiResponse.ok(cr);
     }
 
@@ -131,6 +142,7 @@ public class RuleController {
         ChangeRequest cr = require(id);
         svc.goEffective(cr);
         repo.save(TenantContext.requireTenantId(), cr);
+        notifyIfEffective(cr);
         return ApiResponse.ok(cr);
     }
 

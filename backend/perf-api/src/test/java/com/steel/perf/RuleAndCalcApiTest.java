@@ -74,6 +74,11 @@ class RuleAndCalcApiTest {
         MvcResult last = approve(id, "周总");
         JsonNode lastNode = om.readTree(last.getResponse().getContentAsString());
         assertEquals("EFFECTIVE", lastNode.get("data").get("status").asText());
+
+        // 生效后应推送员工端通知
+        mvc.perform(get("/api/notice").header("X-Tenant-Id", "t2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
     }
 
     @Test

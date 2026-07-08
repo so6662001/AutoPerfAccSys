@@ -10,6 +10,7 @@
         <el-menu-item index="/appeal"><span>⚖ 绩效申诉复核</span></el-menu-item>
         <el-menu-item index="/sandbox"><span>⚗ 政策沙盘对比</span></el-menu-item>
         <el-menu-item index="/metric"><span>💹 指标计息试算</span></el-menu-item>
+        <el-menu-item index="/notice"><span>🔔 消息中心</span></el-menu-item>
         <el-menu-item index="/audit"><span>🔎 合规审计查询</span></el-menu-item>
         <el-menu-item index="/engine"><span>🧮 公式试算</span></el-menu-item>
       </el-menu>
